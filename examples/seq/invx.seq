@@ -1,0 +1,35 @@
+# @ x elem(x).
+
+# Sort axioms
+
+elem(zero).
+elem(unit).
+@ x . elem(x) > elem(inv(x)).
+@ x . elem(x) > @ y . elem(y) > elem(add(x,y)).
+@ x . elem(x) > @ y . elem(y) > elem(mul(x,y)).
+
+# Addition axioms
+
+@ x . elem(x) > @ y . elem(y) > add(x,y) = add(y,x).
+@ x . elem(x) > @ y . elem(y) > @ z . elem(z) > add(add(x,y),z) = add(x,add(y,z)).
+@ x . elem(x) > add(x,zero) = x.
+@ x . elem(x) > add(zero,x) = x.
+@ x . elem(x) > add(x,inv(x)) = zero.
+@ x . elem(x) > add(inv(x),x) = zero.
+
+# Multiplication axioms
+
+#@ x . elem(x) > @ y . elem(y) > mul(x,y) = mul(y,x).
+@ x . elem(x) > @ y . elem(y) > @ z . elem(z) > mul(mul(x,y),z) = mul(x,mul(y,z)).
+@ x . elem(x) > mul(x,unit) = x.
+@ x . elem(x) > mul(unit,x) = x.
+
+# Distributivity axioms
+
+@ x . elem(x) > @ y . elem(y) > @ z . elem(z) > mul(x,add(y,z)) = add(mul(x,y),mul(x,z)).
+@ x . elem(x) > @ y . elem(y) > @ z . elem(z) > mul(add(y,z),x) = add(mul(y,x),mul(z,x)).
+
+# Conjecture
+
+: @ x . elem(x) > mul(x,inv(unit)) = inv(x).
+

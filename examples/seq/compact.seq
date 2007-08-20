@@ -1,0 +1,10 @@
+forall X, Y . subset(X, Y) ~ forall a . in(a, X) > in(a, Y).
+forall X, Y . subset(X, Y) > subset(st(X), st(Y)).
+
+forall X, M . subset(M, X) >
+ . closed(M) ~ forall a . in(a, X) > . exists b (in(b, st(M)) & close(b, a)) > in(a, M).
+
+forall X, M . subset(M, X) >
+ . compact(M) ~ forall b . in(b, st(M)) > exists a . in(a, M) & close(b, a).
+
+: forall X, M, F . subset(M, X) & compact(M) & subset(F, M) & closed(F) > compact(F).

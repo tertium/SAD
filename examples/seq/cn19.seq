@@ -1,0 +1,7 @@
+# taken from the Otter's examples
+
+forall u,v . P(u) > . P(i(u,v)) > P(v).
+forall x,y,z P(i(i(x,y),i(i(y,z),i(x,z)))).
+forall w P(i(i(n(w),w),w)).
+forall r,s P(i(r,i(n(r),s))).
+: P(i(i(i(a,b),c),i(b,c))).

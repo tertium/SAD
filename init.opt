@@ -1,0 +1,10 @@
+# Alice init options
+
+[prdb provers/provers.dat]
+[prover spass]
+[plog on]
+[tran on]
+[splt on]
+#[igno on]
+#[task on]
+[tlim 3]

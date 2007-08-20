@@ -1,0 +1,9 @@
+# taken from the Otter's examples
+
+p1a|p2a. p1a|p3a. p1a|p4a. p1a|p5a. p2a|p3a. p2a|p4a. p2a|p5a. p3a|p4a. p3a|p5a. p4a|p5a.
+p1b|p2b. p1b|p3b. p1b|p4b. p1b|p5b. p2b|p3b. p2b|p4b. p2b|p5b. p3b|p4b. p3b|p5b. p4b|p5b.
+p1c|p2c. p1c|p3c. p1c|p4c. p1c|p5c. p2c|p3c. p2c|p4c. p2c|p5c. p3c|p4c. p3c|p5c. p4c|p5c.
+p1d|p2d. p1d|p3d. p1d|p4d. p1d|p5d. p2d|p3d. p2d|p4d. p2d|p5d. p3d|p4d. p3d|p5d. p4d|p5d.
+:
+(p1a & p1b & p1c & p1d) | (p2a & p2b & p2c & p2d) | (p3a & p3b & p3c & p3d) |
+(p4a & p4b & p4c & p4d) | (p5a & p5b & p5c & p5d).

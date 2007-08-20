@@ -1,0 +1,6 @@
+# taken from the Otter's examples
+
+forall u,v . (P(u) & P(e(u,v))) > P(v).
+forall x,y,z P(e(e(x,y),e(e(x,z),e(z,y)))).
+: P(e(e(a,b),e(e(c,b),e(a,c)))).
+

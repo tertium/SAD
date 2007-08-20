@@ -1,0 +1,7 @@
+forall x,y exists z P(x, y, z).
+forall x,y,z,u,v,w . P(x, y, u) & P(y, z, v) > . P(u, z, w) ~ P(x, v, w).
+forall x . P(x, e, x) & P(e, x, x).
+forall x . P(x, i(x), e) & P(i(x), x, e).
+forall x P(x, x, e).
+:
+forall a,b,c . P(a,b,c) > P(b, a, c).

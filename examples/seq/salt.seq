@@ -1,0 +1,65 @@
+# taken from the Otter's examples
+
+-sm | mb | ml.
+-sm | mb | sl.
+-sm | sb | ml.
+-sm | sb | sl.
+-ml | -mc | -mm.
+-ml | -mc | -sm.
+-ml | -sc | -mm.
+-ml | -sc | -sm.
+-md | -ml | -mm.
+-md | -ml | -sm.
+-md | -sl | -mm.
+-md | -sl | -sm.
+-sd | -mb | mc.
+-sd | -mb | sc.
+-sd | -sb | mc.
+-sd | -sb | sc.
+-mc | md | ml.
+-mc | md | sl.
+-mc | sd | ml.
+-mc | sd | sl.
+-mb | -md | mm.
+-mb | -md | sm.
+-mb | -sd | mm.
+-mb | -sd | sm.
+sd | -md | mm.
+-sd | md | mm.
+sc | -mc | mm.
+-sc | mc | mm.
+-sl | -ml | sm.
+-sb | -mb | sm.
+sd | -md | sl.
+-sd | md | sl.
+sb | -mb | sl.
+-sb | mb | sl.
+-sc | -mc | sd.
+-sl | -ml | mc.
+-sd | -md | mc.
+sb | -mb | sc.
+-sb | mb | sc.
+-sm | -mm | mb.
+sl | -ml | sb.
+-sl | ml | sb.
+sc | -mc | sb.
+-sc | mc | sb.
+-sc | -mb | -sb | -mm.
+-sc | -mb | -sb | -sm.
+-sc | sb | mb | -mm.
+-sc | sb | mb | -sm.
+-mm | -mc | -sc | -md | -sd.
+-mm | sc | mc | sd | md.
+-sl | -mb | -sb | -md | -sd.
+-sl | -mb | -sb | sd | md.
+-sl | sb | mb | -md | -sd.
+-sb | -mc | -sc | -ml | -sl.
+-sb | -mc | -sc | sl | ml.
+sm | mm | ml.
+sc | mc | ml.
+sm | mm | md.
+sl | ml | md.
+sb | mb | sd.
+sm | mm | sc.
+sd | md | mb. :
+-(sl | -mb | -sb | -sm | -ml | sc | mc | sd | md | mm).

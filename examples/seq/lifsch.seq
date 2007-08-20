@@ -1,0 +1,6 @@
+# taken from the Otter's examples
+
+: exists x, x1 forall y exists z, z1 .
+        ( -p(y,y) | p(x,x)  | -s(z,x) ) &
+             ( s(x,y) | -s(y,z) | q(z1,z1) ) &
+	             ( q(x1,y) | -q(y,z1) | s(x1,x1) ) .
