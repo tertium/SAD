@@ -1,4 +1,5 @@
 # Alice init options
+
 [prdb provers/provers.dat]
 [prover spass]
 [plog on]
