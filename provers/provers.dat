@@ -1,5 +1,14 @@
 ## Alice's provers
 
+Pmoses
+LMoses
+Fmoses
+Cprovers/moses
+Yproved in
+Nfound unprovable in
+Utimeout in
+#Ureached final depth bound in
+
 Pspass
 LSPASS
 Fdfg
@@ -45,13 +54,4 @@ USearch stopped by max_seconds option.
 #USearch stopped by max_given option.
 #USearch stopped by max_kept option.
 #USearch stopped by max_gen option.
-
-Pmoses
-LMoses
-Fmoses
-Cmoses/moses
-Yproved in
-Nfound unprovable in
-Utimeout in
-#Ureached final depth bound in
 

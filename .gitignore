@@ -1,4 +1,11 @@
-/alice
 /tmp
+/examples/tmp
+
+/alice
+/.build
+
 /*.ftl
 /*.seq
+
+/provers/*
+!/provers/provers.dat
