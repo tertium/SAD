@@ -4,7 +4,7 @@ import Control.Monad
 
 import Alice.Core.Base
 --import Alice.Core.Local
---import Alice.Core.Unfold
+import Alice.Core.Unfold
 import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Kit
@@ -17,45 +17,28 @@ import Alice.Export.Prover
 reason :: [Context] -> Context -> RM ()
 reason cnt tc = do  dlp <- askRSII IIdpth 7
                     let nct = context (cnLink tc) cnt
-                        gls = splitG $ cnForm tc
-                    goalseq dlp nct tc gls
+                    goalseq dlp nct tc $ splitG $ cnForm tc
 
 goalseq :: Int -> [Context] -> Context -> [Formula] -> RM ()
-goalseq n cnt tc (f:fs) = do  trv <> lnc <> dlp
+goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
+                              trv <> launch cnt rfr <> dlp
                               unless (null fs) dga
                               goalseq n nct tc fs
   where
     rfr = {- reduce -} f
-    lnc = launch cnt rfr
-    dlp = defloop n cnt tc rfr
-    nct = tc { cnForm = f } : cnt
-    trv = sbg >> guard (isTop rfr) >> tri
+    nct = tc { cnForm = rfr } : cnt
 
-    dga = whenIB IBsplt False $ rlog0 $ "passing to the next subgoal"
-    sbg = whenIB IBsplt False $ rlog0 $ "subgoal: " ++ show f
+    trv = sbg >> guard (isTop rfr) >> tri
+    dlp = do  tsk <- unfold $ tc {cnForm = Not rfr} : cnt
+              let Context {cnForm = Not nfr} : nct = tsk
+              goalseq (pred n) nct tc $ splitG nfr
+
+    rde = whenIB IBrlog False $ rlog0 $ "reasoning depth exceeded"
+    dga = whenIB IBrlog False $ rlog0 $ "passing to the next subgoal"
+    sbg = whenIB IBrlog False $ rlog0 $ "subgoal: " ++ show f
     tri = whenIB IBplog False $ rlog0 $ "trivial"
 
 goalseq _ _ _ _ = return ()
-
-
-defloop :: Int -> [Context] -> Context -> Formula -> RM ()
-defloop n cnt tc f  = do  when (n == 0) $ bot >> mzero
-                          tsk <- markup $ tc { cnForm = Not f } : cnt
-                          let exs = concatMap (markedF . cnForm) tsk
-                          if null exs then ntu >> mzero else unf exs
-                          addRSCI CIunfl $ length exs
-                          let nc : nct = unfold n tsk
-                              Context { cnForm = Not nf } = nc
-                          goalseq (pred n) nct tc $ splitG nf
-  where
-    bot = whenIB IBunfl False $ rlog0 $ "reasoning depth exceeded"
-    ntu = whenIB IBunfl False $ rlog0 $ "nothing to unfold"
-    unf = whenIB IBunfl False . rlog0 . (++) "unfold: " . out
-    out = concatMap $ flip (showsPrec 3) " "
-
-    markup = return
-    markedF = const ([]::[Formula])
-    unfold _ = id
 
 
 launch :: [Context] -> Formula -> RM ()
@@ -99,7 +82,7 @@ context ls cnt = filter (not . isTop . cnForm) $ map chk cnt
           | True  = c { cnForm = lichten $ cnForm c }
 
     tst c | not (cnIsTL c)  = True
-          | null ls         = True -- not $ isDefn $ cnForm c
+          | null ls         = not $ isDefn $ cnForm c
           | otherwise       = cnName c `elem` ls
 
 lichten :: Formula -> Formula
@@ -138,8 +121,8 @@ isSign (Imp _ f)            = isSign f
 isSign _                    = False
 
 isSort :: Formula -> Bool
-isSort (Not f)            = isEqu $ strip f
-isSort (Trm ('a':_) _ _)  = True
-isSort (Trm _ [_] _)      = True
-isSort _                  = False
+isSort (Not f)              = isEqu (strip f)
+isSort (Trm ('a':_) _ _)    = True
+isSort (Trm _ [_] _)        = True
+isSort _                    = False
 

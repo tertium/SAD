@@ -146,6 +146,23 @@ occursH = occurs zHole
 occursS = occurs zSlot
 
 
+-- Info handling
+
+hasInfo f = isTrm f || isVar f || isInd f
+
+nullInfo f  | hasInfo f = f {trInfo = []}
+            | otherwise = f
+
+skipInfo fn f | hasInfo f = (fn $ nullInfo f) {trInfo = trInfo f}
+              | otherwise = fn f
+
+trInfoI t = [ e | Ann DIM e <- trInfo t ]
+trInfoO t = [ e | Ann DOR e <- trInfo t ]
+trInfoE t = [ e | Ann DEQ e <- trInfo t ]
+trInfoC t = [ e | Ann DCN e <- trInfo t ]
+trInfoN t = [ e | Ann DNC e <- trInfo t ]
+
+
 -- Misc stuff
 
 isUnit (Sub _ f)    = isUnit f
@@ -153,10 +170,6 @@ isUnit (Ann _ f)    = isUnit f
 isUnit (Not f)      = isUnit f
 isUnit (Trm _ _ _)  = True
 isUnit _            = False
-
-trInfoI t = [ e | Ann DIM e <- trInfo t ]
-trInfoO t = [ e | Ann DOR e <- trInfo t ]
-trInfoE t = [ e | Ann DEQ e <- trInfo t ]
 
 infilt vs v = guard (v `elem` vs) >> return v
 nifilt vs v = guard (v `notElem` vs) >> return v

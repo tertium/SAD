@@ -1,71 +1,79 @@
-module Alice.Core.Unfold where
+module Alice.Core.Unfold (unfold) where
 
+import Control.Monad
+import Data.Maybe
+
+import Alice.Data.Context
 import Alice.Data.Formula
+import Alice.Data.Instr
+import Alice.Data.Kit
 import Alice.Data.Text
-import Alice.Core.Local
+import Alice.Core.Base
+--import Alice.Core.Local
 
 -- Definition expansion
 
-markup cnt    = return $ dlc ++ glb
+unfold :: [Context] -> RM [Context]
+unfold tsk  = do  when (null exs) $ ntu >> mzero
+                  unf ; addRSCI CIunfl $ length exs
+                  return $ foldr exp [] mts
   where
-    (loc,glb) = span ((== "__") . blMark) cnt
-    dlc = map (\ b -> b { blForm = mrk (blForm b) }) loc
-    mrk f@(Trm _ ts _ d) = f {  trDefn = map (Ann DCN) d,
-                                trArgs = map mrk ts }
-    mrk v | isVar v = v
-    mrk f = mapF mrk f
+    mts = markup tsk
+    exs = concatMap (markedF . cnForm) mts
 
+    exp c cnt = c {cnForm = unfoldF cnt c (cnForm c)} : cnt
 
-expand n  = roll
+    ntu = whenIB IBunfl False $ rlog0 $ "nothing to unfold"
+    unf = whenIB IBunfl False $ rlog0 $ "unfold: " ++ out
+    out = concatMap (flip (showsPrec 3) " ") exs
+
+unfoldF cnt cx f = fill [] (Just True) 0 f
   where
-    roll (bl:cnt) = let ecn = roll cnt ; fr = formulate bl
-                    in  bl { blForm = fill ecn True fr } : ecn
-    roll _        = []
+    fill fc sg n f | isTrm f  = let nct = cnJoin cnt cx fc
+                                in  unfoldA nct (fromJust sg) f
+    fill fc sg n (Iff f g)    = roundF fill fc sg n (zIff f g)
+    fill fc sg n f            = roundF fill fc sg n f
 
-    fill cnt sg f | isTrm f = reduce $ fillDLV cnt nfr
-      where
-        wip = (wipeDCN f {trInfo = []}) {trInfo = trInfo f}
-        nbs = foldr (if sg then And else Or) wip (expU f)
-        nfr = foldr (if sg then And else Imp) nbs arg
-        arg = concatMap expT $ trArgs f
-    fill cnt sg f = roundF fill cnt sg f
+unfoldA cnt s f = {- reduce $ fillDLV cnt -} nfr
+  where
+    nfr = foldr (if s then And else Imp) nbs (expS f)
+    nbs = foldr (if s then And else Or ) wip (expA f)
+    wip = wipeDCN f
 
-    expU (Not h)  = map Not (expU h)
-    expU h  | isDCN h = [outDef h]
-    expU h  = []
-
-    expT h  | isDCN h = outDef h : expT (nullD h)
-    expT h  | isTrm h = concatMap expT (trArgs h) ++
-                        concatMap expU (trInfo h)
-    expT h  | isVar h = concatMap expU (trInfo h)
-    expT h  = foldF expT [] (++) h
-
-    outDef (Trm _ _ _ [Ann DCN d])  = rebind undot d
-
-    undot ('.':'.':x) = '.':x
-    undot ('.':x) = 'd':show n ++ x
-    undot x = error $ "undot " ++ x
+    expS h  = foldF expT $ nullInfo h
+    expT h  = expS h ++ expA h
+    expA h  = getDCN h
 
 
-isDCN (Trm _ _ _ [Ann DCN _]) = True
-isDCN _ = False
+-- Trivial markup
 
-wipeDCN f | isDCN f = wipeDCN (nullD f)
-          | True    = mapF wipeDCN f
+markup tsk  = map mrk loc ++ glb
+  where
+    (loc, glb) = span (not . cnIsTL) tsk
 
-markDCN t = t { trDefn = map (Ann DCN) (trDefn t) }
+    mrk c = c {cnForm = tot $ cnForm c}
+    tot f | isTrm f   = skipInfo (mapF tot) $ markDCN f
+          | otherwise = skipInfo (mapF tot) f
+
+markDCN f = f { trInfo = map mrk (trInfo f) }
+  where
+    mrk (Ann DEQ f) = Ann DCN f   -- DEQ lost!!!
+    mrk f           = f
+
+wipeDCN (Ann DCN _) = Top
+wipeDCN f@(Ann DIM _) = f
+wipeDCN f@(Ann DOR _) = f
+wipeDCN f@(Ann DEQ _) = f
+wipeDCN f = mapF wipeDCN f
 
 
-markedF (Ann DIM _) = []
-markedF (Ann DOR _) = []
-markedF f | isDCN f = foldF markedF [f] (++) (nullD f)
-          | isTrm f = foldF markedF []  (++) (nullD f)
-          | True    = foldF markedF []  (++) f
+-- Service stuff
 
-tailleF (Ann DIM _) = 0
-tailleF (Ann DOR _) = 0
-tailleF f | isTrm f = foldF tailleF 1 (+) (nullD f)
-          | isVar f = foldF tailleF 1 (+) f
-          | True    = foldF tailleF 0 (+) f
+markedF f | isDCN f   = f : foldF markedF (nullInfo f)
+          | otherwise =     foldF markedF (nullInfo f)
 
+isDCN     = not . null . getDCN
+
+getDCN f  | hasInfo f = trInfoC f
+          | otherwise = []
 

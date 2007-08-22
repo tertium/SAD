@@ -191,7 +191,8 @@ showFormula p d = dive
       dive (Trm "=" [l,r] _)  = sinfix " = " l r
       dive (Trm s ts _)       = showString s . sargs ts
       dive (Var s _)          = showString s
-      dive (Ind i _)          = showChar 'v' . shows (d - 1 - i)
+      dive (Ind i _)  | i < d = showChar 'v' . shows (d - i - 1)
+                      | True  = showChar 'v' . showChar '?'
 
       sargs []  = id
       sargs _   | p == 1  = showString "(...)"

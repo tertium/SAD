@@ -38,7 +38,7 @@ data InBin  = IBprov  --  prove goals (yes)
             | IBtran  --  print current sentence (no)
             | IBdefn  --  print definition checks (no)
             | IBunfl  --  print definition unfolds (no)
-            | IBsplt  --  print subgoals (no)
+            | IBrlog  --  print reasoner's log (no)
             | IBplog  --  print prover's log (no)
             | IBtask  --  print inference tasks (no)
             | IBhelp  --  print help
@@ -104,7 +104,7 @@ setIB = [ (IBprov,  ["prov", "prove"]),
           (IBtran,  ["tran", "printtran"]),
           (IBdefn,  ["defn", "printdefn"]),
           (IBunfl,  ["unfl", "printunfl"]),
-          (IBsplt,  ["splt", "printsplt"]),
+          (IBrlog,  ["rlog", "printrlog"]),
           (IBplog,  ["plog", "printplog"]),
           (IBtask,  ["task", "printtask"]) ]
 
