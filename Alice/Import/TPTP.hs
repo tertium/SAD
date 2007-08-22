@@ -5,6 +5,7 @@ import Data.Char
 import Data.List
 
 import Alice.Data.Formula
+import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Parser.Base
 import Alice.Parser.Prim

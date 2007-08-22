@@ -4,6 +4,7 @@ import Data.List
 
 import Alice.Data.Formula
 import Alice.Data.Instr
+import Alice.Data.Kit
 
 
 data Text = TB Block | TI Instr | TD Idrop

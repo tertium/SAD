@@ -2,6 +2,7 @@ module Alice.Export.Otter (otterOut) where
 
 import Alice.Data.Context
 import Alice.Data.Formula
+import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Export.Base
 

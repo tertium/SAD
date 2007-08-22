@@ -8,6 +8,7 @@ import Alice.Core.Base
 -- import Alice.Core.Local
 import Alice.Data.Context
 import Alice.Data.Formula
+import Alice.Data.Kit
 import Alice.Data.Text
 
 

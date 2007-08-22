@@ -6,6 +6,7 @@ import Data.List
 import Data.Maybe
 
 import Alice.Data.Formula
+import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.ForTheL.Base
 import Alice.ForTheL.Intro

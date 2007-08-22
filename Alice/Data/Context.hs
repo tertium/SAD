@@ -34,7 +34,7 @@ roundF fn cn sg n  = dive
     dive (Imp f g) =  let nf = fn cn (liftM not sg) n f
                       in  Imp nf $ fn (nf:cn) sg n g
     dive (Or  f g) =  let nf = fn cn sg n f
-                      in  Or nf $ fn (neg nf:cn) sg n g
+                      in  Or nf $ fn (Not nf:cn) sg n g
     dive (And f g) =  let nf = fn cn sg n f
                       in  And nf $ fn (nf:cn) sg n g
     dive (Sub f g) =  let nf = fn cn Nothing n f
@@ -56,7 +56,7 @@ roundFM fn cn sg n  = dive
     dive (Imp f g)  = do  nf <- fn cn (liftM not sg) n f
                           liftM (Imp nf) $ fn (nf:cn) sg n g
     dive (Or  f g)  = do  nf <- fn cn sg n f
-                          liftM (Or nf) $ fn (neg nf:cn) sg n g
+                          liftM (Or nf) $ fn (Not nf:cn) sg n g
     dive (And f g)  = do  nf <- fn cn sg n f
                           liftM (And nf) $ fn (nf:cn) sg n g
     dive (Sub f g)  = do  nf <- fn cn Nothing n f

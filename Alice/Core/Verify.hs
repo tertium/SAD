@@ -9,6 +9,7 @@ import Alice.Core.Reason
 import Alice.Core.Thesis
 import Alice.Data.Context
 import Alice.Data.Formula
+import Alice.Data.Kit
 import Alice.Data.Instr
 import Alice.Data.Text
 import Alice.Export.Base

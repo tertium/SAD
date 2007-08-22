@@ -5,6 +5,7 @@ import qualified Data.Monoid as Monoid
 
 import Alice.Data.Context
 import Alice.Data.Formula
+import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Export.Base
 
