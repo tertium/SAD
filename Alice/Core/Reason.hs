@@ -2,8 +2,9 @@ module Alice.Core.Reason where
 
 import Control.Monad
 
---import Alice.Core.Local
 import Alice.Core.Base
+--import Alice.Core.Local
+--import Alice.Core.Unfold
 import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Instr
@@ -19,13 +20,13 @@ reason cnt tc = do  dlp <- askRSII IIdpth 7
                     goalseq dlp nct tc gls
 
 goalseq :: Int -> [Context] -> Context -> [Formula] -> RM ()
-goalseq n cnt tc (f:fs) = do  trv <> lnc -- <> dlp
+goalseq n cnt tc (f:fs) = do  trv <> lnc <> dlp
                               unless (null fs) dga
                               goalseq n nct tc fs
   where
     rfr = {- reduce -} f
     lnc = launch cnt rfr
---    dlp = defloop n cnt tc rfr
+    dlp = defloop n cnt tc rfr
     nct = tc { cnForm = f } : cnt
     trv = sbg >> guard (isTop rfr) >> tri
 
@@ -35,18 +36,26 @@ goalseq n cnt tc (f:fs) = do  trv <> lnc -- <> dlp
 
 goalseq _ _ _ _ = return ()
 
-{-
-defloop 0 _ _ = mzero
-defloop n c f = do  tsk <- markup (dumbF (Not f) : c)
-                    let exs = concatMap (markedF . formulate) tsk
-                    guard $ not $ null exs; onVerb 1 $ xout exs
-                    let (nb:nc) = expand n tsk
-                        Block { blForm = Not nf } = nb
-                    goalseq (pred n) nc $ splitG nf
+
+defloop :: Int -> [Context] -> Context -> Formula -> RM ()
+defloop n cnt tc f  = do  when (n == 0) $ bot >> mzero
+                          tsk <- markup $ tc { cnForm = Not f } : cnt
+                          let exs = concatMap (markedF . cnForm) tsk
+                          if null exs then ntu >> mzero else unf exs
+                          addRSCI CIunfl $ length exs
+                          let nc : nct = unfold n tsk
+                              Context { cnForm = Not nf } = nc
+                          goalseq (pred n) nct tc $ splitG nf
   where
-    xout es = rlog0 $ "unfold: " ++ concatMap xo es
-    xo fr = ' ' : showsPrec 3 fr ""
--}
+    bot = whenIB IBunfl False $ rlog0 $ "reasoning depth exceeded"
+    ntu = whenIB IBunfl False $ rlog0 $ "nothing to unfold"
+    unf = whenIB IBunfl False . rlog0 . (++) "unfold: " . out
+    out = concatMap $ flip (showsPrec 3) " "
+
+    markup = return
+    markedF = const ([]::[Formula])
+    unfold _ = id
+
 
 launch :: [Context] -> Formula -> RM ()
 launch cnt fr = do  incRSCI CIprov; whenIB IBtask False debug

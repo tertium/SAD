@@ -29,6 +29,7 @@ data CntrT  = CTpars
 
 data CntrI  = CIsect
             | CIgoal
+            | CIunfl
             | CIprov
             deriving (Eq,Show)
 
