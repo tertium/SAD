@@ -3,6 +3,7 @@
 
 /alice
 /.build
+/init.opt
 
 /*.ftl
 /*.seq
