@@ -19,43 +19,6 @@ import Alice.Import.Reader
 
 verify rst bs = runRM (vLoop False (Context [] Bot) [] [] bs) rst
 
-vLoop mot ths brn cnt (TI ins : bs)
-    = proc ins >> vLoop mot ths brn cnt bs
-  where
-    proc (InCom ICthes)
-      = do  let smt = if mot then "(mot): " else "(nmt): "
-            rlog0 $ "current thesis " ++ smt ++ show (cnForm ths)
-
-    proc (InCom ICsimp)
-      = do  let tlb = filter cnIsTL cnt
-            rlog0 $ "current simple rules:"
-            mapM_ (printRM . cnForm) $ context ["."] tlb
-
-    proc (InCom _)  = rlog0 $ "unsupported instruction"
-
-    proc (InStr ISread "-") = proc (InStr ISread "")
-
-    proc (InStr ISread file)
-      = do  let fn = if null file then "stdin" else file
-            txt <- timer CTpars $ justIO $ readText file
-            trn <- askRSIB IBtext False
-            if trn then mapM_ printRM txt else
-              do  rlog0 $ fn ++ ": verification started"
-                  let success = rlog0 $ fn ++ ": verification successful"
-                      failure = rlog0 $ fn ++ ": verification failed"
-                  (vLoop mot ths brn cnt txt >> success) <> failure
-
-    proc (InStr ISprdb file)
-      = do  prd <- justIO $ readPrDB file
-            updateRS $ \ rs -> rs { rsPrdb = prd }
-
-    proc i  = addRSIn i
-
-vLoop mot ths brn cnt (TD ind : bs)
-    = proc ind >> vLoop mot ths brn cnt bs
-  where
-    proc i  = drpRSIn i
-
 vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
   do  let sectout = showsPrec (length brn) (bl { blBody = [] }) ""
       whenIB IBtran False $ putStrRM $ '[' : la ++ "] " ++ sectout
@@ -90,14 +53,19 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
 
       return (TB nbl : nbs)
 
-
 vLoop True ths brn cnt [] = whenIB IBprov True prove >> return []
   where
     prove = do  let bl = cnHead ths; tx = "goal: " ++ blText bl
                 incRSCI CIgoal; whenIB IBgoal True $ rlog bl tx
                 reason cnt ths <> guardIB IBigno False
 
-vLoop _ _ _ _ [] = return []
+vLoop mot ths brn cnt (TI ins : bs) =
+      procTI mot ths brn cnt ins >> vLoop mot ths brn cnt bs
+
+vLoop mot ths brn cnt (TD ind : bs) =
+      procTD mot ths brn cnt ind >> vLoop mot ths brn cnt bs
+
+vLoop _ _ _ _ _ = return []
 
 
 splitTh mot ths brn cnt bs = dive id cnt $ cnForm ths
@@ -119,6 +87,44 @@ deICH = dive id
     dive c (Imp f g)            = dive (c . Imp f) g
     dive c (All v f)            = dive (c . All v) f
     dive c f                    = c f
+
+
+-- Instruction handling
+
+procTI mot ths brn cnt = proc
+  where
+    proc (InCom ICthes)
+      = do  let smt = if mot then "(mot): " else "(nmt): "
+            rlog0 $ "current thesis " ++ smt ++ show (cnForm ths)
+
+    proc (InCom ICsimp)
+      = do  let tlb = filter cnIsTL cnt
+            rlog0 $ "current simple rules:"
+            mapM_ (printRM . cnForm) $ context ["."] tlb
+
+    proc (InCom _)  = rlog0 $ "unsupported instruction"
+
+    proc (InStr ISread "-") = proc (InStr ISread "")
+
+    proc (InStr ISread file)
+      = do  let fn = if null file then "stdin" else file
+            txt <- timer CTpars $ justIO $ readText file
+            trn <- askRSIB IBtext False
+            if trn then mapM_ printRM txt else
+              do  rlog0 $ fn ++ ": verification started"
+                  let success = rlog0 $ fn ++ ": verification successful"
+                      failure = rlog0 $ fn ++ ": verification failed"
+                  (vLoop mot ths brn cnt txt >> success) <> failure
+
+    proc (InStr ISprdb file)
+      = do  prd <- justIO $ readPrDB file
+            updateRS $ \ rs -> rs { rsPrdb = prd }
+
+    proc i  = addRSIn i
+
+procTD mot ths brn cnt = proc
+  where
+    proc i  = drpRSIn i
 
 {-
 -- Service stuff
