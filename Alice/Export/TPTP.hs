@@ -36,12 +36,14 @@ tptpTerm d = dive
     dive Top        = showString "$true"
     dive Bot        = showString "$false"
     dive t| isEqu t = let [l, r] = trArgs t in sinfix " = " l r
-          | isTrm t = showString ('s':trName t) . showArgs dive (trArgs t)
-          | isVar t = showString ('s':trName t)
+          | isTrm t = showTrName t . showArgs dive (trArgs t)
+          | isVar t = showTrName t
           | isInd t = showChar 'X' . shows (d - 1 - trIndx t)
 
     sinfix o f g  = showParen True $ dive f . showString o . dive g
 
     binder f  = showChar '[' . tptpTerm (succ d) (Ind 0 [])
               . showString "] : " . tptpTerm (succ d) f
+
+showTrName = showString . (:) 's' . filter (/= ':') . trName
 

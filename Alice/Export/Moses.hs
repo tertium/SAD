@@ -36,8 +36,8 @@ mosesTerm d = dive
     dive Top        = showChar '+'
     dive Bot        = showChar '-'
     dive t| isEqu t = let [l,r] = trArgs t in showChar '=' . binary l r
-          | isTrm t = showString (trName t) . showParen True (sargs $ trArgs t)
-          | isVar t = showString (trName t)
+          | isTrm t = showTrName t . showParen True (sargs $ trArgs t)
+          | isVar t = showTrName t
           | isInd t = showChar 'v' . shows (d - 1 - trIndx t)
 
     binder f  = mosesTerm (succ d) (Ind 0 []) . showChar ' '
@@ -47,4 +47,6 @@ mosesTerm d = dive
 
     sargs (t:ts)  = dive t . showChar ' ' . sargs ts
     sargs _       = id
+
+showTrName = showString . filter (/= ':') . trName
 

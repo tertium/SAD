@@ -45,10 +45,12 @@ otterTerm d = dive
     dive Top        = showString "$T"
     dive Bot        = showString "$F"
     dive t| isEqu t = showString "=" . showArgs dive (trArgs t)
-          | isTrm t = showString (trName t) . showArgs dive (trArgs t)
-          | isVar t = showString (trName t)
+          | isTrm t = showTrName t . showArgs dive (trArgs t)
+          | isVar t = showTrName t
           | isInd t = showChar 'v' . shows (d - 1 - trIndx t)
 
     binder f  = otterTerm (succ d) (Ind 0 []) . showChar ','
               . otterTerm (succ d) f
+
+showTrName = showString . filter (/= ':') . trName
 

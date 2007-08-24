@@ -50,12 +50,14 @@ dfgTerm d = dive
     dive Top        = showString "true"
     dive Bot        = showString "false"
     dive t| isEqu t = showString "equal" . showArgs dive (trArgs t)
-          | isTrm t = showString (trName t) . showArgs dive (trArgs t)
-          | isVar t = showString (trName t)
+          | isTrm t = showTrName t . showArgs dive (trArgs t)
+          | isVar t = showTrName t
           | isInd t = showChar 'v' . shows (d - 1 - trIndx t)
 
     binder f  = showChar '[' . dfgTerm (succ d) (Ind 0 [])
               . showString "]," . dfgTerm (succ d) f
+
+showTrName = showString . filter (/= ':') . trName
 
 
 -- Symbol count
@@ -74,7 +76,8 @@ dfgSLS cnl gl  = sls "functions" fns . sls "predicates" pds
                   . showTail shs tl . showString "].\n"
     sls _ _ = id
 
-    shs (s, a)  = showParen True $ showString s . showChar ',' . shows a
+    shs (s, a)  = showParen True $ stn s . showChar ',' . shows a
+    stn = showString . filter (/= ':')
 
     SS (pds, fns) = css
     css = foldr (Monoid.mappend . dfgSyms True . snd) gss cnl
