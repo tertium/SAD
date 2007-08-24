@@ -187,7 +187,7 @@ showFormula p d = dive
       dive Top        = showString "truth"
       dive Bot        = showString "contradiction"
 
-      dive (Trm "?th?" _ _)   = showString "thesis"
+      dive (Trm "#TH#" _ _)   = showString "thesis"
       dive (Trm "=" [l,r] _)  = sinfix " = " l r
       dive (Trm s ts _)       = showString s . sargs ts
       dive (Var s _)          = showString s

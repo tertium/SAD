@@ -96,7 +96,7 @@ zIff f g  = And (Imp f g) (Imp g f)
 
 zVar v    = Var v []
 zTrm t ts = Trm t ts []
-zThesis   = zTrm "?th?" []
+zThesis   = zTrm "#TH#" []
 zEqu t s  = zTrm "=" [t,s]
 zSet t    = zTrm "aSet" [t]
 zElm t s  = zTrm "aElementOf" [t,s]
@@ -121,7 +121,7 @@ isTrm _           = False
 isEqu (Trm "=" [_,_] _) = True
 isEqu _                 = False
 
-isThesis (Trm "?th?" [] _)  = True
+isThesis (Trm "#TH#" [] _)  = True
 isThesis _                  = False
 
 isSSS (Trm ('S':'S':'S':_) _ _) = True
@@ -146,12 +146,37 @@ occursH = occurs zHole
 occursS = occurs zSlot
 
 
+-- Special formulas
+
+isDefn (Iff (Ann DHD _) _)  = True
+isDefn (All _ f)            = isDefn f
+isDefn (Imp _ f)            = isDefn f
+isDefn _                    = False
+
+isSign (Imp (Ann DHS _) _)  = True
+isSign (All _ f)            = isSign f
+isSign (Imp _ f)            = isSign f
+isSign _                    = False
+
+isUnit (Sub _ f)            = isUnit f
+isUnit (Ann _ f)            = isUnit f
+isUnit (Not f)              = isUnit f
+isUnit f                    = isTrm f
+
+isSort (Not f)              = isEqu (strip f)
+isSort (Trm ('a':_) _ _)    = True
+isSort (Trm _ [_] _)        = True
+isSort _                    = False
+
+
 -- Info handling
 
 hasInfo f = isTrm f || isVar f || isInd f
 
 nullInfo f  | hasInfo f = f {trInfo = []}
             | otherwise = f
+
+wipeInfo f  = mapF wipeInfo $ nullInfo f
 
 skipInfo fn f | hasInfo f = (fn $ nullInfo f) {trInfo = trInfo f}
               | otherwise = fn f
@@ -164,12 +189,6 @@ trInfoN t = [ e | Ann DNC e <- trInfo t ]
 
 
 -- Misc stuff
-
-isUnit (Sub _ f)    = isUnit f
-isUnit (Ann _ f)    = isUnit f
-isUnit (Not f)      = isUnit f
-isUnit (Trm _ _ _)  = True
-isUnit _            = False
 
 infilt vs v = guard (v `elem` vs) >> return v
 nifilt vs v = guard (v `notElem` vs) >> return v
