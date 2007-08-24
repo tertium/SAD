@@ -16,7 +16,8 @@ import Alice.Export.Prover
 
 reason :: [Context] -> Context -> RM ()
 reason cnt tc = do  dlp <- askRSII IIdpth 7
-                    let nct = context (cnLink tc) cnt
+                    dfl <- askRSIB IBchck True
+                    let nct = context dfl (cnLink tc) cnt
                     goalseq dlp nct tc $ splitG $ cnForm tc
 
 goalseq :: Int -> [Context] -> Context -> [Formula] -> RM ()
@@ -75,15 +76,15 @@ splitG fr = spl $ albet $ strip fr
 
 -- Context filtering
 
-context :: [String] -> [Context] -> [Context]
-context ls cnt = filter (not . isTop . cnForm) $ map chk cnt
+context :: Bool -> [String] -> [Context] -> [Context]
+context df ls cnt = filter (not . isTop . cnForm) $ map chk cnt
   where
-    chk c | tst c = c
-          | True  = c { cnForm = lichten $ cnForm c }
+    chk c | tst c = c { cnForm = lichten $ cnForm c }
+          | True  = c
 
-    tst c | not (cnIsTL c)  = True
-          | null ls         = not $ isDefn $ cnForm c
-          | otherwise       = cnName c `elem` ls
+    tst c | not (cnIsTL c)  = False
+          | null ls         = df && isDefn (cnForm c)
+          | otherwise       = cnName c `notElem` ls
 
 lichten :: Formula -> Formula
 lichten = sr . strip
@@ -104,25 +105,4 @@ lichten = sr . strip
     sm (And f g)    = bool $ And (sm $ strip f) (sm $ strip g)
     sm f | isUnit f = f
     sm _            = Bot
-
-
--- Service stuff
-
-isDefn :: Formula -> Bool
-isDefn (Iff (Ann DHD _) _)  = True
-isDefn (All _ f)            = isDefn f
-isDefn (Imp _ f)            = isDefn f
-isDefn _                    = False
-
-isSign :: Formula -> Bool
-isSign (Imp (Ann DHS _) _)  = True
-isSign (All _ f)            = isSign f
-isSign (Imp _ f)            = isSign f
-isSign _                    = False
-
-isSort :: Formula -> Bool
-isSort (Not f)              = isEqu (strip f)
-isSort (Trm ('a':_) _ _)    = True
-isSort (Trm _ [_] _)        = True
-isSort _                    = False
 

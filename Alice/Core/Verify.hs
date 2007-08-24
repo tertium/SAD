@@ -24,10 +24,12 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
       whenIB IBtran False $ putStrRM $ '[' : la ++ "] " ++ sectout
       incRSCI CIsect
 
-      dfr <- return fr -- fillDef cnt bl
+      let nbr = bl : brn; tfr = cnForm ths
+          ncx = Context nbr $ formulate bl
+
+      dfr <- fillDef cnt ncx fr
 
       let nfr = replace tfr zThesis dfr
-          nbr = bl : brn ; tfr = cnForm ths
           rth = Context nbr $ foldr zExi nfr dv
           bsg = null brn || blSign (head brn)
           smt = bsg && sg && not (isHole fr)
@@ -99,8 +101,9 @@ procTI mot ths brn cnt = proc
 
     proc (InCom ICsimp)
       = do  let tlb = filter cnIsTL cnt
+                srl = context True ["."] tlb
             rlog0 $ "current simple rules:"
-            mapM_ (printRM . cnForm) $ context ["."] tlb
+            mapM_ (printRM . cnForm) srl
 
     proc (InCom _)  = rlog0 $ "unsupported instruction"
 
