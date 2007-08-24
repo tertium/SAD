@@ -111,12 +111,12 @@ sexp t@(Trm s vs _) f = (pt, nf)
     get_patt "#" = Vr
     get_patt  w  = Sm w
 
-    get_name (Sm s:ls)          = chcode s ++ get_name ls
-    get_name (_:ls)             = 'V' : get_name ls
-    get_name []                 = ""
+    get_name (Sm s:ls)  = chcode s ++ get_name ls
+    get_name (_:ls)     = get_name ls
+    get_name []         = ""
 
-    chcode s@(c:_)  | isAlphaNum c  = 'W' : s ++ "_"
-                    | otherwise     = concatMap chc s
+    chcode s@(c:_)  = let (c:cs) = concatMap chc s
+                      in  toUpper c : cs
 
     chc '`' = "bq" ; chc '~'  = "tl" ; chc '!' = "ex"
     chc '@' = "at" ; chc '$'  = "dl" ; chc '%' = "pc"
@@ -127,7 +127,7 @@ sexp t@(Trm s vs _) f = (pt, nf)
     chc ':' = "cl" ; chc '\'' = "qt" ; chc '"' = "dq"
     chc '<' = "ls" ; chc '>'  = "gt" ; chc '/' = "sl"
     chc '?' = "qu" ; chc '\\' = "bs" ; chc '|' = "br"
-    chc ';' = "sc" ; chc ','  = "cm"
+    chc ';' = "sc" ; chc ','  = "cm" ; chc c   = ['z', c]
 
 
 -- New patterns
