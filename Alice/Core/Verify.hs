@@ -27,7 +27,7 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
       let nbr = bl : brn; tfr = cnForm ths
           ncx = Context nbr $ formulate bl
 
-      dfr <- fillDef cnt ncx fr
+      dfr <- return fr -- fillDef cnt ncx fr
 
       let nfr = replace tfr zThesis dfr
           rth = Context nbr $ foldr zExi nfr dv
@@ -57,9 +57,10 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
 
 vLoop True ths brn cnt [] = whenIB IBprov True prove >> return []
   where
-    prove = do  let bl = cnHead ths; tx = "goal: " ++ blText bl
-                incRSCI CIgoal; whenIB IBgoal True $ rlog bl tx
-                reason cnt ths <> guardIB IBigno False
+    prove = do  let fr = cnForm ths ; bl = cnHead ths
+                    out = rlog bl $ "goal: " ++ blText bl
+                incRSCI CIgoal ; whenIB IBgoal True out
+                reason cnt ths fr <> guardIB IBigno False
 
 vLoop mot ths brn cnt (TI ins : bs) =
       procTI mot ths brn cnt ins >> vLoop mot ths brn cnt bs
@@ -100,10 +101,11 @@ procTI mot ths brn cnt = proc
             rlog0 $ "current thesis " ++ smt ++ show (cnForm ths)
 
     proc (InCom ICsimp)
-      = do  let tlb = filter cnIsTL cnt
-                srl = context True ["."] tlb
+      = do  let tlb = filter cnTopL cnt
+                tlf = map (lichten . cnForm) tlb
+                srl = filter (not . isTop) tlf
             rlog0 $ "current simple rules:"
-            mapM_ (printRM . cnForm) srl
+            mapM_ printRM srl
 
     proc (InCom _)  = rlog0 $ "unsupported instruction"
 

@@ -14,11 +14,13 @@ import Alice.Export.Prover
 
 -- Reasoner
 
-reason :: [Context] -> Context -> RM ()
-reason cnt tc = do  dlp <- askRSII IIdpth 7
-                    dfl <- askRSIB IBchck True
-                    let nct = context dfl (cnLink tc) cnt
-                    goalseq dlp nct tc $ splitG $ cnForm tc
+reason :: [Context] -> Context -> Formula -> RM ()
+reason cnt tc f = do  dlp <- askRSII IIdpth 7
+                      flt <- askRSIB IBfilt True
+                      dfl <- askRSIB IBdefn True
+                      let nct = context (flt && dfl)
+                                    (cnLink tc) cnt
+                      goalseq dlp nct tc $ splitG f
 
 goalseq :: Int -> [Context] -> Context -> [Formula] -> RM ()
 goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
@@ -41,6 +43,8 @@ goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
 
 goalseq _ _ _ _ = return ()
 
+
+-- Call prover
 
 launch :: [Context] -> Formula -> RM ()
 launch cnt fr = do  incRSCI CIprov; whenIB IBtask False debug
@@ -82,9 +86,9 @@ context df ls cnt = filter (not . isTop . cnForm) $ map chk cnt
     chk c | tst c = c { cnForm = lichten $ cnForm c }
           | True  = c
 
-    tst c | not (cnIsTL c)  = False
-          | null ls         = df && isDefn (cnForm c)
-          | otherwise       = cnName c `notElem` ls
+    tst c | cnLowL c  = False
+          | null ls   = df && isDefn (cnForm c)
+          | otherwise = cnName c `notElem` ls
 
 lichten :: Formula -> Formula
 lichten = sr . strip

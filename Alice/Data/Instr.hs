@@ -27,7 +27,7 @@ data InInt  = IItlim  --  time limit per prover launch  (3 sec)
             deriving (Eq,Show)
 
 data InBin  = IBprov  --  prove goals (yes)
-            | IBchck  --  look for applicable definitions (yes)
+            | IBdefn  --  look for applicable definitions (yes)
             | IBinfo  --  accumulate evidences (yes)
             | IBdeep  --  descend into proofs (yes)
             | IBfilt  --  simplify the context (yes)
@@ -36,7 +36,7 @@ data InBin  = IBprov  --  prove goals (yes)
             | IBtext  --  translation only
             | IBgoal  --  print current goal (yes)
             | IBtran  --  print current sentence (no)
-            | IBdefn  --  print definition checks (no)
+            | IBdchk  --  print definition checks (no)
             | IBunfl  --  print definition unfolds (no)
             | IBrlog  --  print reasoner's log (no)
             | IBplog  --  print prover's log (no)
@@ -94,7 +94,7 @@ setII = [ (IItlim,  ["tlim", "timelimit"]),
 
 setIB :: [(InBin, [String])]
 setIB = [ (IBprov,  ["prov", "prove"]),
-          (IBchck,  ["chck", "check"]),
+          (IBdefn,  ["defn", "filldef"]),
           (IBinfo,  ["info", "collect"]),
           (IBdeep,  ["deep", "descend"]),
           (IBfilt,  ["filt", "filter"]),
@@ -102,7 +102,7 @@ setIB = [ (IBprov,  ["prov", "prove"]),
           (IBigno,  ["igno", "ignore"]),
           (IBgoal,  ["goal", "printgoal"]),
           (IBtran,  ["tran", "printtran"]),
-          (IBdefn,  ["defn", "printdefn"]),
+          (IBdchk,  ["dchk", "printdchk"]),
           (IBunfl,  ["unfl", "printunfl"]),
           (IBrlog,  ["rlog", "printrlog"]),
           (IBplog,  ["plog", "printplog"]),

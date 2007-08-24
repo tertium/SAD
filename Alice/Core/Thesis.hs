@@ -16,7 +16,7 @@ thesis :: [Context] -> Context -> (Bool, Context)
 thesis cnt@(ct:_) tc = (nmt, tc { cnForm = nth })
   where
     nmt = cnSign ct || isJust ith
-    nth = {- reduce $ fillDLV cnt -} kth
+    nth = {- reduce $ fillInfo cnt tc -} kth
     kth = tmWipe (deAnd $ cnForm ct) jth
     jth | cnSign ct = ths
         | otherwise = fromMaybe ths ith
@@ -72,13 +72,12 @@ tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
                                           _           -> return h
         dive h@(Exi u f)    = case sg of  Just False  -> qua u f h
                                           _           -> return h
-        dive h@(Trm _ _ is) = let ncn = cnJoin cnt tc fc
-                                  out = dive -- . reduce . fillDLV ncn
-                                  dfs = msum $ map out $ trInfoE h
-                              in  mplus (return h) dfs
+        dive h@(Trm _ _ is) = return h `mplus` dfs h
         dive h              = roundFM pass fc sg n h
 
         qua u f = mplus (tmVars u f >>= dive) . roundFM pass fc sg n
+        dfs = msum . map (dive {-. reduce . fillInfo nct tc-}) . trInfoE
+        nct = cnJoin cnt tc fc
 
 tmVars u f  = TM (vrs [])
   where

@@ -49,7 +49,7 @@ unfoldA cnt s f = {- reduce $ fillDLV cnt -} nfr
 
 markup tsk  = map mrk loc ++ glb
   where
-    (loc, glb) = span (not . cnIsTL) tsk
+    (loc, glb) = break cnTopL tsk
 
     mrk c = c {cnForm = tot $ cnForm c}
     tot f | isTrm f   = skipInfo (mapF tot) $ markDCN f

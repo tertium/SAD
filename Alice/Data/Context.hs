@@ -9,11 +9,14 @@ import Alice.Data.Text
 data Context  = Context { cnBran :: [Block], cnForm :: Formula }
 
 cnHead  = head . cnBran
+cnTail  = tail . cnBran
+cnTopL  = null . cnTail
+cnLowL  = not . cnTopL
+
 cnSign  = blSign . cnHead
 cnDecl  = blDecl . cnHead
 cnName  = blName . cnHead
 cnLink  = blLink . cnHead
-cnIsTL  = null . tail . cnBran
 
 cnJoin :: [Context] -> Context -> [Formula] -> [Context]
 cnJoin cnt cx fs  = foldr ((:) . \ f -> cx { cnForm = f }) cnt fs

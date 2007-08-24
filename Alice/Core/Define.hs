@@ -1,40 +1,35 @@
 module Alice.Core.Define where
 
+import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Text
 import Alice.Core.Local
 
-fillDef cnt bl  = fill True cnt True $ blForm bl
+fillDef cnt bl  = fill True [] (Just True) 0 $ blForm bl
   where
-    fill pr cn sg (Ann DHD (Trm "=" [v, trm@(Trm t vs _ _)] _ _))
-                      = liftM (Ann DHD . zEqu v . nullD) $ defs cn trm True
-    fill pr cn sg (Ann DHD trm@(Trm t vs _ _))
-                      = liftM (Ann DHD . nullD) $ defs cn trm True
-    fill pr cn sg v@(Var _ _)
-                      = return $ setDLV cn pr v
-    fill pr cn sg f@(Trm t ts is df)
-                      = do  nts <- mapM (fill False cn sg) ts
-                            ndf <- mapM (fill True  cn sg) df
-                            let rdf = map (rebind ('.':)) ndf
-                            dtr <- defs cn (Trm t nts is rdf) False
-                            let nbl = setDLV cn pr (specDef dtr)
-                                fin [Ann _ _] = nullD nbl
-                                fin _         = nbl
-                            return $ fin $ trDefn nbl
+    fill pr fc sg _ (Ann DHD (Trm "=" [v, t] _)) | isTrm t
+                      = liftM (Ann DHD . zEqu v) $ defs True fc t
+    fill pr fc sg _ (Ann DHD trm)
+                      = liftM (Ann DHD) $ defs True fc t
+    fill pr fc sg _ v@(Var _ [])
+                      = return $ {- setDLV fc pr -} v
+    fill pr fc sg _ (Trm t ts [])
+                      = do  nts <- mapM (fill False fc sg _) ts
+                            ntr <- defs False fc (zTrm t nts)
+                            return $ {- setDLV fc pr $ -} specDef ntr
+    fill pr fc sg n f = roundFM (fill pr) fc sg n f
 
-    fill pr cn sg f   = roundFM (fill pr) cn sg f
-
-    defs cn trm@(Trm t _ _ _) n
-                      = do  let dfs = filter (relev t) cnt
-                                spc = t ++ show (length dfs)
-                            (guard (isDigit $ last t) >> return trm)
-                              <> (guard (head t == '#') >> return trm)
-                              <> msum (map (testDef cn bl trm False) dfs)
-                              <> (guardPas >> return trm)
-                              <> (guard (t == "=") >> return trm)
-                              <> msum (map (testDef cn bl trm True) dfs)
-                              <> (guard n >> return trm { trName = spc })
-                              <> (failed trm >> mzero)
+    defs nw fc trm@(Trm t _ _ _)
+                      = let dfs = filter (relev t) cnt
+                            spc = t ++ show (length dfs)
+                        in   (guard (isDigit $ last t) >> return trm)
+                          <> (guard (head t == '#') >> return trm)
+                          <> msum (map (testDef cn bl trm False) dfs)
+                          <> (guardPas >> return trm)
+                          <> (guard (t == "=") >> return trm)
+                          <> msum (map (testDef cn bl trm True) dfs)
+                          <> (guard n >> return trm { trName = spc })
+                          <> (failed trm >> mzero)
 
     relev t b = let def = blForm $ last $ textB $ blProf b
                     dtr = fst $ break isDigit $ fst $ headDef def
@@ -49,17 +44,16 @@ testDef cnt bl tr@(Trm _ ts _ _) hard dbl
           passed; return $ Trm sc ts [] $ dfn (last block)
   where
     check f | hard  = reason cnt bl f
-            | True  = guard $ rapid f
---            | True  = unless (rapid f) $ (rlog 0 $ "dlvs: " ++ show (concatMap trInfo ts)) >> mzero
+            | True  = guard $ isTop $ {- reduce -} f
     block   = map blForm $ textB $ blProf dbl
     regrd f = substs (reface ('g':) f) vs ts
     prepr f = resubst f vs $ map wipeD ts
     (sc,vs) = headDef $ last block
 
-    dfn (Iff (Ann DHD (Trm "=" [v,t] _ _)) f) | isTrm t
-                  = [prepr $ subst t v f]
-    dfn (Iff _ f) = [prepr f]
-    dfn (Imp (Ann DHD (Trm "=" [v,t] _ _)) f) | isTrm t
+    dfn (Iff (Ann _ (Trm "=" [v,t] _ )) f) | isTrm t
+                  = [Ann DEQ $ prepr $ subst t v f]
+    dfn (Iff _ f) = [Ann DEQ $ prepr f]
+    dfn (Imp (Ann _ (Trm "=" [v,t] _ )) f) | isTrm t
                   = [Ann DIM $ prepr $ subst t v f]
     dfn (Imp _ f) = [Ann DIM $ prepr f]
     dfn (All _ f) = dfn f
