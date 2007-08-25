@@ -153,7 +153,7 @@ isDefn (All _ f)            = isDefn f
 isDefn (Imp _ f)            = isDefn f
 isDefn _                    = False
 
-isSign (Imp (Ann DHS _) _)  = True
+isSign (Imp (Ann DHD _) _)  = True
 isSign (All _ f)            = isSign f
 isSign (Imp _ f)            = isSign f
 isSign _                    = False

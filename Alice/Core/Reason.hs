@@ -95,7 +95,7 @@ lichten = sr . strip
   where
     sr (Iff (Ann DHD (Trm "=" [_, t] _)) f)
          | isTrm t  = sr $ strip $ subst t "." $ inst "." 0 f
-    sr (Imp (Ann DHS (Trm "=" [_, t] _)) f)
+    sr (Imp (Ann DHD (Trm "=" [_, t] _)) f)
          | isTrm t  = sr $ strip $ subst t "." $ inst "." 0 f
     sr (Iff f g)    = sr $ zIff f g
     sr (All v f)    = bool $ All v $ sr $ strip f

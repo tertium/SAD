@@ -78,7 +78,7 @@ def_prd = do  f <- old_prd mnn ; g <- statement
     mnn = iff -|- string "<=>"
 
 sig_prd = do  f <- old_prd mnn ; g <- statement -|- atm
-              prdvars f g ; return $ Imp (Ann DHS f) g
+              prdvars f g ; return $ Imp (Ann DHD f) g
   where
     mnn = word "is" -|- word "implies" -|- string "=>"
     atm = an >> wordOf ["atom","relation"] >> return Top
@@ -99,7 +99,7 @@ def_ntn = do  (n, u) <- old_ntn ieq; (q, f) <- anotion
 sig_ntn = do  (n, u) <- old_ntn is; (q, f) <- anotion -|- nmn
               let v = zVar u ; fn = replace v (trm n)
               h <- liftM (fn . q) $ dig f [v]
-              ntnvars n h ; return $ zAll u $ Imp (Ann DHS n) h
+              ntnvars n h ; return $ zAll u $ Imp (Ann DHD n) h
   where
     nmn = an >> wordOf ["notion","function","constant"] >> return (id,Top)
     trm (Trm "=" [_,t] _) = t ; trm t = t
