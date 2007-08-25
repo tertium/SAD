@@ -84,6 +84,7 @@ timer c a   = do  b <- justIO $ getClockTime ; r <- a
                   return r
 
 guardIB i d     = askRSIB i d >>= guard
+unguardIB i d   = askRSIB i d >>= guard . not
 whenIB i d a    = askRSIB i d >>= \ b -> when b a
 unlessIB i d a  = askRSIB i d >>= \ b -> unless b a
 
