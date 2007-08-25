@@ -4,7 +4,6 @@ import Control.Monad
 import Data.Maybe
 import qualified Data.Monoid as Monoid
 
-
 data Formula  = All String  Formula       | Exi String  Formula
               | Iff Formula Formula       | Imp Formula Formula
               | Or  Formula Formula       | And Formula Formula
@@ -168,46 +167,6 @@ substs f vs ts = dive f
     dive f@(Var u _)  = fromMaybe (mapF dive f) (lookup u zvt)
     dive f            = mapF dive f
     zvt               = zip vs ts
-
-
--- Match, replace
-
-match :: (MonadPlus m) => Formula -> Formula -> m (Formula -> Formula)
-match (Var v@('?':_) _) t       = return  $ subst t v
-match (Var u _)    (Var v _)    | u == v  = return id
-match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
-  where
-    pairs (p:ps) (q:qs) = do  sb <- pairs ps qs
-                              sc <- match (sb $ strip p) (strip q)
-                              return $ sc . sb
-    pairs [] []         = return id
-    pairs _ _           = mzero
-match _ _         = mzero
-
-twins :: Formula -> Formula -> Bool
-twins (Var u _)    (Var v _)    = u == v
-twins (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
-  where
-    pairs (p:ps) (q:qs) = twins (strip p) (strip q) && pairs ps qs
-    pairs [] []         = True
-    pairs _ _           = False
-twins _ _         = False
-
-occurs :: Formula -> Formula -> Bool
-occurs t  = dive
-  where
-    dive f  = twins t f || anyF dive f
-
-replace :: Formula -> Formula -> Formula -> Formula
-replace t s = dive
-  where
-    dive f  | twins s f = t
-            | otherwise = mapF dive f
-
-strip :: Formula -> Formula
-strip (Ann _ f) = strip f
-strip (Sub _ f) = strip f
-strip f         = f
 
 
 -- Show instances
