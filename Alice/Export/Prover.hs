@@ -40,7 +40,7 @@ export prs ins cnt gl =
                   Otter -> otterOut ; Moses -> mosesOut
           tsk = dmp prv tlm cnt gl
 
---      when (askIB ins IBtask False) $ putStrLn tsk
+      when (askIB ins IBinfo False) $ putStrLn tsk
       hPutStrLn wh tsk ; hClose wh
 
       ofl <- hGetContents rh

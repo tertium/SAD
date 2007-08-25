@@ -37,7 +37,7 @@ tptpTerm d = dive
     dive t| isEqu t = let [l, r] = trArgs t in sinfix " = " l r
           | isTrm t = showTrName t . showArgs dive (trArgs t)
           | isVar t = showTrName t
-          | isInd t = showChar 'X' . shows (d - 1 - trIndx t)
+          | isInd t = showChar 'W' . shows (d - 1 - trIndx t)
 
     sinfix o f g  = showParen True $ dive f . showString o . dive g
 
