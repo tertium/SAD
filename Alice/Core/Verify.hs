@@ -3,7 +3,7 @@ module Alice.Core.Verify (verify) where
 import Control.Monad
 
 import Alice.Core.Base
--- import Alice.Core.Define
+import Alice.Core.Define
 -- import Alice.Core.Local
 import Alice.Core.Reason
 import Alice.Core.Thesis
@@ -18,6 +18,7 @@ import Alice.Import.Reader
 
 verify rst bs = runRM (vLoop False (Context Bot []) [] [] bs) rst
 
+vLoop :: Bool -> Context -> [Block] -> [Context] -> [Text] -> RM [Text]
 vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
   do  let sect = showForm (length brn) bl ""
           sout = '[' : la ++ "] " ++ sect
@@ -27,7 +28,7 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
       let nbr = bl : brn
           cbl = Context fr nbr
 
-      nfr <- return fr -- fillDef (blForm ths) cnt cc
+      nfr <- fillDef (cnForm ths) cnt cbl
 
       dwn <- askRSIB IBdeep True
       let sth = Context (foldr zExi nfr dv) nbr
