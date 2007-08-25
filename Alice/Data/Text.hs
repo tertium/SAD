@@ -53,7 +53,6 @@ cnSign  = blSign . cnHead
 cnDecl  = blDecl . cnHead
 cnName  = blName . cnHead
 cnLink  = blLink . cnHead
-cnText  = blText . cnHead
 
 setForm :: Context -> Formula -> Context
 setForm cx fr = cx { cnForm = fr }
