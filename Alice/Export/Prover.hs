@@ -8,7 +8,6 @@ import System.IO.Error
 import System.Process
 import System.Time
 
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Instr
 import Alice.Data.Text
@@ -20,7 +19,7 @@ import Alice.Export.Moses
 
 -- Prover interface
 
-export :: [Prover] -> [Instr] -> [Context] -> Formula -> IO Bool
+export :: [Prover] -> [Instr] -> [Context] -> Context -> IO Bool
 export prs ins cnt gl =
   do  when (null prs) $ die "no provers"
 

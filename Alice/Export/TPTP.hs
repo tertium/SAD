@@ -1,25 +1,24 @@
 module Alice.Export.TPTP (tptpOut) where
 
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Export.Base
 
-tptpOut :: Prover -> Int -> [Context] -> Formula -> String
+tptpOut :: Prover -> Int -> [Context] -> Context -> String
 tptpOut pr tl cn gl = tsk ""
   where
-    tsk = foldr ((.) . tptpForm ",hypothesis,") cnj cnl
-    cnl = map (\ c -> (cnName c, cnForm c)) cn
-    cnj = tptpForm ",conjecture," ("__", gl)
+    tsk = foldr ((.) . tptpForm ",hypothesis,") cnj cn
+    cnj = tptpForm ",conjecture," gl
 
 
 -- Formula print
 
-tptpForm :: String -> (String, Formula) -> ShowS
-tptpForm s (m, f) = showString "fof(m"
-                  . showString (if null m then "_" else m)
-                  . showString s . tptpTerm 0 f . showString ").\n"
+tptpForm :: String -> Context -> ShowS
+tptpForm s (Context f (Block { blName = m } : _))
+          = showString "fof(m"
+          . showString (if null m then "_" else m)
+          . showString s . tptpTerm 0 f . showString ").\n"
 
 tptpTerm :: Int -> Formula -> ShowS
 tptpTerm d = dive

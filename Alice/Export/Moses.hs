@@ -1,25 +1,24 @@
 module Alice.Export.Moses (mosesOut) where
 
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Export.Base
 
-mosesOut :: Prover -> Int -> [Context] -> Formula -> String
+mosesOut :: Prover -> Int -> [Context] -> Context -> String
 mosesOut pr tl cn gl = (prm . cnj . tlm) ""
   where
-    prm = foldr ((.) . mosesForm) id cnl
-    cnl = map (\ c -> (cnName c, cnForm c)) cn
-    cnj = showChar '?' . mosesTerm 0 gl . showChar '\n'
+    prm = foldr ((.) . mosesForm) id cn
+    cnj = showChar '?' . mosesTerm 0 (cnForm gl) . showChar '\n'
     tlm = shows tl . showChar '\n'
 
 
 -- Formula print
 
-mosesForm :: (String, Formula) -> ShowS
-mosesForm (m,f) = showString (if null m then "_" else m)
-                . showChar '\n' . mosesTerm 0 f . showChar '\n'
+mosesForm :: Context -> ShowS
+mosesForm (Context f (Block { blName = m } : _))
+          = showString (if null m then "_" else m)
+          . showChar '\n' . mosesTerm 0 f . showChar '\n'
 
 mosesTerm :: Int -> Formula -> ShowS
 mosesTerm d = dive

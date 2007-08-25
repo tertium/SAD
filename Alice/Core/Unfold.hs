@@ -3,7 +3,6 @@ module Alice.Core.Unfold (unfold) where
 import Control.Monad
 import Data.Maybe
 
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Instr
 import Alice.Data.Kit
@@ -21,24 +20,25 @@ unfold tsk  = do  when (null exs) $ ntu >> mzero
     mts = markup tsk
     exs = concatMap (markedF . cnForm) mts
 
-    exp c cnt = c {cnForm = unfoldF cnt c (cnForm c)} : cnt
+    exp c cnt = setForm c (unfoldF cnt c) : cnt
 
     ntu = whenIB IBunfl False $ rlog0 $ "nothing to unfold"
     unf = whenIB IBunfl False $ rlog0 $ "unfold: " ++ out
     out = concatMap (flip (showsPrec 3) " ") exs
 
-unfoldF cnt cx f = fill [] (Just True) 0 f
+unfoldF cnt cx = fill [] (Just True) 0 (cnForm cx)
   where
-    fill fc sg n f | isTrm f  = let nct = cnJoin cnt cx fc
-                                in  unfoldA nct (fromJust sg) f
+    fill fc sg n f | isTrm f  = let nct = cnRaise cnt cx fc
+                                    nfr = unfoldA (fromJust sg) f
+                                in  {-fillInfo nct $ setForm cx-} nfr
     fill fc sg n (Iff f g)    = roundF fill fc sg n (zIff f g)
     fill fc sg n f            = roundF fill fc sg n f
 
-unfoldA cnt s f = {- reduce $ fillDLV cnt -} nfr
+unfoldA sg fr = nfr
   where
-    nfr = foldr (if s then And else Imp) nbs (expS f)
-    nbs = foldr (if s then And else Or ) wip (expA f)
-    wip = wipeDCN f
+    nfr = foldr (if sg then And else Imp) nbs (expS fr)
+    nbs = foldr (if sg then And else Or ) wip (expA fr)
+    wip = wipeDCN fr
 
     expS h  = foldF expT $ nullInfo h
     expT h  = expS h ++ expA h

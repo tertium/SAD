@@ -5,7 +5,6 @@ import Control.Monad
 import Alice.Core.Base
 --import Alice.Core.Local
 import Alice.Core.Unfold
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Instr
@@ -14,25 +13,24 @@ import Alice.Export.Prover
 
 -- Reasoner
 
-reason :: [Context] -> Context -> Formula -> RM ()
-reason cnt tc f = do  dlp <- askRSII IIdpth 7
-                      flt <- askRSIB IBfilt True
-                      dfl <- askRSIB IBdefn True
-                      let nct = context (flt && dfl)
-                                    (cnLink tc) cnt
-                      goalseq dlp nct tc $ splitG f
+reason :: [Context] -> Context -> RM ()
+reason cnt tc = do  dlp <- askRSII IIdpth 7
+                    flt <- askRSIB IBfilt True
+                    dfl <- askRSIB IBdefn True
+                    let nct = context (flt && dfl) cnt tc
+                    goalseq dlp nct tc $ splitG $ cnForm tc
 
 goalseq :: Int -> [Context] -> Context -> [Formula] -> RM ()
 goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
-                              trv <> launch cnt rfr <> dlp
+                              trv <> launch cnt ntc <> dlp
                               unless (null fs) dga
-                              goalseq n nct tc fs
+                              goalseq n (ntc : cnt) tc fs
   where
     rfr = {- reduce -} f
-    nct = tc { cnForm = rfr } : cnt
+    ntc = setForm tc rfr
 
     trv = sbg >> guard (isTop rfr) >> tri
-    dlp = do  tsk <- unfold $ tc {cnForm = Not rfr} : cnt
+    dlp = do  tsk <- unfold $ setForm tc (Not rfr) : cnt
               let Context {cnForm = Not nfr} : nct = tsk
               goalseq (pred n) nct tc $ splitG nfr
 
@@ -46,10 +44,10 @@ goalseq _ _ _ _ = return ()
 
 -- Call prover
 
-launch :: [Context] -> Formula -> RM ()
-launch cnt fr = do  incRSCI CIprov; whenIB IBtask False debug
+launch :: [Context] -> Context -> RM ()
+launch cnt tc = do  incRSCI CIprov; whenIB IBtask False debug
                     prd <- askRS rsPrdb ; ins <- askRS rsInst
-                    let prv = justIO $ export prd ins cnt fr
+                    let prv = justIO $ export prd ins cnt tc
                     timer CTprov prv >>= guard
   where
 {-
@@ -63,7 +61,7 @@ launch cnt fr = do  incRSCI CIprov; whenIB IBtask False debug
     pre v | isVar v = []; pre f = foldF pre [] (++) f
 -}
     debug = do  rlog0 "prover task:"
-                let tlb = fr : map cnForm cnt
+                let tlb = map cnForm (tc:cnt)
                 mapM_ printRM $ reverse tlb
 
 
@@ -80,8 +78,8 @@ splitG fr = spl $ albet $ strip fr
 
 -- Context filtering
 
-context :: Bool -> [String] -> [Context] -> [Context]
-context df ls cnt = filter (not . isTop . cnForm) $ map chk cnt
+context :: Bool -> [Context] -> Context -> [Context]
+context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
   where
     chk c | tst c = c { cnForm = lichten $ cnForm c }
           | True  = c
@@ -89,6 +87,8 @@ context df ls cnt = filter (not . isTop . cnForm) $ map chk cnt
     tst c | cnLowL c  = False
           | null ls   = df && isDefn (cnForm c)
           | otherwise = cnName c `notElem` ls
+
+    ls = cnLink tc
 
 lichten :: Formula -> Formula
 lichten = sr . strip

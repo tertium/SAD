@@ -3,20 +3,19 @@ module Alice.Export.DFG (dfgOut) where
 import Data.List
 import qualified Data.Monoid as Monoid
 
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Export.Base
 
-dfgOut :: Prover -> Int -> [Context] -> Formula -> String
+dfgOut :: Prover -> Int -> [Context] -> Context -> String
 dfgOut pr tl cn gl = (hdr . sym . axm . cnj . eop) ""
   where
     hdr = showString "begin_problem(A).list_of_descriptions.name({*EA*})."
         . showString "author({*EA*}).status(unknown).description({*EA*})."
         . eol
 
-    sym = showString "list_of_symbols.\n" . dfgSLS cnl gl . eol
+    sym = showString "list_of_symbols.\n" . dfgSLS (gl:cn) . eol
 
     axm = showString "list_of_formulae(axioms).\n" . axs . eol
     cnj = showString "list_of_formulae(conjectures).\n" . gll . eol
@@ -24,16 +23,16 @@ dfgOut pr tl cn gl = (hdr . sym . axm . cnj . eop) ""
     eol = showString "end_of_list.\n"
     eop = showString "end_problem.\n"
 
-    axs = foldr ((.) . dfgForm) id cnl
-    cnl = map (\ c -> (cnName c, cnForm c)) cn
-    gll = dfgForm ("__", gl)
+    axs = foldr ((.) . dfgForm) id cn
+    gll = dfgForm gl
 
 
 -- Formula print
 
-dfgForm :: (String, Formula) -> ShowS
-dfgForm (m,f) = showString "formula(" . dfgTerm 0 f . showChar ','
-              . showString (if null m then "_" else m) . showString ").\n"
+dfgForm :: Context -> ShowS
+dfgForm (Context f (Block { blName = m } : _))
+        = showString "formula(" . dfgTerm 0 f . showChar ','
+        . showString (if null m then "_" else m) . showString ").\n"
 
 dfgTerm :: Int -> Formula -> ShowS
 dfgTerm d = dive
@@ -69,8 +68,8 @@ instance Monoid.Monoid SymSet where
   mappend (SS (psa, fsa)) (SS (psb, fsb))
           = SS (union psa psb, union fsa fsb)
 
-dfgSLS :: [(String, Formula)] -> Formula -> ShowS
-dfgSLS cnl gl  = sls "functions" fns . sls "predicates" pds
+dfgSLS :: [Context] -> ShowS
+dfgSLS tsk  = sls "functions" fns . sls "predicates" pds
   where
     sls s (hd:tl) = showString s . showChar '[' . shs hd
                   . showTail shs tl . showString "].\n"
@@ -79,9 +78,8 @@ dfgSLS cnl gl  = sls "functions" fns . sls "predicates" pds
     shs (s, a)  = showParen True $ stn s . showChar ',' . shows a
     stn = showString . filter (/= ':')
 
-    SS (pds, fns) = css
-    css = foldr (Monoid.mappend . dfgSyms True . snd) gss cnl
-    gss = dfgSyms True gl
+    SS (pds, fns) = foldr fld (Monoid.mempty) tsk
+    fld = Monoid.mappend . dfgSyms True . cnForm
 
 dfgSyms :: Bool -> Formula -> SymSet
 dfgSyms s (Sub f g)     = dfgSyms s g

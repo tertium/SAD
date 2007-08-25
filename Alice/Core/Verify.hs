@@ -7,7 +7,6 @@ import Alice.Core.Base
 -- import Alice.Core.Local
 import Alice.Core.Reason
 import Alice.Core.Thesis
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Instr
@@ -17,50 +16,47 @@ import Alice.Import.Reader
 
 -- Main verification loop
 
-verify rst bs = runRM (vLoop False (Context [] Bot) [] [] bs) rst
+verify rst bs = runRM (vLoop False (Context Bot []) [] [] bs) rst
 
 vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
-  do  let sectout = showsPrec (length brn) (bl { blBody = [] }) ""
-      whenIB IBtran False $ putStrRM $ '[' : la ++ "] " ++ sectout
+  do  let sect = showForm (length brn) bl ""
+          sout = '[' : la ++ "] " ++ sect
+      whenIB IBtran False $ putStrRM sout
       incRSCI CIsect
 
-      let nbr = bl : brn; tfr = cnForm ths
-          ncx = Context nbr $ formulate bl
+      let nbr = bl : brn
+          cbl = Context fr nbr
 
-      dfr <- return fr -- fillDef cnt ncx fr
-
-      let nfr = replace tfr zThesis dfr
-          rth = Context nbr $ foldr zExi nfr dv
-          bsg = null brn || blSign (head brn)
-          smt = bsg && sg && not (isHole fr)
-          sth = if smt then rth else ths
+      nfr <- return fr -- fillDef (blForm ths) cnt cc
 
       dwn <- askRSIB IBdeep True
-      npr <- splitTh smt sth nbr cnt $
-                if dwn || isHole fr then pr else []
+      let sth = Context (foldr zExi nfr dv) nbr
+          bsg = null brn || blSign (head brn)
+          smt = bsg && sg && not (noForm bl)
+          spr = if dwn then pr else []
+
+      npr <- if smt then splitTh smt sth nbr cnt spr
+                    else splitTh smt ths nbr cnt pr
 
       mtv <- askRSIB IBmotv True
       let nbl = bl { blForm = deICH nfr, blBody = npr }
-          nct = Context nbr (formulate nbl) : cnt
+          nct = Context (formulate nbl) nbr : cnt
           (nmt, nth) = if mtv then thesis nct ths
                               else (sg, ths)
 
       nbs <- splitTh (mot && nmt) nth brn nct bs
 
-      let ffr = Ann DIH $ compose $ nbl : blocks nbs
-          fth = ths { cnForm = Imp ffr tfr }
-          fin = splitTh True fth brn cnt []
+      let fcn = setForm ths $ compose $ TB nbl : nbs
+      splitTh (mot && not nmt) ths brn (fcn : cnt) []
 
-      when (mot && not nmt) $ fin >> return ()
-
-      return (TB nbl : nbs)
+      return $ TB nbl : nbs
 
 vLoop True ths brn cnt [] = whenIB IBprov True prove >> return []
   where
-    prove = do  let fr = cnForm ths ; bl = cnHead ths
-                    out = rlog bl $ "goal: " ++ blText bl
-                incRSCI CIgoal ; whenIB IBgoal True out
-                reason cnt ths fr <> guardIB IBigno False
+    prove = do  let rl = rlog bl $ "goal: " ++ tx
+                    bl = cnHead ths ; tx = blText bl
+                incRSCI CIgoal ; whenIB IBgoal True rl
+                reason cnt ths <> guardIB IBigno False
 
 vLoop mot ths brn cnt (TI ins : bs) =
       procTI mot ths brn cnt ins >> vLoop mot ths brn cnt bs
@@ -74,14 +70,12 @@ vLoop _ _ _ _ _ = return []
 splitTh mot ths brn cnt bs = dive id cnt $ cnForm ths
   where
     dive c cn (Imp (Ann DIH f) g)  | closed f
-                                   = dive c (ctx f : cn) g
+                                   = dive c (setForm ths f : cn) g
     dive c cn (Imp (Ann DCH f) g)  | closed f
-                                   = dive c (ctx f : cn) g
+                                   = dive c (setForm ths f : cn) g
     dive c cn (Imp f g)            = dive (c . Imp f) cn g
     dive c cn (All v f)            = dive (c . All v) cn f
-    dive c cn f                    = vLoop mot (ctx $ c f) brn cn bs
-
-    ctx f = ths { cnForm = f }
+    dive c cn f                    = vLoop mot (setForm ths $ c f) brn cn bs
 
 deICH = dive id
   where

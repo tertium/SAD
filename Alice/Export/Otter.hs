@@ -1,12 +1,11 @@
 module Alice.Export.Otter (otterOut) where
 
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Export.Base
 
-otterOut :: Prover -> Int -> [Context] -> Formula -> String
+otterOut :: Prover -> Int -> [Context] -> Context -> String
 otterOut pr tl cn gl = (hdr . sos . usa) ""
   where
     hdr = foldr ((.) . sop) tlm (prArgs pr)
@@ -16,7 +15,7 @@ otterOut pr tl cn gl = (hdr . sos . usa) ""
 
     aut = if elem "set(auto)" (prArgs pr) then "usable" else "sos"
     sos = showString "formula_list(" . showString aut . showString ").\n"
-        . otterForm (Not gl) . eol
+        . otterForm (Not $ cnForm gl) . eol
 
     usa = showString "formula_list(usable).\n"
         . foldr ((.) . otterForm . cnForm) equ cn . eol

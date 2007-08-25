@@ -13,13 +13,11 @@ import Alice.Parser.Trans
 
 -- Basic types
 
-type Context  = Formula -> Formula
+type UTerm    = (Formula -> Formula, Formula)
+type UNotion  = (Formula -> Formula, Formula, String)
 
-type UTerm    = (Context, Formula)              -- context, term/predicate
-type UNotion  = (Context, Formula, String)      -- context, predicate, name
-
-type MTerm    = (Context, [Formula])            -- context, terms
-type MNotion  = (Context, Formula, [String])    -- context, predicate, names
+type MTerm    = (Formula -> Formula, [Formula])
+type MNotion  = (Formula -> Formula, Formula, [String])
 
 type Prim     = ([Patt], [Formula] -> Formula)
 

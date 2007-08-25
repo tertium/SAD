@@ -6,14 +6,7 @@ import Alice.Data.Formula
 import Alice.Data.Instr
 import Alice.Data.Kit
 
-
 data Text = TB Block | TI Instr | TD Idrop
-
-blocks :: [Text] -> [Block]
-blocks (TB bl : tx) = bl : blocks tx
-blocks (_ : tx)     = blocks tx
-blocks _            = []
-
 
 data Block  = Block { blForm :: Formula,  blBody :: [Text],
                       blSign :: Bool,     blDecl :: [String],
@@ -21,24 +14,52 @@ data Block  = Block { blForm :: Formula,  blBody :: [Text],
                       blLang :: String,   blFile :: String,
                       blLine :: Int,      blText :: String }
 
+data Context  = Context { cnForm :: Formula, cnBran :: [Block] }
+
+
+-- Block utilities
+
 noForm :: Block -> Bool
 noForm  = isHole . blForm
 
 noBody :: Block -> Bool
 noBody  = null . blBody
 
+
+-- Composition
+
 formulate :: Block -> Formula
-formulate bl  | noForm bl = compose $ blocks $ blBody bl
+formulate bl  | noForm bl = compose $ blBody bl
               | otherwise = blForm bl
 
-compose :: [Block] -> Formula
-compose (bl : bs) | blSign bl = foldr zExi (bool $ And fbl fbs) dvs
-                  | otherwise = foldr zAll (bool $ Imp fbl fbs) dvs
+compose :: [Text] -> Formula
+compose = foldr comp Top
   where
-    fbl = formulate bl
-    fbs = compose bs
-    dvs = blDecl bl
-compose _ = Top
+    comp (TB bl@(Block{ blDecl = dvs, blSign = True  })) fb
+            = foldr zExi (bool $ And (formulate bl) fb) dvs
+    comp (TB bl@(Block{ blDecl = dvs, blSign = False })) fb
+            = foldr zAll (bool $ Imp (formulate bl) fb) dvs
+    comp _ fb = fb
+
+
+-- Context utilities
+
+cnHead  = head . cnBran
+cnTail  = tail . cnBran
+cnTopL  = null . cnTail
+cnLowL  = not  . cnTopL
+
+cnSign  = blSign . cnHead
+cnDecl  = blDecl . cnHead
+cnName  = blName . cnHead
+cnLink  = blLink . cnHead
+cnText  = blText . cnHead
+
+setForm :: Context -> Formula -> Context
+setForm cx fr = cx { cnForm = fr }
+
+cnRaise :: [Context] -> Context -> [Formula] -> [Context]
+cnRaise cnt cx fs = foldr ((:) . setForm cx) cnt fs
 
 
 -- Show instances
@@ -49,12 +70,14 @@ instance Show Text where
   showsPrec p (TD id) = showsPrec p id . showChar '\n'
 
 instance Show Block where
-  showsPrec p bl  = showForm p bl . prf . sbody . suf
+  showsPrec p bl  | noBody bl = showForm p bl
+                  | noForm bl = showForm p bl . sbody
+                  | otherwise = showForm p bl
+                              . showIndent p . showString "proof.\n"
+                              . sbody
+                              . showIndent p . showString "qed.\n"
     where
-      sbody = foldl (.) id $ map (showsPrec $ succ p) $ blBody bl
-      prf = if nem then id else showIndent p . showString "proof.\n"
-      suf = if nem then id else showIndent p . showString "qed.\n"
-      nem = noForm bl || noBody bl
+      sbody = foldr ((.) . showsPrec (succ p)) id $ blBody bl
 
 showForm p bl = showIndent p . sform (noForm bl) (blSign bl) . dt
   where

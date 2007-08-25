@@ -1,6 +1,5 @@
 module Alice.Core.Define where
 
-import Alice.Data.Context
 import Alice.Data.Formula
 import Alice.Data.Text
 import Alice.Core.Local
