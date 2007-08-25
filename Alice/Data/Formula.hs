@@ -83,9 +83,9 @@ roundFM :: (Monad m) =>
         -> [Formula] -> Maybe Bool -> Int -> Formula -> m Formula
 roundFM fn cn sg n  = dive
   where
-    dive (All u f)  = do  let nf = fn cn sg (succ n) ; nn = show n
+    dive (All u f)  = do  let nf = fn cn sg (succ n) ; nn = 'v':show n
                           liftM (All u . bind nn 0) $ nf $ inst nn 0 f
-    dive (Exi u f)  = do  let nf = fn cn sg (succ n) ; nn = show n
+    dive (Exi u f)  = do  let nf = fn cn sg (succ n) ; nn = 'v':show n
                           liftM (Exi u . bind nn 0) $ nf $ inst nn 0 f
     dive (Iff f g)  = do  nf <- fn cn Nothing n f
                           liftM (Iff nf) $ fn cn Nothing n g
@@ -172,8 +172,8 @@ substs f vs ts = dive f
 
 -- Match, replace
 
-{-
 match :: (MonadPlus m) => Formula -> Formula -> m (Formula -> Formula)
+match (Var v@('?':_) _) t       = return  $ subst t v
 match (Var u _)    (Var v _)    | u == v  = return id
 match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
   where
@@ -182,9 +182,7 @@ match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
                               return $ sc . sb
     pairs [] []         = return id
     pairs _ _           = mzero
-match (Ind v _) t = return $ inst t v
 match _ _         = mzero
--}
 
 twins :: Formula -> Formula -> Bool
 twins (Var u _)    (Var v _)    = u == v
