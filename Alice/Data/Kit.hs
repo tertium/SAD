@@ -201,9 +201,6 @@ isSort f                    = isTop f || isBot f
 
 ground f  = not (isVar f) && allF ground f
 
-strip (Ann _ f) = strip f
-strip f         = f
-
 
 -- Info handling
 
