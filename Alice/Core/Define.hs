@@ -45,6 +45,9 @@ setDef nw cnt cx trm@(Trm t _ _)
     str = trm { trName = t ++ ':' : show (length dfs) }
     out = rlog (cnHead cx) $ "unrecognized: " ++ showsPrec 2 trm ""
 
+
+-- Find relevant definitions and test them
+
 type DefTrio = (Context, Formula, Formula)
 
 findDef :: Formula -> Context -> Maybe DefTrio
@@ -59,7 +62,6 @@ findDef trm cx  = dive Top 0 $ cnForm cx
 
     dive gs n (All u f) = dive gs (succ n) $ inst ('?':show n) 0 f
     dive gs n (Imp g f) = dive (bool $ And gs g) n f
-    dive gs n (And _ f) = dive gs n f
     dive _ _ _          = mzero
 
     fine gs tr@(Trm t _ _) fr =
@@ -87,26 +89,46 @@ testDef hard cnt cx trm (dc, gs, nt)
     versus  = if cnTopL dc then cnName dc else "(internal)"
     whdchk  = whenIB IBdchk False
 
+
+-- Infer ad hoc definitions
+
 specDef :: Formula -> Formula
 specDef  (Trm "=" [l, r] is) | not (null nds)
         = Trm "=" [l, nullDEQ r] (nds ++ is)
   where
     nds = map (Ann DEQ . replace (wipeDEQ l) r) (trInfoE r)
 
-specDef f = f
-
-{-
-specDef f@(Trm "=" [l, r] is _) | isTrm r && not (null $ trDefn r)
-  = Trm "=" [l, nullD r] is [replace (wipeD l) r $ head (trDefn r)]
-
-specDef f@(Trm nam [l, r] is _) | isTrm r && elm && std (trDefn r)
-  = Trm nam [l, nullD r] is [subst (wipeD l) v c]
+specDef trm@(Trm t ts is) = foldr add (Trm t [] is) ts
   where
-    elm = fst (break isDigit nam) == "aElementOf"
-    (And _ (And (All v (Imp _ c)) _)) = head (trDefn r)
-    std [And _ (And (All (Var ('.':'e':_) _) _) _)] = True
-    std _ = False
--}
+    add a (Trm t ts is)
+      = let (ni, ns) = foldr tst (is, []) (trInfo a)
+        in  Trm t (a { trInfo = ns } : ts) ni
+
+    tst (Ann DEQ d) (nd, ds)
+      = case dive Top 0 d
+        of  Just f  ->  (Ann DEQ f : nd, ds)
+            _       ->  (nd, Ann DEQ d : ds)
+    tst d (nd, ds)  =   (nd, d : ds)
+
+    dive gs _ (Iff (Trm "=" [Var v _, t] _) f) | isTrm t
+                        = fine gs t $ subst t v f
+    dive gs _ (Iff t f) = fine gs t f
+    dive gs n (All u f) = dive gs (succ n) $ inst ('?':show n) 0 f
+    dive gs n (And f g) = dive gs n f `mplus` dive gs n g
+    dive gs n (Imp g f) = dive (bool $ And gs g) n f
+    dive _ _ _          = mzero
+
+    fine gs tr@(Trm t _ _) fr =
+      do  ngs <- match tr trm `ap` return gs
+          nfr <- match tr (wipeDEQ trm) `ap` return fr
+          guard $ gut ngs && gut nfr && isTop ({- reduce -} ngs)
+          return nfr
+
+    gut (Var ('?':_) _) = False
+    gut f = allF gut $ nullInfo f
+
+
+-- Service stuff
 
 nullDEQ f | hasInfo f = let isDEQ (Ann DEQ _) = True ; isDEQ _ = False
                         in  f { trInfo = filter (not . isDEQ) (trInfo f) }
