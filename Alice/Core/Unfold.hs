@@ -8,7 +8,7 @@ import Alice.Data.Instr
 import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Core.Base
---import Alice.Core.Local
+import Alice.Core.Local
 
 -- Definition expansion
 
@@ -30,7 +30,7 @@ unfoldF cnt cx = fill [] (Just True) 0 (cnForm cx)
   where
     fill fc sg n f | isTrm f  = let nct = cnRaise cnt cx fc
                                     nfr = unfoldA (fromJust sg) f
-                                in  {-fillInfo nct $ setForm cx-} nfr
+                                in  fillInfo nct $ setForm cx nfr
     fill fc sg n (Iff f g)    = roundF fill fc sg n (zIff f g)
     fill fc sg n f            = roundF fill fc sg n f
 

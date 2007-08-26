@@ -3,7 +3,7 @@ module Alice.Core.Reason where
 import Control.Monad
 
 import Alice.Core.Base
---import Alice.Core.Local
+import Alice.Core.Local
 import Alice.Core.Unfold
 import Alice.Data.Formula
 import Alice.Data.Kit
@@ -26,7 +26,7 @@ goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
                               unless (null fs) dga
                               goalseq n (ntc : cnt) tc fs
   where
-    rfr = {- reduce -} f
+    rfr = reduce f
     ntc = setForm tc rfr
 
     trv = sbg >> guard (isTop rfr) >> tri

@@ -5,7 +5,7 @@ import Data.List
 import Data.Maybe
 
 import Alice.Core.Base
--- import Alice.Core.Local
+import Alice.Core.Local
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Text
@@ -15,7 +15,7 @@ thesis :: [Context] -> Context -> (Bool, Context)
 thesis cnt@(ct:_) tc = (nmt, setForm tc nth)
   where
     nmt = cnSign ct || isJust ith
-    nth = {- fillInfo cnt $ setForm tc -} kth
+    nth = fillInfo cnt $ setForm tc kth
     kth = tmWipe (deAnd $ cnForm ct) jth
     jth | cnSign ct = ths
         | otherwise = fromMaybe ths ith
@@ -73,7 +73,7 @@ tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
         dive h              = roundFM pass fc sg n h
 
         qua u f = mplus (tmVars u f >>= dive) . roundFM pass fc sg n
-        dfs = msum . map (dive {-. fillInfo nct . setForm tc-}) . trInfoE
+        dfs = msum . map (dive . fillInfo nct . setForm tc) . trInfoE
         nct = cnRaise cnt tc fc
 
 tmVars u f  = TM (vrs [])

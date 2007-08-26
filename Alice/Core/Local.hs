@@ -1,132 +1,177 @@
 module Alice.Core.Local where
 
+import Control.Monad
 import Data.List
 
 import Alice.Data.Formula
+import Alice.Data.Kit
+import Alice.Data.Instr
 import Alice.Data.Text
+import Alice.Core.Base
 
--- Local validity
+-- Collect evidence
 
-fillDLV cnt fr  = fill True cnt True fr
+fillInfo :: [Context] -> Context -> Formula
+fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
   where
-    fill pr cn sg f | isVar f = setDLV cn pr f
-                    | isTrm f = setDLV cn pr $ specDef h
-                    | True    = roundF (fill pr) cn sg f
-      where h = f { trArgs = map (fill False cn sg) (trArgs f) }
-
-
-setDLV cnt prd trm  = trm { trInfo = nti trm }
-  where
-    nti (Trm "=" [l@(Var _ []), r] _ _)
-          = map (Ann DIM . replace l r) (trInfo r)
-            +++ trigger nct prd trm
-    nti _ = trigger nct prd trm
-
-    act | isVar trm = []
-        | not prd   = dedfn $ trDefn trm
-        | True      = map (Imp trm) $ dedfn $ trDefn trm
-
-    nct = act ++ concatMap def (offspring trm) ++ oct
-
-    def (Trm _ _ hs dd) = dedfn dd ++ concatMap def hs
-    def (Var _ hs)      = concatMap def hs
-    def f               = foldF def [] (++) f
-
-    dedfn = map (deAnn . rebind undot)
-    undot ('.':'.':x) = '.':x ; undot ('.':x) = 'd':x
-    oct = [ formulate bl | bl <- cnt, comtype bl /= Defn ]
-
-
-trigger cnt prd fr  = fld (sr [] zTrue) cnt
-  where
-    sr vs ps (All v f)    = sr (v:vs) ps f
-    sr vs ps (Iff f g)    = sr vs ps (zIff f g)
-    sr vs ps (And f g)    = sr vs ps f +++ sr vs ps g
-    sr vs ps (Imp f g)    = sr vs (bool $ And f ps) g
-    sr vs ps f  | bad f   = []
-                | prd     = sm vs zTrue f ps
-                | True    = fld (sl vs ps f) (offspring f)
-
-    sl vs ps f s          = [ g | s `notElem` vs, g <- sq vs ps f s,
-                                  any (isMatch fr) (offspring g) ]
-
-    sm vs ps gl (Or f g)  = sm vs ps gl f +++ sm vs ps gl g
-    sm vs ps gl (And f g) = sm vs (bool $ And f ps) gl g
-                            +++ sm vs (bool $ And g ps) gl f
-    sm vs ps gl f | bad f = []
-                  | True  = map (Ann DIM) (sq vs ps gl f)
-                            +++ map (Ann DOR) (sq vs ps gl (Not f))
-
-    sq vs ps gl s         = [ norm f |  sb <- match vs s fr,
-                                        let g = sb gl; hs = sb ps,
-                                        ground vs g, ground vs hs,
-                                        rapid $ dequa hs,
-                                        f <- dlv True (ded g) ]
-    ground vs f = grn f
+    fill pr fc sg n fr
+      | isThesis fr = fr
+      | isVar fr    = sti fr
+      | isTrm fr    = sti $ fr { trArgs = nts }
+      | otherwise   = roundF (fill pr) fc sg n fr
       where
-        grn (Ann DSB f) = True
-        grn f | isVar f = f `notElem` vs
-              | isTrm f = all grn (trArgs f)
-              | True    = foldF grn True (&&) f
+        sti = setInfo pr $ cnRaise cnt cx fc
+        nts = map (fill False fc sg n) (trArgs fr)
 
-    dequa (All _ _) = zTrm "?" [] ; dequa f | isTrm f = f
-    dequa (Exi _ _) = zTrm "?" [] ; dequa f = mapF dequa f
+setInfo :: Bool -> [Context] -> Formula -> Formula
+setInfo prd cnt otr = ntr
+  where
+    trm = specDef otr
 
-    dlv s (Not f) = dlv (not s) f ; dlv s (Ann _ f) = dlv s f
-    dlv True f  =     f : [ g | (Ann DIM g) <- trInfo f ]
-    dlv False f = Not f : [ g | (Ann DOR g) <- trInfo f ]
+    ntr = trm { trInfo = nte ++ nti }
+    nte = map (Ann DEQ) $ trInfoE trm
+    nti = eqi trm +++ trigger prd nct trm
 
-    bad f = not (isUnit f) || isTrue f
-    fld f = foldr (+++) [] . map f
-    ded (Ann DSB f) = wipeD f
-    ded f = mapF ded f
+    eqi (Trm "=" [l@(Var _ []), r] _)
+          = map (Ann DIM . replace l r) (trInfoI r)
+    eqi _ = []
 
-    norm (Ann a f)      = norm f
-    norm (Not f)        = Not (norm f)
-    norm (Trm t ts _ d) = Trm t (map wipe ts) [] d
-    wipe (Trm t ts _ _) = Trm t (map wipe ts) [] []
-    wipe (Var v _)      = Var v []
+    nct = act ++ sct ++ oct
+
+    act = if prd then map (Imp trm) cur else cur
+    cur = trInfoE trm ++ trInfoI trm
+
+    sct = concatMap def $ offspring trm
+    def f | hasInfo f = trInfoE f -- ++ concatMap def (trInfoI f)
+          | otherwise = foldF def f
+
+    oct = filter flt $ map cnForm cnt
+    flt f = not $ isDefn f || isSign f
+
+
+-- Infer ad hoc definitions
+
+specDef :: Formula -> Formula
+specDef trm@(Trm "=" [l, r] is) | not (null nds)
+        = Trm "=" [l, nullDEQ r] nds
+  where
+    nds = map (Ann DEQ . replace (wipeDEQ l) r) (trInfoE r)
+
+specDef trm@(Trm t ts is) | not (null $ trInfo ntr) = ntr
+  where
+    ntr = foldr add (Trm t [] []) ts
+
+    add a (Trm t ts is)
+      = let (ni, ns) = foldr tst (is, []) (trInfo a)
+        in  Trm t (a { trInfo = ns } : ts) ni
+
+    tst (Ann DEQ d) (nd, ds)
+      = case dive Top 0 d
+        of  Just f  ->  (Ann DEQ f : nd, ds)
+            _       ->  (nd, Ann DEQ d : ds)
+    tst d (nd, ds)  =   (nd, d : ds)
+
+    dive gs _ (Iff (Trm "=" [Var v _, t] _) f) | isTrm t
+                        = fine gs t $ subst t v f
+    dive gs _ (Iff t f) = fine gs t f
+    dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) 0 f
+    dive gs n (And f g) = dive gs n f `mplus` dive gs n g
+    dive gs n (Imp g f) = dive (bool $ And gs g) n f
+    dive _ _ _          = mzero
+
+    fine gs tr@(Trm t _ _) fr =
+      do  ngs <- match tr trm `ap` return gs
+          nfr <- match tr (wipeDEQ trm) `ap` return fr
+          guard $ grune ngs && grune nfr && rapid ngs
+          return nfr
+
+specDef f = f
+
+
+-- Deductor
+
+trigger :: Bool -> [Formula] -> Formula -> [Formula]
+trigger prd cnt trm = fld (sr Top 0) cnt
+  where
+    sr ps nn (All _ f)  = sr ps (succ nn) $ inst ('?':show nn) 0 f
+    sr ps nn (Exi _ f)  = sr ps (succ nn) $ inst ('!':show nn) 0 f
+    sr ps nn (Iff f g)  = sr ps nn $ zIff f g
+    sr ps nn (And f g)  = sr ps nn f +++ sr ps nn g
+    sr ps nn (Imp f g)  = sr (bool $ And ps f) nn g
+    sr ps nn (Ann _ f)  = sr ps nn f
+    sr ps nn f  | bad f = []
+                | prd   = sm Top f ps
+                | True  = fld (sl ps f) $ offspring f
+
+    sl ps gl s  = [ Ann DIM g | not (isVar s) || grune s,
+                                g <- sq ps gl s,
+                                occurs trm g ]
+
+    sm ps gl (Or  f g)  = sm ps gl f +++ sm ps gl g
+    sm ps gl (And f g)  = sm (bool $ And f ps) gl g +++
+                          sm (bool $ And g ps) gl f
+    sm ps gl (Ann _ f)  = sm ps gl f
+    sm ps gl f  | bad f = []
+                | True  = map (Ann DIM) (sq ps gl f) +++
+                          map (Ann DOR) (sq ps gl (neg f))
+
+    sq ps gl s  = [ f | sb <- match s trm,
+                        let g = sb gl, grune g,
+                        rapid $ sb ps, f <- dlv True g ]
+
+    dlv s (Not f) = dlv (not s) f
+    dlv True f    = wipeInfo f : trInfoI f
+    dlv False f   = wipeInfo (Not f) : trInfoO f
+
+    fld f = foldr ((+++) . f) []
+
+    bad (Not f)   = bad f
+    bad f = not $ isTrm f
+
+    wtrm  = wipeDEQ trm
+
+
+-- Simplification with evidence
+
+rapid f = isTop $ reduce f
+
+reduce f  | isTrm f = nfr
+          | True    = bool $ mapF reduce f
+  where
+    nfr | triv f            = Top
+        | any (twins f) plv = Top
+        | any (twins f) nlv = Bot
+        | otherwise         = f
+
+    plv = [ f | f <- lvs, isTrm f ]
+    nlv = [ f | Not f <- lvs ]
+    lvs = concatMap trInfoI $ offspring f
+
+    triv (Trm "=" [l,r] _)  = twins l r
+    triv f                  = isTop f
+
+
+-- Service stuff
 
 (+++) = unionBy ism
   where
-    ism (Ann DIM _) (Ann DOR _) = False
-    ism (Ann DOR _) (Ann DIM _) = False
-    ism f g = isMatch f g
+    ism (Ann DIM f) (Ann DIM g) = twins f g
+    ism (Ann DOR f) (Ann DOR g) = twins f g
+    ism f g                     = False
 
-children f  | isInd f = []
-            | isTrm f = map strip $ trArgs f
-            | True    = foldF children f
+children f  | isTrm f = trArgs f
+            | True    = foldF children $ nullInfo f
 
 offspring f = let x = children f
               in  x ++ concatMap offspring x
 
+nullDEQ f | hasInfo f = let isDEQ (Ann DEQ _) = True ; isDEQ _ = False
+                        in  f { trInfo = filter (not . isDEQ) (trInfo f) }
+          | otherwise = f
 
+wipeDEQ = skipInfo (mapF wipeDEQ) . nullDEQ
 
-
-rapid = isTrue . reduce
-
-reduce f  
-| isTrm f = nfr
-          | True    = bool $ mapF reduce f
-  where
-    nfr | triv f = zTrue
-        | any (isMatch f) lvs = zTrue
-        | any (isMatch $ Not f) lvs = zFalse
-        | otherwise = f
-
-    lvs = concatMap trInfo $ offspring f
-
---    triv (Trm "aSet" [t] _ _) = isSSS t  -- do we need it?
-    triv (Trm "=" [l,r] _ _)  = twins l r
-    triv f                    = isTrue f
-
-infos :: Bool -> Bool -> Formula -> [Formula]
-infos sg pr f@(Trm _ _ ss)  | pr  = map
-  where
-    
-    h = if pr then f else zEqu f f
-
-    dive g  | twins h g = if sg then Top else Bot
-            | otherwise = bool $ mapF dive f
-
+grune (Var ('?':_) _) = False
+grune (Var ('!':_) _) = False
+grune f               = allF grune $ nullInfo f
 

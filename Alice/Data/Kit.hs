@@ -193,9 +193,8 @@ isSign (All _ f)            = isSign f
 isSign (Imp _ f)            = isSign f
 isSign _                    = False
 
-isUnit (Ann _ f)            = isUnit f
 isUnit (Not f)              = isUnit f
-isUnit f                    = isTop f || isBot f || isTrm f
+isUnit f                    = isTrm f || isTop f || isBot f
 
 isSort (Trm _ (_:ts) _)     = all ground ts
 isSort (Trm ('a':_) _ _)    = True
