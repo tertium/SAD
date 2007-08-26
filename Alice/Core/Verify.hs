@@ -47,8 +47,8 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
 
       nbs <- splitTh (mot && nmt) nth brn nct bs
 
-      let fcn = setForm ths $ compose $ TB nbl : nbs
-      splitTh (mot && not nmt) ths brn (fcn : cnt) []
+      let fth = Imp (compose $ TB nbl : nbs) (cnForm ths)
+      splitTh (mot && not nmt) (setForm ths fth) brn cnt []
 
       return $ TB nbl : nbs
 
