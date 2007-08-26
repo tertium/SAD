@@ -185,7 +185,7 @@ showFormula p d = dive
 
       dive (Trm "#TH#" _ _)   = showString "thesis"
       dive (Trm "=" [l,r] _)  = sinfix " = " l r
-      dive (Trm s ts _)       = showString s . sargs ts
+      dive (Trm s ts is)      = showString s . sargs ts -- . sinfo is
       dive (Var s _)          = showString s
       dive (Ind i _)  | i < d = showChar 'v' . shows (d - i - 1)
                       | True  = showChar 'v' . showChar '?'
@@ -193,6 +193,10 @@ showFormula p d = dive
       sargs []  = id
       sargs _   | p == 1  = showString "(...)"
       sargs ts  = showArgs (showFormula (pred p) d) ts
+
+      sinfo []      = id
+      sinfo (t:ts)  = showChar '[' . showFormula 0 d t
+                    . showTail (showFormula 0 d) ts . showChar ']'
 
       binder f      = showFormula p (succ d) (Ind 0 []) . showChar ' '
                     . showFormula p (succ d) f
