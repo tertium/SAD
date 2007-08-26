@@ -186,7 +186,7 @@ fo_term   = sym_term -|- set_term -|- paren (opt () the >> prim_fun fo_term)
 
 sym_notion  = (paren (prim_snt s_term) -|- prim_tvr) >>= (digntn . digadd)
 
-sym_eqnt    = do  t <- s_term; guard $ isTrm $ strip t
+sym_eqnt    = do  t <- s_term; guard $ isTrm t
                   v <- hidden; return (id, zEqu zHole t, [v])
 
 sym_term    = liftM ((,) id) s_term
@@ -267,27 +267,20 @@ set_strm  = exbrc (u1 -|- u2 -|- u3)
     u3  = chain (char ',') ft >>= finset
     ft  = liftM snd fo_term
 
-ntnset (q, f, v)  = retset $ zAll v $ Iff (zElm (zVar v) zHole) (q f)
+ntnset (q, f, v)  = retset v $ q f
 
-trmset t s  = do  vs <- liftM (`decl` s) getDecl
-                  v <- hidden ; let u = zVar v
-                  let fe = foldr mbExi (And s $ zEqu t u) vs
-                      fw = zAll v $ Imp (zElm u zHole) fe
-                      bw = foldr mbAll (Imp s $ zElm t zHole) vs
-                  retset $ And fw bw
+trmset t s  = do  v <- hidden ; let u = zVar v
+                  vs <- liftM (`decl` s) getDecl
+                  retset v $ foldr mbExi (And s $ zEqu t u) vs
 
 finset ts   = do  v <- hidden ; let u = zVar v
-                  let fe = foldl1 Or $ map (zEqu u) ts
-                      fw = zAll v $ Imp (zElm u zHole) fe
-                      bw = foldl1 And $ map (`zElm` zHole) ts
-                  retset $ And fw bw
+                  retset v $ foldl1 Or $ map (zEqu u) ts
 
-retset ex   = do  v@(_:h) <- hidden ; let u = zVar v
-                  let nt = zSSS h $ map zVar (free [] ex)
-                      nf = And (zSet u) (substH u ex)
-                      ne = Ann DHD $ zEqu u nt
-                      nd = zAll v $ Iff ne nf
-                  return $ Sub nd nt
+retset v fe = do  (_:h) <- hidden ; let u = zVar v
+                  let ex = zAll v $ Iff (zElm u zHole) fe
+                      nt = zSSS h $ map zVar (free [] ex)
+                      nf = And (zSet nt) (substH nt ex)
+                  return $ nt { trInfo = [Ann DEQ nf] }
 
 
 -- Digger

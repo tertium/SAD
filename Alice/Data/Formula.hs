@@ -7,8 +7,8 @@ import qualified Data.Monoid as Monoid
 data Formula  = All String  Formula       | Exi String  Formula
               | Iff Formula Formula       | Imp Formula Formula
               | Or  Formula Formula       | And Formula Formula
-              | Sub Formula Formula       | Ann Annotat Formula
-              | Not Formula               | Top | Bot
+              | Ann Annotat Formula       | Not Formula
+              | Top                       | Bot
               | Trm { trName :: String,
                       trArgs :: [Formula],  trInfo :: [Formula] }
               | Var { trName :: String,     trInfo :: [Formula] }
@@ -28,7 +28,6 @@ mapF fn (Iff f g)       = Iff (fn f) (fn g)
 mapF fn (Imp f g)       = Imp (fn f) (fn g)
 mapF fn (Or  f g)       = Or  (fn f) (fn g)
 mapF fn (And f g)       = And (fn f) (fn g)
-mapF fn (Sub f g)       = Sub (fn f) (fn g)
 mapF fn (Ann a f)       = Ann a (fn f)
 mapF fn (Not f)         = Not (fn f)
 mapF fn (Top)           = Top
@@ -44,7 +43,6 @@ mapFM fn (Iff f g)      = liftM2 Iff (fn f) (fn g)
 mapFM fn (Imp f g)      = liftM2 Imp (fn f) (fn g)
 mapFM fn (Or  f g)      = liftM2 Or  (fn f) (fn g)
 mapFM fn (And f g)      = liftM2 And (fn f) (fn g)
-mapFM fn (Sub f g)      = liftM2 Sub (fn f) (fn g)
 mapFM fn (Ann a f)      = liftM (Ann a) (fn f)
 mapFM fn (Not f)        = liftM  Not (fn f)
 mapFM fn (Top)          = return Top
@@ -72,8 +70,6 @@ roundF fn cn sg n  = dive
                       in  Or nf $ fn (Not nf:cn) sg n g
     dive (And f g) =  let nf = fn cn sg n f
                       in  And nf $ fn (nf:cn) sg n g
-    dive (Sub f g) =  let nf = fn cn Nothing n f
-                      in  Sub nf $ fn (nf:cn) sg n g
     dive (Not f)   =  Not $ fn cn (liftM not sg) n f
     dive f         =  mapF (fn cn sg n) f
 
@@ -94,8 +90,6 @@ roundFM fn cn sg n  = dive
                           liftM (Or nf) $ fn (Not nf:cn) sg n g
     dive (And f g)  = do  nf <- fn cn sg n f
                           liftM (And nf) $ fn (nf:cn) sg n g
-    dive (Sub f g)  = do  nf <- fn cn Nothing n f
-                          liftM (Sub nf) $ fn (nf:cn) sg n g
     dive (Not f)    = liftM Not $ fn cn (liftM not sg) n f
     dive f          = mapFM (fn cn sg n) f
 
@@ -109,7 +103,6 @@ foldF fn (Iff f g)      = Monoid.mappend (fn f) (fn g)
 foldF fn (Imp f g)      = Monoid.mappend (fn f) (fn g)
 foldF fn (Or  f g)      = Monoid.mappend (fn f) (fn g)
 foldF fn (And f g)      = Monoid.mappend (fn f) (fn g)
-foldF fn (Sub f g)      = Monoid.mappend (fn f) (fn g)
 foldF fn (Ann _ f)      = fn f
 foldF fn (Not f)        = fn f
 foldF fn (Top)          = Monoid.mempty
@@ -152,7 +145,8 @@ inst v  = dive
   where
     dive n (All u g)  = All u $ dive (succ n) g
     dive n (Exi u g)  = Exi u $ dive (succ n) g
-    dive n (Ind m _)  | m == n  = Var v []
+    dive n (Ind m ss) | m == n
+                      = Var v $ map (dive n) ss
     dive n f          = mapF (dive n) f
 
 subst :: Formula -> String -> Formula -> Formula
@@ -185,7 +179,6 @@ showFormula p d = dive
       dive (And f g)  = showParen True $ sinfix " and " f g
       dive (Ann a f)  = showParen True $ shows a
                       . showString " :: " . dive f
-      dive (Sub f g)  = showString "[" . sinfix "] " f g
       dive (Not f)    = showString "not " . dive f
       dive Top        = showString "truth"
       dive Bot        = showString "contradiction"

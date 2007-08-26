@@ -30,7 +30,6 @@ tptpTerm d = dive
     dive (Or  f g)  = sinfix " | " f g
     dive (And f g)  = sinfix " & " f g
     dive (Ann a f)  = dive f
-    dive (Sub f g)  = dive f
     dive (Not f)    = showParen True $ showString " ~ " . dive f
     dive Top        = showString "$true"
     dive Bot        = showString "$false"

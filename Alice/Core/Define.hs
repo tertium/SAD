@@ -22,22 +22,26 @@ fillDef ths cnt cx  = fill True [] (Just True) 0 $ cnForm cx
       = return v -- $ setInfo pr (cnRaise cnt cx fc) v
     fill _ _ _ _ t | isThesis t
       = return ths
-    fill pr fc sg n (Trm t ts _)
+    fill pr fc sg n (Trm t ts is)
       = do  let nct = cnRaise cnt cx fc
             nts <- mapM (fill False fc sg n) ts
-            ntr <- setDef False nct cx $ zTrm t nts
+            nis <- mapM (fill True  fc sg n) is
+            ntr <- setDef False nct cx $ Trm t nts nis
+            -- printRM $ trInfoE $ specDef ntr
             return $ {- setInfo pr nct $ -} specDef ntr
     fill pr fc sg n f = roundFM (fill pr) fc sg n f
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
-setDef nw cnt cx trm@(Trm t _ _)
-    =  (unguardIB IBdefn True >> return trm)
+setDef nw cnt cx trm@(Trm t ts is)
+    =  (guard inp >> return trm)
+    <> (guardNotIB IBdefn True >> return trm)
     <> (msum $ map (testDef False cnt cx trm) dfs)
     <> (guard (t == "=" || elem '#' t) >> return trm)
     <> (msum $ map (testDef True  cnt cx trm) dfs)
     <> (guard nw >> return str)
     <> (out >> mzero)
   where
+    inp = not $ null $ trInfoE trm
     dfs = mapMaybe (findDef trm) cnt
     str = trm { trName = t ++ ':' : show (length dfs) }
     out = rlog (cnHead cx) $ "unrecognized: " ++ showsPrec 2 trm ""
@@ -80,7 +84,8 @@ testDef hard cnt cx trm (dc, gs, nt)
     failed  | hard  = rlog0 "check failed"
             | True  = rlog (cnHead cx) $ header ++ "... failed"
 
-    header  = "check: " ++ showsPrec 2 trm " vs " ++ cnName dc
+    header  = "check: " ++ showsPrec 2 trm " vs " ++ versus
+    versus  = if cnTopL dc then cnName dc else "(internal)"
     whdchk  = whenIB IBdchk False
 
 specDef :: Formula -> Formula

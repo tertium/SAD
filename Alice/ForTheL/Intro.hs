@@ -92,8 +92,8 @@ def_ntn = do  (n, u) <- old_ntn ieq; (q, f) <- anotion
     iqt = is >> opt () (word "equal" >> word "to")
     trm (Trm "=" [_,t] _) = t ; trm t = t
 
-    set (Ann DIG (Trm "=" [l, Sub (All u (Iff (Ann DHD _) d)) r] _))
-          = Ann DIG $ subst l u d
+    set (Ann DIG (Trm "=" [l, r@(Trm _ _ [Ann DEQ d])] _))
+          = Ann DIG $ replace l r d
     set n = n
 
 sig_ntn = do  (n, u) <- old_ntn is; (q, f) <- anotion -|- nmn

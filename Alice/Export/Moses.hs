@@ -30,7 +30,6 @@ mosesTerm d = dive
     dive (Or  f g)  = showChar '|' . binary f g
     dive (And f g)  = showChar '&' . binary f g
     dive (Ann a f)  = dive f
-    dive (Sub f g)  = dive f
     dive (Not f)    = showChar '!' . dive f
     dive Top        = showChar '+'
     dive Bot        = showChar '-'

@@ -219,22 +219,21 @@ decl vs f = dive f
   where
     dive (All _ f)  = dive f
     dive (Exi _ f)  = dive f
-    dive (Sub _ f)  = dive f
     dive (Ann _ f)  = dive f
     dive (Imp f g)  = filter (noc f) (dive g)
     dive (And f g)  = dive f `union` filter (noc f) (dive g)
     dive (Trm ('a':_) (v@(Var u@('x':_) _):ts) _)
       | all (not . occurs v) ts = nifilt vs u
     dive (Trm "=" [v@(Var u@('x':_) _), t] _)
-      | isTrm (strip t) && not (occurs v t) = nifilt vs u
+      | isTrm t && not (occurs v t) = nifilt vs u
     dive _  = []
 
     noc f v = not $ occurs (zVar v) f
 
 free vs f = nub (dive f)
   where
-    dive (Var u@('x':_) _)  = nifilt vs u
-    dive f                  = foldF dive f
+    dive f@(Var u@('x':_) _)  = nifilt vs u ++ foldF dive f
+    dive f                    = foldF dive f
 
 overfree vs f
     | occurs zSlot f  = "too few subjects for an m-predicate " ++ inf

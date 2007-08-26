@@ -39,7 +39,6 @@ otterTerm d = dive
     dive (Or  f g)  = showString "|" . showArgs dive [f,g]
     dive (And f g)  = showString "&" . showArgs dive [f,g]
     dive (Ann a f)  = dive f
-    dive (Sub f g)  = dive f
     dive (Not f)    = showString "-" . showArgs dive [f]
     dive Top        = showString "$T"
     dive Bot        = showString "$F"

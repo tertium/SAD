@@ -5,7 +5,7 @@ import Data.Maybe
 
 import Alice.Data.Formula
 
--- Match, replace
+-- Match and replace
 
 match :: (MonadPlus m) => Formula -> Formula -> m (Formula -> Formula)
 match (Var v@('?':_) _) t       = return  $ subst t v
@@ -13,7 +13,7 @@ match (Var u _)    (Var v _)    | u == v  = return id
 match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
   where
     pairs (p:ps) (q:qs) = do  sb <- pairs ps qs
-                              sc <- match (sb $ strip p) (strip q)
+                              sc <- match (sb p) q
                               return $ sc . sb
     pairs [] []         = return id
     pairs _ _           = mzero
@@ -23,7 +23,7 @@ twins :: Formula -> Formula -> Bool
 twins (Var u _)    (Var v _)    = u == v
 twins (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
   where
-    pairs (p:ps) (q:qs) = twins (strip p) (strip q) && pairs ps qs
+    pairs (p:ps) (q:qs) = twins p q && pairs ps qs
     pairs [] []         = True
     pairs _ _           = False
 twins _ _         = False
@@ -38,11 +38,6 @@ replace t s = dive
   where
     dive f  | twins s f = t
             | otherwise = mapF dive f
-
-strip :: Formula -> Formula
-strip (Ann _ f) = strip f
-strip (Sub _ f) = strip f
-strip f         = f
 
 
 -- Alpha-beta normalization
@@ -93,8 +88,6 @@ bool (And Bot f)  = Bot
 bool (And f Bot)  = Bot
 bool (Ann a Top)  = Top
 bool (Ann a Bot)  = Bot
-bool (Sub f Top)  = Top
-bool (Sub f Bot)  = Bot
 bool (Not Top)    = Bot
 bool (Not Bot)    = Top
 bool f            = f
@@ -110,7 +103,6 @@ mbBind v  = dive id
     dive c s (All u f)  = dive (c . bool . All u) s f
     dive c s (Exi u f)  = dive (c . bool . Exi u) s f
     dive c s (Ann a f)  = dive (c . bool . Ann a) s f
-    dive c s (Sub g f)  = dive (c . bool . Sub g) s f
     dive c s (Not f)    = dive (c . bool . Not) (not s) f
     dive c False (Imp f g)  = dive (c . bool . (`Imp` g)) True f
                       `mplus` dive (c . bool . (f `Imp`)) False g
@@ -198,15 +190,19 @@ isSign (All _ f)            = isSign f
 isSign (Imp _ f)            = isSign f
 isSign _                    = False
 
-isUnit (Sub _ f)            = isUnit f
 isUnit (Ann _ f)            = isUnit f
 isUnit (Not f)              = isUnit f
-isUnit f                    = isTrm f
+isUnit f                    = isTop f || isBot f || isTrm f
 
-isSort (Not f)              = isEqu (strip f)
+isSort (Trm _ (_:ts) _)     = all ground ts
 isSort (Trm ('a':_) _ _)    = True
-isSort (Trm _ [_] _)        = True
-isSort _                    = False
+isSort (Not (Trm "=" _ _))  = True
+isSort f                    = isTop f || isBot f
+
+ground f  = not (isVar f) && allF ground f
+
+strip (Ann _ f) = strip f
+strip f         = f
 
 
 -- Info handling

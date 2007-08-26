@@ -44,7 +44,6 @@ dfgTerm d = dive
     dive (Or  f g)  = showString "or" . showArgs dive [f,g]
     dive (And f g)  = showString "and" . showArgs dive [f,g]
     dive (Ann a f)  = dive f
-    dive (Sub f g)  = dive f
     dive (Not f)    = showString "not" . showArgs dive [f]
     dive Top        = showString "true"
     dive Bot        = showString "false"
@@ -82,7 +81,6 @@ dfgSLS tsk  = sls "functions" fns . sls "predicates" pds
     fld = Monoid.mappend . dfgSyms True . cnForm
 
 dfgSyms :: Bool -> Formula -> SymSet
-dfgSyms s (Sub f g)     = dfgSyms s g
 dfgSyms s (Trm t ts _)  = let h | t == "="  = Monoid.mempty
                                 | s         = SS ([(t, length ts)], [])
                                 | otherwise = SS ([], [(t, length ts)])

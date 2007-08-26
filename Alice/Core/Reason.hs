@@ -68,7 +68,7 @@ launch cnt tc = do  incRSCI CIprov; whenIB IBtask False debug
 -- Goal splitting
 
 splitG :: Formula -> [Formula]
-splitG fr = spl $ albet $ strip fr
+splitG fr = spl $ albet fr
   where
     spl (All u f) = liftM (All u) (splitG f)
     spl (And f g) = mplus (splitG f) (splitG g)
@@ -91,22 +91,22 @@ context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
     ls = cnLink tc
 
 lichten :: Formula -> Formula
-lichten = sr . strip
+lichten = sr
   where
     sr (Iff (Ann DHD (Trm "=" [_, t] _)) f)
-         | isTrm t  = sr $ strip $ subst t "." $ inst "." 0 f
+         | isTrm t  = sr $ subst t "." $ inst "." 0 f
     sr (Imp (Ann DHD (Trm "=" [_, t] _)) f)
-         | isTrm t  = sr $ strip $ subst t "." $ inst "." 0 f
+         | isTrm t  = sr $ subst t "." $ inst "." 0 f
     sr (Iff f g)    = sr $ zIff f g
-    sr (All v f)    = bool $ All v $ sr $ strip f
-    sr (And f g)    = bool $ And (sr $ strip f) (sr $ strip g)
-    sr (Imp f g)    = bool $ Imp (sm $ strip f) (sr $ strip g)
+    sr (All v f)    = bool $ All v $ sr f
+    sr (And f g)    = bool $ And (sr f) (sr g)
+    sr (Imp f g)    = bool $ Imp (sm f) (sr g)
     sr f | isEqu f  = sr $ foldr And Top $ trInfoI f
     sr f | isSort f = f
     sr _            = Top
 
-    sm (Or  f g)    = bool $ Or  (sm $ strip f) (sm $ strip g)
-    sm (And f g)    = bool $ And (sm $ strip f) (sm $ strip g)
+    sm (Or  f g)    = bool $ Or  (sm f) (sm g)
+    sm (And f g)    = bool $ And (sm f) (sm g)
     sm f | isUnit f = f
     sm _            = Bot
 
