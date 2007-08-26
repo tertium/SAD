@@ -18,13 +18,13 @@ unfold tsk  = do  when (null exs) $ ntu >> mzero
                   return $ foldr exp [] mts
   where
     mts = markup tsk
-    exs = concatMap (markedF . cnForm) mts
+    exs = concatMap marked mts
 
     exp c cnt = setForm c (unfoldF cnt c) : cnt
 
     ntu = whenIB IBunfl False $ rlog0 $ "nothing to unfold"
     unf = whenIB IBunfl False $ rlog0 $ "unfold: " ++ out
-    out = concatMap (flip (showsPrec 3) " ") exs
+    out = foldr (. showChar ' ') "" exs
 
 unfoldF cnt cx = fill [] (Just True) 0 (cnForm cx)
   where
@@ -69,8 +69,15 @@ wipeDCN f = mapF wipeDCN f
 
 -- Service stuff
 
-markedF f | isDCN f   = f : foldF markedF (nullInfo f)
-          | otherwise =     foldF markedF (nullInfo f)
+marked cx = mrk 0 $ cnForm cx
+  where
+    mrk n (All _ f)     = mrk (succ n) f
+    mrk n (Exi _ f)     = mrk (succ n) f
+    mrk n f | isDCN f   = showParen True (showFormula 3 n f . lin)
+                        : foldF (mrk n) (nullInfo f)
+            | otherwise = foldF (mrk n) (nullInfo f)
+
+    lin = showChar ',' . shows (blLine $ cnHead cx)
 
 isDCN     = not . null . getDCN
 
