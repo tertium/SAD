@@ -32,8 +32,8 @@ fillDef ths cnt cx  = fill True [] (Just True) 0 $ cnForm cx
     fill pr fc sg n f = roundFM (fill pr) fc sg n f
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
-setDef nw cnt cx trm@(Trm t ts is)
-    =  (guard inp >> return trm)
+setDef nw cnt cx trm@(Trm t _ _)
+    =  (guard (elem ':' t) >> return trm)
     <> (guardNotIB IBdefn True >> return trm)
     <> (msum $ map (testDef False cnt cx trm) dfs)
     <> (guard (t == "=" || elem '#' t) >> return trm)
@@ -41,7 +41,6 @@ setDef nw cnt cx trm@(Trm t ts is)
     <> (guard nw >> return str)
     <> (out >> mzero)
   where
-    inp = not $ null $ trInfoE trm
     dfs = mapMaybe (findDef trm) cnt
     str = trm { trName = t ++ ':' : show (length dfs) }
     out = rlog (cnHead cx) $ "unrecognized: " ++ showsPrec 2 trm ""
