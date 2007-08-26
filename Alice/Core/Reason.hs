@@ -68,11 +68,11 @@ launch cnt tc = do  incRSCI CIprov; whenIB IBtask False debug
 -- Goal splitting
 
 splitG :: Formula -> [Formula]
-splitG fr = spl $ albet fr
+splitG fr = spl $ albet $ strip fr
   where
     spl (All u f) = liftM (All u) (splitG f)
     spl (And f g) = mplus (splitG f) (splitG g)
-    spl (Or f g)  = liftM2 Or (splitG f) (splitG g)
+    spl (Or f g)  = liftM2 zOr (splitG f) (splitG g)
     spl _         = return fr
 
 
@@ -101,12 +101,14 @@ lichten = sr
     sr (All v f)    = bool $ All v $ sr f
     sr (And f g)    = bool $ And (sr f) (sr g)
     sr (Imp f g)    = bool $ Imp (sm f) (sr g)
+    sr (Ann _ f)    = sr f
     sr f | isEqu f  = sr $ foldr And Top $ trInfoI f
     sr f | isSort f = f
     sr _            = Top
 
     sm (Or  f g)    = bool $ Or  (sm f) (sm g)
     sm (And f g)    = bool $ And (sm f) (sm g)
+    sm (Ann _ f)    = sm f
     sm f | isUnit f = f
     sm _            = Bot
 
