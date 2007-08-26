@@ -126,6 +126,9 @@ zExi v f  = Exi v $ bind v 0 f
 
 zIff f g  = And (Imp f g) (Imp g f)
 
+zOr (Not f) g = Imp f g
+zOr f g       = Or  f g
+
 zVar v    = Var v []
 zTrm t ts = Trm t ts []
 zThesis   = zTrm "#TH#" []
@@ -133,7 +136,7 @@ zEqu t s  = zTrm "=" [t,s]
 zSet t    = zTrm "aSet" [t]
 zElm t s  = zTrm "aElementOf" [t,s]
 zLess t s = zTrm "iLess" [t,s]
-zSSS s ts = zTrm ('S':'S':'S':s) ts
+zSSS s ts = zTrm ('S':'C':':':s) ts
 
 isTop Top = True
 isTop _   = False
@@ -156,7 +159,7 @@ isEqu _                 = False
 isThesis (Trm "#TH#" [] _)  = True
 isThesis _                  = False
 
-isSSS (Trm ('S':'S':'S':_) _ _) = True
+isSSS (Trm ('S':'C':':':_) _ _) = True
 isSSS _                         = False
 
 
@@ -200,6 +203,9 @@ isSort (Not (Trm "=" _ _))  = True
 isSort f                    = isTop f || isBot f
 
 ground f  = not (isVar f) && allF ground f
+
+strip (Ann _ f) = strip f
+strip f         = f
 
 
 -- Info handling
