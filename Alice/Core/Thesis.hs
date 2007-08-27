@@ -15,8 +15,7 @@ thesis :: [Context] -> Context -> (Bool, Context)
 thesis cnt@(ct:_) tc = (nmt, setForm tc nth)
   where
     nmt = cnSign ct || isJust ith
-    nth = fillInfo cnt $ setForm tc kth
-    kth = tmWipe (deAnd $ cnForm ct) jth
+    nth = tmWipe (tmDown $ cnForm ct) jth
     jth | cnSign ct = ths
         | otherwise = fromMaybe ths ith
     ith = tmInst cnt tc
@@ -53,10 +52,19 @@ tmInst (ct:cnt) tc = find gut insts
 tmFlat n  = flat . albet
   where
     flat (Exi _ f) = tmFlat (succ n) (inst nvr 0 f)
-    flat (And g f) = deAnd g ++ tmFlat n f
+    flat (And g f) = tmDown g ++ tmFlat n f
     flat f         = [f]
 
     nvr = '.' : show n
+
+tmDown = spl . albet
+  where
+    spl (And f g) = tmDown f ++ tmDown g
+    spl (Not f) | hasInfo f = Not f : concatMap (tmDown . Not) (trInfoE f)
+                              ++  concatMap tmDown (trInfoO f)
+    spl f | hasInfo f       = f : concatMap tmDown (trInfoE f)
+                              ++  concatMap tmDown (trInfoI f)
+    spl f = [f]
 
 
 -- Find possible instantiations
