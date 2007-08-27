@@ -21,7 +21,7 @@ fillDef ths cnt cx  = fill True [] (Just True) 0 $ cnForm cx
     fill pr fc _ _ v | isVar v
       = return $ setInfo pr (cnRaise cnt cx fc) v
     fill _ _ _ _ t | isThesis t
-      = return ths
+      = return t -- ths
     fill pr fc sg n (Trm t ts is)
       = do  nts <- mapM (fill False fc sg n) ts
             nis <- mapM (fill True  fc sg n) is
@@ -66,7 +66,7 @@ findDef trm cx  = dive Top 0 $ cnForm cx
 
     fine gs tr@(Trm t _ _) fr =
       do  ngs <- match otr trm `ap` return gs
-          nfr <- match otr (wipeDEQ trm) `ap` return fr
+          nfr <- match otr (wipeInfo trm) `ap` return fr
           return (cx, ngs, trm { trName = t, trInfo = [nfr] })
       where otr = tr { trName = takeWhile (/= ':') t }
 

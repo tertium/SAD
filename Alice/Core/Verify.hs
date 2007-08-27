@@ -4,7 +4,7 @@ import Control.Monad
 
 import Alice.Core.Base
 import Alice.Core.Define
--- import Alice.Core.Local
+import Alice.Core.Local
 import Alice.Core.Reason
 import Alice.Core.Thesis
 import Alice.Data.Formula
@@ -28,7 +28,8 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
       let nbr = bl : brn
           cbl = Context fr nbr
 
-      nfr <- fillDef (cnForm ths) cnt cbl
+      dfr <- fillDef (cnForm ths) cnt cbl
+      let nfr = replace (cnForm ths) zThesis dfr
 
       dwn <- askRSIB IBdeep True
       let sth = Context (foldr zExi nfr dv) nbr

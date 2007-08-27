@@ -36,26 +36,21 @@ setInfo prd cnt otr = ntr
           = map (Ann DIM . replace l r) (trInfoI r)
     eqi _ = []
 
-    nct = act ++ sct ++ oct
+    nct = act ++ sct ++ map cnForm cnt
 
     act = if prd then map (Imp trm) cur else cur
     cur = trInfoE trm ++ trInfoI trm
 
-    sct = concatMap def $ offspring trm
-    def f | hasInfo f = trInfoE f -- ++ concatMap def (trInfoI f)
-          | otherwise = foldF def f
-
-    oct = filter flt $ map cnForm cnt
-    flt f = not $ isDefn f || isSign f
+    sct = concatMap trInfoE $ offspring trm
 
 
 -- Infer ad hoc definitions
 
 specDef :: Formula -> Formula
-specDef trm@(Trm "=" [l, r] is) | not (null nds)
-        = Trm "=" [l, nullDEQ r] nds
+specDef trm@(Trm "=" [l, r] is) | not (null nds)  = ntr
   where
-    nds = map (Ann DEQ . replace (wipeDEQ l) r) (trInfoE r)
+    ntr = Trm "=" [l, r {trInfo = map (Ann DIM) $ trInfoI r}] nds
+    nds = map (Ann DEQ . replace (wipeInfo l) r) (trInfoE r)
 
 specDef trm@(Trm t ts is) | not (null $ trInfo ntr) = ntr
   where
@@ -81,7 +76,7 @@ specDef trm@(Trm t ts is) | not (null $ trInfo ntr) = ntr
 
     fine gs tr@(Trm t _ _) fr =
       do  ngs <- match tr trm `ap` return gs
-          nfr <- match tr (wipeDEQ trm) `ap` return fr
+          nfr <- match tr (wipeInfo trm) `ap` return fr
           guard $ grune ngs && grune nfr && rapid ngs
           return nfr
 
@@ -94,7 +89,6 @@ trigger :: Bool -> [Formula] -> Formula -> [Formula]
 trigger prd cnt trm = fld (sr Top 0) cnt
   where
     sr ps nn (All _ f)  = sr ps (succ nn) $ inst ('?':show nn) 0 f
-    sr ps nn (Exi _ f)  = sr ps (succ nn) $ inst ('!':show nn) 0 f
     sr ps nn (Iff f g)  = sr ps nn $ zIff f g
     sr ps nn (And f g)  = sr ps nn f +++ sr ps nn g
     sr ps nn (Imp f g)  = sr (bool $ And ps f) nn g
@@ -115,20 +109,23 @@ trigger prd cnt trm = fld (sr Top 0) cnt
                 | True  = map (Ann DIM) (sq ps gl f) +++
                           map (Ann DOR) (sq ps gl (neg f))
 
-    sq ps gl s  = [ f | sb <- match s trm,
-                        let g = sb gl, grune g,
-                        rapid $ sb ps, f <- dlv True g ]
+    sq ps gl s  = [ f | ngl <- match s wtr `ap` [gl],
+                        nps <- match s trm `ap` [dequa ps],
+                        grune ngl, grune nps, rapid nps,
+                        f <- dlv ngl ]
 
-    dlv s (Not f) = dlv (not s) f
-    dlv True f    = wipeInfo f : trInfoI f
-    dlv False f   = wipeInfo (Not f) : trInfoO f
+    dlv (Not f)   = Not (wipeInfo f) : trInfoO f
+    dlv f         = wipeInfo f       : trInfoI f
+
+    dequa (All _ _) = zHole ; dequa f | isTrm f = f
+    dequa (Exi _ _) = zHole ; dequa f = mapF dequa f
 
     fld f = foldr ((+++) . f) []
 
-    bad (Not f)   = bad f
+    bad (Not f) = not $ isTrm f
     bad f = not $ isTrm f
 
-    wtrm  = wipeDEQ trm
+    wtr = wipeInfo trm
 
 
 -- Simplification with evidence
@@ -165,13 +162,22 @@ children f  | isTrm f = trArgs f
 offspring f = let x = children f
               in  x ++ concatMap offspring x
 
-nullDEQ f | hasInfo f = let isDEQ (Ann DEQ _) = True ; isDEQ _ = False
-                        in  f { trInfo = filter (not . isDEQ) (trInfo f) }
-          | otherwise = f
-
-wipeDEQ = skipInfo (mapF wipeDEQ) . nullDEQ
-
 grune (Var ('?':_) _) = False
 grune (Var ('!':_) _) = False
 grune f               = allF grune $ nullInfo f
+
+wfcheck f | hasInfo f = all wfinfo (trInfoI f)
+                    &&  all wfinfo (trInfoO f)
+                    &&  all wfcheck (trInfoE f)
+                    &&  allF wfcheck (nullInfo f)
+          | otherwise = allF wfcheck f
+  where
+    wfinfo (Not (Trm _ ts []))  = all wfinfo ts
+    wfinfo (Trm _ ts [])        = all wfinfo ts
+    wfinfo t  | not (hasInfo t) = error $ "wfcheck: " ++ show f
+                                  ++ show (trInfo f) ++ '\n' : show t
+              | null (trInfo t) = True
+              | otherwise       = error $ "wfcheck: " ++ show f
+                                  ++ show (trInfo f) ++ '\n' : show t
+                                  ++ show (trInfo t)
 
