@@ -11,25 +11,22 @@ import Alice.Core.Base
 import Alice.Core.Local
 import Alice.Core.Reason
 
-fillDef :: Formula -> [Context] -> Context -> RM Formula
-fillDef ths cnt cx  = fill True [] (Just True) 0 $ cnForm cx
+fillDef :: Context -> [Context] -> Context -> RM Formula
+fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
   where
-    fill _ fc _ _ (Ann DHD (Trm "=" [v, t] _)) | isTrm t
-      = liftM (Ann DHD . zEqu v) $ setDef True (cnRaise cnt cx fc) cx t
-    fill _ fc _ _ (Ann DHD t)
-      = liftM (Ann DHD) $ setDef True (cnRaise cnt cx fc) cx t
-    fill pr fc _ _ v | isVar v
+    fill pr nw fc sg n (Ann DHD f)
+      = liftM (Ann DHD) $ fill pr True fc sg n f
+    fill _ _ fc _ _ t | isThesis t
+      = return $ cnForm ths
+    fill pr _ fc _ _ v | isVar v
       = return $ setInfo pr (cnRaise cnt cx fc) v
-    fill _ _ _ _ t | isThesis t
-      = return t -- ths
-    fill pr fc sg n (Trm t ts is)
-      = do  nts <- mapM (fill False fc sg n) ts
-            nis <- mapM (fill True  fc sg n) is
-            let nct = cnRaise cnt cx fc
-                otr = Trm t nts nis
-            ntr <- setDef False nct cx otr
+    fill pr nw fc sg n (Trm t ts is)
+      = do  let nct = cnRaise cnt cx fc
+            nts <- mapM (fill False   nw fc sg n) ts
+            nis <- mapM (fill True False fc sg n) is
+            ntr <- setDef nw nct cx $ Trm t nts nis
             return $ setInfo pr nct ntr
-    fill pr fc sg n f = roundFM (fill pr) fc sg n f
+    fill pr nw fc sg n f = roundFM (fill pr nw) fc sg n f
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
 setDef nw cnt cx trm@(Trm t _ _)

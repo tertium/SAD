@@ -28,8 +28,7 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
       let nbr = bl : brn
           cbl = Context fr nbr
 
-      dfr <- fillDef (cnForm ths) cnt cbl
-      let nfr = replace (cnForm ths) zThesis dfr
+      nfr <- fillDef ths cnt cbl
 
       dwn <- askRSIB IBdeep True
       let sth = Context (foldr zExi nfr dv) nbr
