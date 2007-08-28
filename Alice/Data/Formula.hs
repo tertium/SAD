@@ -14,8 +14,8 @@ data Formula  = All String  Formula       | Exi String  Formula
               | Var { trName :: String,     trInfo :: [Formula] }
               | Ind { trIndx :: Int,        trInfo :: [Formula] }
 
-data Annotat  = DIG | DMS | DMP | DIH | DCN | DHD
-              | DIM | DOR | DEQ | DCH | DNC
+data Annotat  = DIG | DMS | DMP | DHD | DIH | DCH
+              | DIM | DOR | DEQ | DSD | DCN | DNC
               deriving Show
 
 

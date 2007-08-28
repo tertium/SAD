@@ -187,8 +187,11 @@ skipInfo fn f | hasInfo f = (fn $ nullInfo f) {trInfo = trInfo f}
 trInfoI t = [ e | Ann DIM e <- trInfo t ]
 trInfoO t = [ e | Ann DOR e <- trInfo t ]
 trInfoE t = [ e | Ann DEQ e <- trInfo t ]
+trInfoS t = [ e | Ann DSD e <- trInfo t ]
 trInfoC t = [ e | Ann DCN e <- trInfo t ]
 trInfoN t = [ e | Ann DNC e <- trInfo t ]
+trInfoD t = trInfoE t ++ trInfoS t
+trInfoA t = trInfoD t ++ trInfoI t
 
 
 -- Misc stuff

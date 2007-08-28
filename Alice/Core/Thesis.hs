@@ -60,9 +60,9 @@ tmFlat n  = flat . albet
 tmDown = spl . albet
   where
     spl (And f g) = tmDown f ++ tmDown g
-    spl (Not f) | hasInfo f = Not f : concatMap (tmDown . Not) (trInfoE f)
+    spl (Not f) | hasInfo f = Not f : concatMap (tmDown . Not) (trInfoD f)
                               ++  concatMap tmDown (trInfoO f)
-    spl f | hasInfo f       = f : concatMap tmDown (trInfoE f)
+    spl f | hasInfo f       = f : concatMap tmDown (trInfoD f)
                               ++  concatMap tmDown (trInfoI f)
     spl f = [f]
 
@@ -81,7 +81,7 @@ tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
         dive h              = roundFM pass fc sg n h
 
         qua u f = mplus (tmVars u f >>= dive) . roundFM pass fc sg n
-        dfs = msum . map (dive . fillInfo nct . setForm tc) . trInfoE
+        dfs = msum . map (dive . fillInfo nct . setForm tc) . trInfoD
         nct = cnRaise cnt tc fc
 
 tmVars u f  = TM (vrs [])

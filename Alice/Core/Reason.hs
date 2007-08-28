@@ -102,7 +102,7 @@ lichten = sr
     sr (And f g)    = bool $ And (sr f) (sr g)
     sr (Imp f g)    = bool $ Imp (sm f) (sr g)
     sr (Ann _ f)    = sr f
-    sr f | isEqu f  = sr $ foldr And Top $ trInfoI f
+    sr f | isEqu f  = sr $ foldr And Top $ trInfoA f
     sr f | isSort f = f
     sr _            = Top
 

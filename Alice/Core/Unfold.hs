@@ -58,12 +58,14 @@ markup tsk  = map mrk loc ++ glb
 markDCN f = f { trInfo = map mrk (trInfo f) }
   where
     mrk (Ann DEQ f) = Ann DCN f   -- DEQ lost!!!
+    mrk (Ann DSD f) = Ann DCN f   -- DEQ lost!!!
     mrk f           = f
 
 wipeDCN (Ann DCN _) = Top
 wipeDCN f@(Ann DIM _) = f
 wipeDCN f@(Ann DOR _) = f
 wipeDCN f@(Ann DEQ _) = f
+wipeDCN f@(Ann DSD _) = f
 wipeDCN f = mapF wipeDCN f
 
 
