@@ -24,16 +24,17 @@ data InCom  = ICexit  --  exit
 
 data InInt  = IItlim  --  time limit per prover launch  (3 sec)
             | IIdpth  --  number of reasoner iterations (7)
+            | IIchtl  --  time limit for checker's tasks (1 sec)
+            | IIchdl  --  depth limit for checker's tasks (3)
             deriving (Eq,Show)
 
 data InBin  = IBprov  --  prove goals (yes)
             | IBdefn  --  look for applicable definitions (yes)
             | IBinfo  --  accumulate evidences (yes)
-            | IBdeep  --  descend into proofs (yes)
             | IBfilt  --  simplify the context (yes)
+            | IBflat  --  do not descend into proofs (no)
             | IBmotv  --  modify thesis (yes)
             | IBigno  --  ignore failed proofs (no)
-            | IBtext  --  translation only
             | IBgoal  --  print current goal (yes)
             | IBtran  --  print current sentence (no)
             | IBdchk  --  print definition checks (no)
@@ -41,10 +42,14 @@ data InBin  = IBprov  --  prove goals (yes)
             | IBrlog  --  print reasoner's log (no)
             | IBplog  --  print prover's log (no)
             | IBtask  --  print inference tasks (no)
+            | IBdump  --  dump tasks in prover's syntax (no)
+            | IBtext  --  translation only
+            | IBverb  --  verbosity control
             | IBhelp  --  print help
             deriving (Eq,Show)
 
-data InStr  = ISread  --  read file
+data InStr  = ISinit  --  init file
+            | ISread  --  read file
             | ISprdb  --  prover database
             | ISprvr  --  current prover
             deriving (Eq,Show)
@@ -85,32 +90,35 @@ dropI _ _ = []
 
 setIC :: [(InCom, [String])]
 setIC = [ (ICexit,  ["exit", "quit"]),
-          (ICthes,  ["thes", "thesis"]),
-          (ICsimp,  ["simp", "rules"]) ]
+          (ICthes,  ["thesis"]),
+          (ICsimp,  ["rules"]) ]
 
 setII :: [(InInt, [String])]
-setII = [ (IItlim,  ["tlim", "timelimit"]),
-          (IIdpth,  ["dpth", "depth"]) ]
+setII = [ (IItlim,  ["timelimit"]),
+          (IIdpth,  ["depthlimit"]),
+          (IIchtl,  ["checktime"]),
+          (IIchdl,  ["checkdepth"]) ]
 
 setIB :: [(InBin, [String])]
-setIB = [ (IBprov,  ["prov", "prove"]),
-          (IBdefn,  ["defn", "filldef"]),
-          (IBinfo,  ["info", "collect"]),
-          (IBdeep,  ["deep", "descend"]),
-          (IBfilt,  ["filt", "filter"]),
-          (IBmotv,  ["motv", "motivate"]),
-          (IBigno,  ["igno", "ignore"]),
-          (IBgoal,  ["goal", "printgoal"]),
-          (IBtran,  ["tran", "printtran"]),
-          (IBdchk,  ["dchk", "printdchk"]),
-          (IBunfl,  ["unfl", "printunfl"]),
-          (IBrlog,  ["rlog", "printrlog"]),
-          (IBplog,  ["plog", "printplog"]),
-          (IBtask,  ["task", "printtask"]) ]
+setIB = [ (IBprov,  ["prove"]),
+          (IBdefn,  ["check"]),
+          (IBinfo,  ["info"]),
+          (IBfilt,  ["filter"]),
+          (IBflat,  ["flat"]),
+          (IBmotv,  ["trim"]),
+          (IBigno,  ["skipfail"]),
+          (IBgoal,  ["printgoal"]),
+          (IBtran,  ["printsection"]),
+          (IBdchk,  ["printcheck"]),
+          (IBunfl,  ["printunfold"]),
+          (IBrlog,  ["printreason"]),
+          (IBplog,  ["printprover"]),
+          (IBtask,  ["printfulltask"]),
+          (IBdump,  ["dump"]) ]
 
 setIS :: [(InStr, [String])]
 setIS = [ (ISread,  ["read"]),
-          (ISprdb,  ["prdb"]),
+          (ISprdb,  ["provers"]),
           (ISprvr,  ["prover"]) ]
 
 readIX :: (MonadPlus m) => [(a, [String])] -> String -> m a

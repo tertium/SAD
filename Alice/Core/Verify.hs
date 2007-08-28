@@ -20,7 +20,7 @@ verify rst bs = runRM (vLoop False (Context Bot []) [] [] bs) rst
 
 vLoop :: Bool -> Context -> [Block] -> [Context] -> [Text] -> RM [Text]
 vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
-  do  let sect = showForm (length brn) bl ""
+  do  let sect = blLabl bl ++ showForm 0 bl ""
           sout = '[' : la ++ "] " ++ sect
       whenIB IBtran False $ putStrRM sout
       incRSCI CIsect
@@ -30,11 +30,11 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
 
       nfr <- fillDef ths cnt cbl
 
-      dwn <- askRSIB IBdeep True
+      flt <- askRSIB IBflat False
       let sth = Context (foldr zExi nfr dv) nbr
           bsg = null brn || blSign (head brn)
           smt = bsg && sg && not (noForm bl)
-          spr = if dwn then pr else []
+          spr = if flt then [] else pr
 
       npr <- if smt then splitTh smt sth nbr cnt spr
                     else splitTh smt ths nbr cnt pr
@@ -105,6 +105,28 @@ procTI mot ths brn cnt = proc
 
     proc (InCom _)  = rlog0 $ "unsupported instruction"
 
+    proc (InBin IBverb False)
+      = do  addRSIn $ InBin IBgoal False
+            addRSIn $ InBin IBtran False
+            addRSIn $ InBin IBdchk False
+            addRSIn $ InBin IBunfl False
+            addRSIn $ InBin IBrlog False
+            addRSIn $ InBin IBplog False
+            addRSIn $ InBin IBtask False
+
+    proc (InBin IBverb True)
+      = do  try IBgoal True
+        <>  try IBrlog False
+        <>  try IBtran False
+        <>  try IBdchk False
+        <>  try IBplog False
+        <>  try IBunfl False
+        <>  try IBtask False
+        <>  return ()
+      where
+        try i d = askRSIB i d >>= guard . not
+                    >> addRSIn (InBin i True)
+
     proc (InStr ISread "-") = proc (InStr ISread "")
 
     proc (InStr ISread file)
@@ -127,27 +149,3 @@ procTD mot ths brn cnt = proc
   where
     proc i  = drpRSIn i
 
-{-
--- Service stuff
-
-reface c  = let nc t@('.':_) = t
-                nc t = c t
-            in  rebind nc
-
-wipeD f | isTrm f = mapF wipeD (nullD f)
-        | True    = mapF wipeD f
-
-nullD t = t { trDefn = [] }
-
-wfcheck fs n (All (Var v _) f) = (length (fst $ span ('.' ==) v) == n
-                              || error ("wf : " ++ show n ++ "  " ++ show f ++ "  " ++ show fs))
-                              && wfcheck fs n f
-wfcheck fs n (Exi (Var v _) f) = (length (fst $ span ('.' ==) v) == n
-                              || error ("wf : " ++ show n ++ "  " ++ show f ++ "  " ++ show fs))
-                              && wfcheck fs n f
-wfcheck fs n f  | isTrm f     = all (wfcheck fs n) (trArgs f)
-                              && all (wfcheck ((n,f):fs) (succ n)) (trDefn f)
-                              && all (wfcheck ((n,f):fs) n) (trInfo f)
-                | isVar f     = all (wfcheck ((n,f):fs) n) (trInfo f)
-                | otherwise   = foldF (wfcheck fs n) True (&&) f
--}

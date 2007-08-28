@@ -40,12 +40,11 @@ export prs ins cnt gl =
                   Otter -> otterOut ; Moses -> mosesOut
           tsk = dmp prv tlm cnt gl
 
-      when (askIB ins IBinfo False) $ putStrLn tsk
+      when (askIB ins IBdump False) $ putStrLn tsk
       hPutStrLn wh tsk ; hClose wh
 
-      ofl <- hGetContents rh
-
-      let lns = filter (not . null) $ lines ofl
+      ofl <- hGetContents rh ; efl <- hGetContents eh
+      let lns = filter (not . null) $ lines $ ofl ++ efl
           out = map (("[" ++ lbl ++ "] ") ++) lns
 
       when (null lns) $ die "empty response"

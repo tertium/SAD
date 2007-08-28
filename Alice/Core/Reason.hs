@@ -29,15 +29,15 @@ goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
     rfr = reduce f
     ntc = setForm tc rfr
 
-    trv = sbg >> guard (isTop rfr) >> incRSCI CIsubt >> tri
+    trv = sbg >> guard (isTop rfr) >> incRSCI CIsubt
     dlp = do  tsk <- unfold $ setForm tc (Not rfr) : cnt
               let Context {cnForm = Not nfr} : nct = tsk
               goalseq (pred n) nct tc $ splitG nfr
 
     rde = whenIB IBrlog False $ rlog0 $ "reasoning depth exceeded"
-    dga = whenIB IBrlog False $ rlog0 $ "passing to the next subgoal"
-    sbg = whenIB IBrlog False $ rlog0 $ "subgoal: " ++ show f
-    tri = whenIB IBplog False $ rlog0 $ "trivial"
+    dga = whenIB IBrlog False $ rlog0 $ "pass to the next subgoal"
+    sbg = whenIB IBrlog False $ rlog0 $ tri ++ "subgoal: " ++ show f
+    tri = if (isTop rfr) then "trivial " else ""
 
 goalseq _ _ _ _ = return ()
 

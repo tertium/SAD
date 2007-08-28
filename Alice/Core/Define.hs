@@ -19,14 +19,20 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
     fill _ _ fc _ _ t | isThesis t
       = return $ cnForm ths
     fill pr _ fc _ _ v | isVar v
-      = return $ setInfo pr (cnRaise cnt cx fc) v
+      = do  uin <- askRSIB IBinfo True
+            let nct = cnRaise cnt cx fc
+            return $ sinfo uin pr nct v
     fill pr nw fc sg n (Trm t ts is)
-      = do  let nct = cnRaise cnt cx fc
+      = do  uin <- askRSIB IBinfo True
+            let nct = cnRaise cnt cx fc
             nts <- mapM (fill False   nw fc sg n) ts
             nis <- mapM (fill True False fc sg n) is
             ntr <- setDef nw nct cx $ Trm t nts nis
-            return $ setInfo pr nct $ specDef ntr
+            return $ sinfo uin pr nct $ specDef ntr
     fill pr nw fc sg n f = roundFM (fill pr nw) fc sg n f
+
+    sinfo True pr cnt = setInfo pr cnt
+    sinfo _ _ _       = id
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
 setDef nw cnt cx trm@(Trm t _ _)
@@ -71,22 +77,23 @@ findDef trm cx  = dive Top 0 $ cnForm cx
 
 testDef :: Bool -> [Context] -> Context -> Formula -> DefTrio -> RM Formula
 testDef hard cnt cx trm (dc, gs, nt)
-    = do  whdchk outlog
-          guards <> (whdchk failed >> mzero)
-          whdchk passed; return nt
+    = setup >> (guards <> (cleanup >> mzero)) >> cleanup >> return nt
   where
-    guards  | hard  = reason cnt $ setForm cx gs
-            | True  = guard $ rapid gs
-    outlog  | hard  = rlog (cnHead cx) $ header
-            | True  = return ()
-    passed  | hard  = rlog0 "check passed"
-            | True  = rlog (cnHead cx) $ header ++ "... passed"
-    failed  | hard  = rlog0 "check failed"
-            | True  = rlog (cnHead cx) $ header ++ "... failed"
+    guards  | hard  = do  whdchk $ header
+                          reason cnt $ setForm cx gs
+            | True  = do  guard $ rapid gs
+                          whdchk $ "trivial " ++ header
 
-    header  = "check: " ++ showsPrec 2 trm " vs " ++ versus
-    versus  = if cnTopL dc then cnName dc else "(internal)"
-    whdchk  = whenIB IBdchk False
+    setup   | hard  = do  askRSII IIchtl 1 >>= addRSIn . InInt IItlim
+                          askRSII IIchdl 3 >>= addRSIn . InInt IIdpth
+            | True  = return ()
+
+    cleanup | hard  = do  drpRSIn $ IdInt IItlim
+                          drpRSIn $ IdInt IIdpth
+            | True  = return ()
+
+    header  = "check: " ++ showsPrec 2 trm " vs " ++ cnName dc
+    whdchk  = whenIB IBdchk False . rlog0
 
 
 -- Infer ad hoc definitions

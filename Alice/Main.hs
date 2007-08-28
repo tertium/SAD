@@ -1,6 +1,7 @@
 module Main where
 
 import Data.IORef
+import Data.Maybe
 import Control.Monad
 import System.Console.GetOpt
 import System.Environment
@@ -22,7 +23,7 @@ main :: IO ()
 main  =
   do  hSetBuffering stdout LineBuffering
       cmdl <- readOpts
-      init <- readInit "init.opt"
+      init <- readInit $ askIS cmdl ISinit "init.opt"
       rstt <- newIORef initRS
       strt <- getClockTime
 
@@ -69,23 +70,70 @@ readOpts  =
     helper  = do  putStr $ usageInfo header options
                   exitWith ExitSuccess
 
-    header  = "Usage: alice [option|file]...\n"
+    header  = "Usage: alice [option|file]..."
 
     options =
-      [ Option "h" ["help"] (NoArg (InBin IBhelp True)) "this help",
-        Option "P" ["prvr"] (ReqArg (InStr ISprvr) "NAME")
-            "use prover NAME",
-        Option "t" ["tlim"] (ReqArg (InInt IItlim . number . reads) "N")
-            "at most N seconds for a prover call (default: 3)",
-        Option "d" ["dpth"] (ReqArg (InInt IIdpth . number . reads) "N")
-            "at most N reasoner iterations per goal (default: 7)",
-        Option "n" ["none"] (NoArg (InBin IBprov False))
-            "cursory mode",
-        Option "T" ["text"] (NoArg (InBin IBtext True))
-            "translate input text" ]
+      [ Option "h" [] (NoArg (InBin IBhelp True)) "this help",
+        Option ""  ["init"] (ReqArg (InStr ISinit) "FILE")
+            "init file, empty to skip (def: init.opt)",
+        Option "T" [] (NoArg (InBin IBtext True))
+            "translate input text and exit",
+        Option "P" ["prover"] (ReqArg (InStr ISprvr) "NAME")
+            "use prover NAME (def: first listed)",
+        Option ""  ["provers"] (ReqArg (InStr ISprdb) "FILE")
+            "import prover descriptions",
+        Option "t" ["timelimit"] (ReqArg (InInt IItlim . number) "N")
+            "N seconds for a prover call (def: 3)",
+        Option ""  ["depthlimit"] (ReqArg (InInt IIdpth . number) "N")
+            "N reasoner loops per goal (def: 7)",
+        Option ""  ["checktime"] (ReqArg (InInt IIchtl . number) "N")
+            "timelimit for checker's tasks (def: 1)",
+        Option ""  ["checkdepth"] (ReqArg (InInt IIchdl . number) "N")
+            "depthlimit for checker's tasks (def: 3)",
+        Option "n" [] (NoArg (InBin IBprov False))
+            "cursory mode (equivalent to --prove off)",
+        Option "" ["prove"] (ReqArg (InBin IBprov . binary) "<on/off>")
+            "prove goals in the text (default: on)",
+        Option "" ["check"] (ReqArg (InBin IBdefn . binary) "<on/off>")
+            "check symbols for definedness (def: on)",
+        Option "" ["collect"] (ReqArg (InBin IBinfo . binary) "<on/off>")
+            "collect \"evidence\" literals (def: on)",
+        Option "" ["trim"] (ReqArg (InBin IBmotv . binary) "<on/off>")
+            "maintain current thesis (def: on)",
+        Option "" ["filter"] (ReqArg (InBin IBfilt . binary) "<on/off>")
+            "filter prover tasks (def: on)",
+        Option "" ["skipfail"] (ReqArg (InBin IBigno . binary) "<on/off>")
+            "ignore failed goals (def: off)",
+        Option "" ["flat"] (ReqArg (InBin IBflat . binary) "<on/off>")
+            "do not read proofs (def: off)",
+        Option "v" [] (NoArg (InBin IBverb True))
+            "print more details (-vv, -vvv, ...)",
+        Option "q" [] (NoArg (InBin IBverb False))
+            "print no details",
+        Option "" ["printgoal"] (ReqArg (InBin IBgoal . binary) "<on/off>")
+            "print current goal (def: on)",
+        Option "" ["printreason"] (ReqArg (InBin IBrlog . binary) "<on/off>")
+            "print reasoner's logs (def: off)",
+        Option "" ["printsection"] (ReqArg (InBin IBtran . binary) "<on/off>")
+            "print sentence translations (def: off)",
+        Option "" ["printcheck"] (ReqArg (InBin IBdchk . binary) "<on/off>")
+            "print checker's logs (def: off)",
+        Option "" ["printprover"] (ReqArg (InBin IBplog . binary) "<on/off>")
+            "print prover's logs (def: off)",
+        Option "" ["printunfold"] (ReqArg (InBin IBunfl . binary) "<on/off>")
+            "print unfolded definitions (def: off)",
+        Option "" ["printfulltask"] (ReqArg (InBin IBtask . binary) "<on/off>")
+            "print full prover tasks (def: off)" ]
 
-    number ((n,[]):_) | n >= 0 = n
-    number _ = error "invalid numeric argument"
+    binary "yes"  = True
+    binary "on"   = True
+    binary "no"   = False
+    binary "off"  = False
+    binary s      = error $ "invalid boolean argument: " ++ s
+
+    number s  = case reads s of
+      ((n,[]):_) | n >= 0 -> n
+      _ -> error $ "invalid numeric argument: " ++ s
 
     die s = putStr s >> exitFailure
 

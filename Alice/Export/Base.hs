@@ -31,7 +31,7 @@ readPrDB file = do  inp <- catch (readFile file) $ \ e ->
                       Left e  ->  die e
                       Right d ->  return d
   where
-    die e = putStrLn ("[Export] " ++ file ++ ": ") >> exitFailure
+    die e = putStrLn ("[Export] " ++ file ++ ": " ++ e) >> exitFailure
 
 
 readPrvs :: Int -> Maybe Prover -> [String] -> Either String [Prover]
