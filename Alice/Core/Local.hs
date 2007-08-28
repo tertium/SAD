@@ -66,9 +66,9 @@ specDef trm@(Trm t ts is) | not (null $ trInfo ntr) = ntr
             _       ->  (nd, Ann DEQ d : ds)
     tst d (nd, ds)  =   (nd, d : ds)
 
-    dive gs _ (Iff (Trm "=" [Var v _, t] _) f) | isTrm t
-                                  = fine gs t $ subst t v f
-    dive gs _ (Iff t f) | isTrm t = fine gs t f
+    dive gs _ (Iff (Trm "=" [l@(Var v@('?':_) _), t] _) f)
+      | isTrm t && not (occurs l t) = fine gs t $ subst t v f
+    dive gs _ (Iff t f) | isTrm t   = fine gs t f
     dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
     dive gs n (Imp g f) = dive (bool $ And gs g) n f
     dive gs n (And f g) = dive gs n f `mplus` dive gs n g
