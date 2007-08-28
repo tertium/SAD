@@ -92,37 +92,37 @@ readOpts  =
             "depthlimit for checker's tasks (def: 3)",
         Option "n" [] (NoArg (InBin IBprov False))
             "cursory mode (equivalent to --prove off)",
-        Option "" ["prove"] (ReqArg (InBin IBprov . binary) "<on/off>")
+        Option "" ["prove"] (ReqArg (InBin IBprov . binary) "{on|off}")
             "prove goals in the text (default: on)",
-        Option "" ["check"] (ReqArg (InBin IBdefn . binary) "<on/off>")
+        Option "" ["check"] (ReqArg (InBin IBdefn . binary) "{on|off}")
             "check symbols for definedness (def: on)",
-        Option "" ["collect"] (ReqArg (InBin IBinfo . binary) "<on/off>")
+        Option "" ["collect"] (ReqArg (InBin IBinfo . binary) "{on|off}")
             "collect \"evidence\" literals (def: on)",
-        Option "" ["trim"] (ReqArg (InBin IBmotv . binary) "<on/off>")
+        Option "" ["trim"] (ReqArg (InBin IBmotv . binary) "{on|off}")
             "maintain current thesis (def: on)",
-        Option "" ["filter"] (ReqArg (InBin IBfilt . binary) "<on/off>")
+        Option "" ["filter"] (ReqArg (InBin IBfilt . binary) "{on|off}")
             "filter prover tasks (def: on)",
-        Option "" ["skipfail"] (ReqArg (InBin IBigno . binary) "<on/off>")
+        Option "" ["skipfail"] (ReqArg (InBin IBigno . binary) "{on|off}")
             "ignore failed goals (def: off)",
-        Option "" ["flat"] (ReqArg (InBin IBflat . binary) "<on/off>")
+        Option "" ["flat"] (ReqArg (InBin IBflat . binary) "{on|off}")
             "do not read proofs (def: off)",
         Option "v" [] (NoArg (InBin IBverb True))
             "print more details (-vv, -vvv, ...)",
         Option "q" [] (NoArg (InBin IBverb False))
             "print no details",
-        Option "" ["printgoal"] (ReqArg (InBin IBgoal . binary) "<on/off>")
+        Option "" ["printgoal"] (ReqArg (InBin IBgoal . binary) "{on|off}")
             "print current goal (def: on)",
-        Option "" ["printreason"] (ReqArg (InBin IBrlog . binary) "<on/off>")
+        Option "" ["printreason"] (ReqArg (InBin IBrlog . binary) "{on|off}")
             "print reasoner's logs (def: off)",
-        Option "" ["printsection"] (ReqArg (InBin IBtran . binary) "<on/off>")
+        Option "" ["printsection"] (ReqArg (InBin IBtran . binary) "{on|off}")
             "print sentence translations (def: off)",
-        Option "" ["printcheck"] (ReqArg (InBin IBdchk . binary) "<on/off>")
+        Option "" ["printcheck"] (ReqArg (InBin IBdchk . binary) "{on|off}")
             "print checker's logs (def: off)",
-        Option "" ["printprover"] (ReqArg (InBin IBplog . binary) "<on/off>")
+        Option "" ["printprover"] (ReqArg (InBin IBplog . binary) "{on|off}")
             "print prover's logs (def: off)",
-        Option "" ["printunfold"] (ReqArg (InBin IBunfl . binary) "<on/off>")
+        Option "" ["printunfold"] (ReqArg (InBin IBunfl . binary) "{on|off}")
             "print unfolded definitions (def: off)",
-        Option "" ["printfulltask"] (ReqArg (InBin IBtask . binary) "<on/off>")
+        Option "" ["printfulltask"] (ReqArg (InBin IBtask . binary) "{on|off}")
             "print full prover tasks (def: off)" ]
 
     binary "yes"  = True
