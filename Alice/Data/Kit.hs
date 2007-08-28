@@ -5,41 +5,6 @@ import Data.Maybe
 
 import Alice.Data.Formula
 
--- Match and replace
-
-match :: (MonadPlus m) => Formula -> Formula -> m (Formula -> Formula)
-match (Var v@('?':_) _) t       = return  $ subst t v
-match (Var u _)    (Var v _)    | u == v  = return id
-match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
-  where
-    pairs (p:ps) (q:qs) = do  sb <- pairs ps qs
-                              sc <- match (sb p) q
-                              return $ sc . sb
-    pairs [] []         = return id
-    pairs _ _           = mzero
-match _ _         = mzero
-
-twins :: Formula -> Formula -> Bool
-twins (Var u _)    (Var v _)    = u == v
-twins (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
-  where
-    pairs (p:ps) (q:qs) = twins p q && pairs ps qs
-    pairs [] []         = True
-    pairs _ _           = False
-twins _ _         = False
-
-occurs :: Formula -> Formula -> Bool
-occurs t  = dive
-  where
-    dive f  = twins t f || anyF dive f
-
-replace :: Formula -> Formula -> Formula -> Formula
-replace t s = dive
-  where
-    dive f  | twins s f = t
-            | otherwise = mapF dive f
-
-
 -- Alpha-beta normalization
 
 albet (Iff f g)       = And (Imp f g) (Imp g f)
@@ -233,4 +198,50 @@ nifilt vs v = guard (v `notElem` vs) >> return v
 
 dups (v:vs) = infilt vs v `mplus` dups vs
 dups _      = mzero
+
+
+-- Show instances
+
+instance Show Formula where
+  showsPrec p = showFormula p 0
+
+showFormula :: Int -> Int -> Formula -> ShowS
+showFormula p d = dive
+    where
+      dive (All v f)  = showString "forall " . binder f
+      dive (Exi v f)  = showString "exists " . binder f
+      dive (Iff f g)  = showParen True $ sinfix " iff " f g
+      dive (Imp f g)  = showParen True $ sinfix " implies " f g
+      dive (Or  f g)  = showParen True $ sinfix " or "  f g
+      dive (And f g)  = showParen True $ sinfix " and " f g
+      dive (Ann a f)  = showParen True $ shows a
+                      . showString " :: " . dive f
+      dive (Not f)    = showString "not " . dive f
+      dive Top        = showString "truth"
+      dive Bot        = showString "contradiction"
+
+      dive (Trm "#TH#" _ _)   = showString "thesis"
+      dive (Trm "=" [l,r] _)  = sinfix " = " l r
+      dive (Trm s ts is)      = showString s . sargs ts -- . sinfo is
+      dive (Var s _)          = showString s
+      dive (Ind i _)  | i < d = showChar 'v' . shows (d - i - 1)
+                      | True  = showChar 'v' . showChar '?'
+
+      sargs []  = id
+      sargs _   | p == 1  = showString "(...)"
+      sargs ts  = showArgs (showFormula (pred p) d) ts
+
+      sinfo []      = id
+      sinfo (t:ts)  = showChar '[' . showFormula 0 d t
+                    . showTail (showFormula 0 d) ts . showChar ']'
+
+      binder f      = showFormula p (succ d) (Ind 0 []) . showChar ' '
+                    . showFormula p (succ d) f
+
+      sinfix o f g  = dive f . showString o . dive g
+
+showArgs sh (t:ts)  = showParen True $ sh t . showTail sh ts
+showArgs sh _       = id
+
+showTail sh ts      = foldr ((.) . ((showChar ',' .) . sh)) id ts
 

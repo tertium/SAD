@@ -75,8 +75,8 @@ specDef trm@(Trm t ts is) | not (null $ trInfo ntr) = ntr
     dive _ _ _          = mzero
 
     fine gs tr@(Trm t _ _) fr =
-      do  nfr <- match tr wtr `ap` return fr; guard $ grune nfr
-          ngs <- match tr trm `ap` return gs; guard $ grune ngs
+      do  nfr <- match tr wtr `ap` return fr; guard $ green nfr
+          ngs <- match tr trm `ap` return gs; guard $ green ngs
           guard $ rapid ngs; return nfr
 
     wtr = wipeInfo trm
@@ -98,7 +98,7 @@ trigger prd cnt trm = fld (sr Top 0) cnt
                 | prd   = sm Top f ps
                 | True  = fld (sl ps f) $ offspring f
 
-    sl ps gl s  = [ Ann DIM g | not (isVar s) || grune s,
+    sl ps gl s  = [ Ann DIM g | not (isVar s) || green s,
                                 g <- sq ps gl s, occurs trm g ]
 
     sm ps gl (Or  f g)  = sm ps gl f +++ sm ps gl g
@@ -109,8 +109,8 @@ trigger prd cnt trm = fld (sr Top 0) cnt
     sm ps gl (Not f)    = map (Ann DOR) $ sq ps gl f
     sm ps gl f          = map (Ann DIM) $ sq ps gl f
 
-    sq ps gl s  = [ f | ngl <- match s wtr `ap` [gl], grune ngl,
-                        nps <- match s trm `ap` [ps], grune nps,
+    sq ps gl s  = [ f | ngl <- match s wtr `ap` [gl], green ngl,
+                        nps <- match s trm `ap` [ps], green nps,
                         rapid nps, f <- dlv ngl ]
 
     dlv (Not f)   = Not (wipeInfo f) : trInfoO f
@@ -126,8 +126,10 @@ trigger prd cnt trm = fld (sr Top 0) cnt
 
 -- Simplification with evidence
 
+rapid :: Formula -> Bool
 rapid f = isTop $ reduce f
 
+reduce :: Formula -> Formula
 reduce f  | isTrm f = nfr
           | True    = bool $ mapF reduce f
   where
@@ -144,6 +146,26 @@ reduce f  | isTrm f = nfr
     triv f                  = isTop f
 
 
+-- Match
+
+match :: (MonadPlus m) => Formula -> Formula -> m (Formula -> Formula)
+match (Var v@('?':_) _) t       = return  $ subst t v
+match (Var u _)    (Var v _)    | u == v  = return id
+match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
+  where
+    pairs (p:ps) (q:qs) = do  sb <- pairs ps qs
+                              sc <- match (sb p) q
+                              return $ sc . sb
+    pairs [] []         = return id
+    pairs _ _           = mzero
+match _ _         = mzero
+
+green :: Formula -> Bool
+green (Var ('?':_) _) = False
+green (Var ('!':_) _) = False
+green f               = allF green $ nullInfo f
+
+
 -- Service stuff
 
 (+++) = unionBy ism
@@ -157,10 +179,6 @@ children f  | isTrm f = trArgs f
 
 offspring f = let x = children f
               in  x ++ concatMap offspring x
-
-grune (Var ('?':_) _) = False
-grune (Var ('!':_) _) = False
-grune f               = allF grune $ nullInfo f
 
 wfcheck f | hasInfo f = all wfinfo (trInfoI f)
                     &&  all wfinfo (trInfoO f)
