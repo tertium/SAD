@@ -33,24 +33,29 @@ main  =
 
       let inst = rsInst stat
           cntr = rsCntr stat
-          scts = cumulCI CIsect 0 cntr
-          gols = cumulCI CIgoal 0 cntr
+          igno = cumulCI CIfail 0 cntr
+          subt = cumulCI CIsubt 0 cntr
           prst = cumulCT CTpars strt cntr
           prvt = cumulCT CTprov prst cntr
-          prsd = getTimeDiff prst strt
-          prvd = getTimeDiff prvt prst
-          rstd = getTimeDiff fint prvt
-          totd = getTimeDiff fint strt
 
-      putStrLn $ "Sections: " ++ show scts
-      putStrLn $ "Goals:    " ++ show gols
-      putStrLn ""
-      putStrLn $ "Parser: " ++ showTimeDiff prsd
-      putStrLn $ "Reason: " ++ showTimeDiff rstd
-      putStrLn $ "Prover: " ++ showTimeDiff prvd
-      putStrLn $ " Total: " ++ showTimeDiff totd
+      putStrLn $ "[Main] "
+              ++ "sections "    ++ show (cumulCI CIsect 0 cntr)
+              ++ " - goals "    ++ show (cumulCI CIgoal 0 cntr)
+              ++ (if (igno == 0) then "" else
+                 " - failed "   ++ show igno)
+              ++ " - subgoals " ++ show (cumulCI CIprov subt cntr)
+              ++ " - trivial "  ++ show subt
+              ++ " - proved "   ++ show (cumulCI CIprvy 0 cntr)
+      putStrLn $ "[Main] "
+              ++ "parser "      ++ showTimeDiff (getTimeDiff prst strt)
+              ++ " - reason "   ++ showTimeDiff (getTimeDiff fint prvt)
+              ++ " - prover "   ++ showTimeDiff (getTimeDiff prvt prst)
+              ++ "/" ++ showTimeDiff (maximCT CTprvy cntr)
+      putStrLn $ "[Main] "
+              ++ "total "       ++ showTimeDiff (getTimeDiff fint strt)
 
       return ()
+
 
 -- Command line parsing
 

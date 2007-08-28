@@ -57,7 +57,8 @@ vLoop True ths brn cnt [] = whenIB IBprov True prove >> return []
     prove = do  let rl = rlog bl $ "goal: " ++ tx
                     bl = cnHead ths ; tx = blText bl
                 incRSCI CIgoal ; whenIB IBgoal True rl
-                reason cnt ths <> guardIB IBigno False
+                reason cnt ths <>
+                  (guardIB IBigno False >> incRSCI CIfail)
 
 vLoop mot ths brn cnt (TI ins : bs) =
       procTI mot ths brn cnt ins >> vLoop mot ths brn cnt bs

@@ -29,7 +29,7 @@ goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
     rfr = reduce f
     ntc = setForm tc rfr
 
-    trv = sbg >> guard (isTop rfr) >> tri
+    trv = sbg >> guard (isTop rfr) >> incRSCI CIsubt >> tri
     dlp = do  tsk <- unfold $ setForm tc (Not rfr) : cnt
               let Context {cnForm = Not nfr} : nct = tsk
               goalseq (pred n) nct tc $ splitG nfr
@@ -48,18 +48,11 @@ launch :: [Context] -> Context -> RM ()
 launch cnt tc = do  incRSCI CIprov; whenIB IBtask False debug
                     prd <- askRS rsPrdb ; ins <- askRS rsInst
                     let prv = justIO $ export prd ins cnt tc
-                    timer CTprov prv >>= guard
+                    timer CTprov prv >>= guard ; account
   where
-{-
-    axc = dumbF (Not fr) : cnt
-    bxc@(_:cxc) = axc ++ concatMap (pre . formulate) axc
+    account = do  CntrT _ td <- liftM head $ askRS rsCntr
+                  addRSTI CTprvy td ; incRSCI CIprvy
 
-    pre f@(Trm t ts _ _) | isSC f
-          = let vs = map (zVar.('x':).show) [1..length ts]
-            in  [dumbF $ foldr All (zSet $ zTrm t vs) vs]
-    pre f | isTrm f = concatMap pre (trArgs f)
-    pre v | isVar v = []; pre f = foldF pre [] (++) f
--}
     debug = do  rlog0 "prover task:"
                 let tlb = map cnForm (tc:cnt)
                 mapM_ printRM $ reverse tlb

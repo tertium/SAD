@@ -25,12 +25,16 @@ data Count  = CntrT CntrT TimeDiff
 
 data CntrT  = CTpars
             | CTprov
+            | CTprvy
             deriving (Eq,Show)
 
 data CntrI  = CIsect
             | CIgoal
-            | CIunfl
+            | CIfail
+            | CIsubt
             | CIprov
+            | CIprvy
+            | CIunfl
             deriving (Eq,Show)
 
 initRS :: RState
@@ -91,13 +95,17 @@ unlessIB i d a  = askRSIB i d >>= \ b -> unless b a
 
 -- Counter management
 
-cumulCI c t (CntrI d i : cs) | c == d = cumulCI c (i + t) cs
-cumulCI c t (_ : cs) = cumulCI c t cs
-cumulCI _ t _ = t
+fetchCI c (CntrI d i : cs) | c == d = i : fetchCI c cs
+fetchCI c (_ : cs) = fetchCI c cs
+fetchCI _ _ = []
 
-cumulCT c t (CntrT d i : cs) | c == d = cumulCT c (addToClockTime i t) cs
-cumulCT c t (_ : cs) = cumulCT c t cs
-cumulCT _ t _ = t
+fetchCT c (CntrT d i : cs) | c == d = i : fetchCT c cs
+fetchCT c (_ : cs) = fetchCT c cs
+fetchCT _ _ = []
+
+cumulCI c t = foldr (+) t . fetchCI c
+cumulCT c t = foldr addToClockTime t . fetchCT c
+maximCT c   = foldr max noTimeDiff . fetchCT c
 
 getTimeDiff e b = let t = diffClockTimes e b
                       x = tdSec t ; y = tdPicosec t
