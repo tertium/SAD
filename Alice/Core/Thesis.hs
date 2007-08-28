@@ -31,8 +31,8 @@ tmWipe hs f | any (tmComp 0 $ f) hs     = Top
 
 tmComp n f g  = cmp (albet f) (albet g)
   where
-    cmp (All _ a) (All _ b) = tmComp (succ n) (inst nvr 0 a) (inst nvr 0 b)
-    cmp (Exi _ a) (Exi _ b) = tmComp (succ n) (inst nvr 0 a) (inst nvr 0 b)
+    cmp (All _ a) (All _ b) = tmComp (succ n) (inst nvr a) (inst nvr b)
+    cmp (Exi _ a) (Exi _ b) = tmComp (succ n) (inst nvr a) (inst nvr b)
     cmp (And a b) (And c d) = tmComp n a c && tmComp n b d
     cmp (Or a b) (Or c d)   = tmComp n a c && tmComp n b d
     cmp (Ann _ a) b         = tmComp n a b
@@ -51,7 +51,7 @@ tmInst (ct:cnt) tc = find gut insts
 
 tmFlat n  = flat . albet
   where
-    flat (Exi _ f) = tmFlat (succ n) (inst nvr 0 f)
+    flat (Exi _ f) = tmFlat (succ n) (inst nvr f)
     flat (And g f) = tmDown g ++ tmFlat n f
     flat f         = [f]
 
@@ -86,7 +86,7 @@ tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
 
 tmVars u f  = TM (vrs [])
   where
-    vrs ov (v:vs) | gut u v = (ov ++ vs, inst v 0 f) : vrs (v:ov) vs
+    vrs ov (v:vs) | gut u v = (ov ++ vs, inst v f) : vrs (v:ov) vs
                   | True    = vrs (v:ov) vs
     vrs ov _                = []
 

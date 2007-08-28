@@ -58,10 +58,10 @@ roundF :: ([Formula] -> Maybe Bool -> Int -> Formula -> Formula)
         -> [Formula] -> Maybe Bool -> Int -> Formula -> Formula
 roundF fn cn sg n  = dive
   where
-    dive (All u f) =  let nf = fn cn sg (succ n) ; nn = show n
-                      in  All u $ bind nn 0 $ nf $ inst nn 0 f
-    dive (Exi u f) =  let nf = fn cn sg (succ n) ; nn = show n
-                      in  Exi u $ bind nn 0 $ nf $ inst nn 0 f
+    dive (All u f) =  let nf = fn cn sg (succ n); nn = 'v':show n
+                      in  All u $ bind nn $ nf $ inst nn f
+    dive (Exi u f) =  let nf = fn cn sg (succ n); nn = 'v':show n
+                      in  Exi u $ bind nn $ nf $ inst nn f
     dive (Iff f g) =  let nf = fn cn Nothing n f
                       in  Iff nf $ fn cn Nothing n g
     dive (Imp f g) =  let nf = fn cn (liftM not sg) n f
@@ -78,10 +78,10 @@ roundFM :: (Monad m) =>
         -> [Formula] -> Maybe Bool -> Int -> Formula -> m Formula
 roundFM fn cn sg n  = dive
   where
-    dive (All u f)  = do  let nf = fn cn sg (succ n) ; nn = 'v':show n
-                          liftM (All u . bind nn 0) $ nf $ inst nn 0 f
-    dive (Exi u f)  = do  let nf = fn cn sg (succ n) ; nn = 'v':show n
-                          liftM (Exi u . bind nn 0) $ nf $ inst nn 0 f
+    dive (All u f)  = do  let nf = fn cn sg (succ n); nn = 'v':show n
+                          liftM (All u . bind nn) $ nf $ inst nn f
+    dive (Exi u f)  = do  let nf = fn cn sg (succ n); nn = 'v':show n
+                          liftM (Exi u . bind nn) $ nf $ inst nn f
     dive (Iff f g)  = do  nf <- fn cn Nothing n f
                           liftM (Iff nf) $ fn cn Nothing n g
     dive (Imp f g)  = do  nf <- fn cn (liftM not sg) n f
@@ -131,8 +131,8 @@ closed  = dive 0
     dive n (Ind v ss) = v < n && all (dive n) ss
     dive n f          = allF (dive n) f
 
-bind :: String -> Int -> Formula -> Formula
-bind v  = dive
+bind :: String -> Formula -> Formula
+bind v  = dive 0
   where
     dive n (All u g)  = All u $ dive (succ n) g
     dive n (Exi u g)  = Exi u $ dive (succ n) g
@@ -140,8 +140,8 @@ bind v  = dive
                       = Ind n $ map (dive n) ss
     dive n f          = mapF (dive n) f
 
-inst :: String -> Int -> Formula -> Formula
-inst v  = dive
+inst :: String -> Formula -> Formula
+inst v  = dive 0
   where
     dive n (All u g)  = All u $ dive (succ n) g
     dive n (Exi u g)  = Exi u $ dive (succ n) g

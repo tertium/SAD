@@ -60,7 +60,7 @@ extPrim bl  = liftM nbb $ ext $ blForm lbl
 
     (TB lbl :ibl) = reverse $ blBody bl
 
-    ext (All u f) = liftM (zAll u) $ ext $ inst u 0 f
+    ext (All u f) = liftM (zAll u) $ ext $ inst u f
     ext (Iff l r) = liftM (`Iff` r) (ext l)
     ext (Imp l r) = liftM (`Imp` r) (ext l)
     ext (Ann a f) = liftM (Ann a)   (ext f)

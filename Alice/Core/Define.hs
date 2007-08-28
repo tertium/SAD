@@ -57,7 +57,7 @@ findDef trm cx  = dive Top 0 $ cnForm cx
     dive gs _ (Iff (Ann DHD t) f) = fine gs t $ Ann DEQ f
     dive gs _ (Imp (Ann DHD t) f) = fine gs t $ Ann DIM f
 
-    dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) 0 f
+    dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
     dive gs n (Imp g f) = dive (bool $ And gs g) n f
     dive _ _ _          = mzero
 

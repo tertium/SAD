@@ -121,8 +121,8 @@ mbAll v f = fromMaybe (zAll v f) (mbBind v False f)
 
 -- Useful macros
 
-zAll v f  = All v $ bind v 0 f
-zExi v f  = Exi v $ bind v 0 f
+zAll v f  = All v $ bind v f
+zExi v f  = Exi v $ bind v f
 
 zIff f g  = And (Imp f g) (Imp g f)
 

@@ -69,7 +69,7 @@ specDef trm@(Trm t ts is) | not (null $ trInfo ntr) = ntr
     dive gs _ (Iff (Trm "=" [Var v _, t] _) f) | isTrm t
                         = fine gs t $ subst t v f
     dive gs _ (Iff t f) = fine gs t f
-    dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) 0 f
+    dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
     dive gs n (And f g) = dive gs n f `mplus` dive gs n g
     dive gs n (Imp g f) = dive (bool $ And gs g) n f
     dive _ _ _          = mzero
@@ -88,7 +88,7 @@ specDef f = f
 trigger :: Bool -> [Formula] -> Formula -> [Formula]
 trigger prd cnt trm = fld (sr Top 0) cnt
   where
-    sr ps nn (All _ f)  = sr ps (succ nn) $ inst ('?':show nn) 0 f
+    sr ps nn (All _ f)  = sr ps (succ nn) $ inst ('?':show nn) f
     sr ps nn (Iff f g)  = sr ps nn $ zIff f g
     sr ps nn (And f g)  = sr ps nn f +++ sr ps nn g
     sr ps nn (Imp f g)  = sr (bool $ And ps f) nn g

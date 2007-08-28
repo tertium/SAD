@@ -94,9 +94,9 @@ lichten :: Formula -> Formula
 lichten = sr
   where
     sr (Iff (Ann DHD (Trm "=" [_, t] _)) f)
-         | isTrm t  = sr $ subst t "." $ inst "." 0 f
+         | isTrm t  = sr $ subst t "." $ inst "." f
     sr (Imp (Ann DHD (Trm "=" [_, t] _)) f)
-         | isTrm t  = sr $ subst t "." $ inst "." 0 f
+         | isTrm t  = sr $ subst t "." $ inst "." f
     sr (Iff f g)    = sr $ zIff f g
     sr (All v f)    = bool $ All v $ sr f
     sr (And f g)    = bool $ And (sr f) (sr g)
