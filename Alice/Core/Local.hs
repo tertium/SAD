@@ -24,10 +24,8 @@ fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
         nts = map (fill False fc sg n) (trArgs fr)
 
 setInfo :: Bool -> [Context] -> Formula -> Formula
-setInfo prd cnt otr = ntr
+setInfo prd cnt trm = ntr
   where
-    trm = specDef otr
-
     ntr = trm { trInfo = nte ++ nts ++ nti }
     nte = map (Ann DEQ) $ trInfoE trm
     nts = map (Ann DSD) $ trInfoS trm
@@ -38,62 +36,13 @@ setInfo prd cnt otr = ntr
     eqi _ = []
 
     nct =  act (trInfoA trm)
-        ++ concatMap trInfoD (offspring trm)
+        ++ concatMap sct (offspring trm)
         ++ map cnForm cnt
 
     act = if prd then map (Imp trm) else id
 
-
--- Infer ad hoc definitions
-
-specDef :: Formula -> Formula
-specDef trm@(Trm "=" [l, r] _) | not (null nds)  = ntr
-  where
-    ntr = Trm "=" [l, r { trInfo = map (Ann DIM) $ trInfoI r }] (ods ++ nds)
-    ods = map (Ann DIM) (trInfoI trm) ++ map (Ann DEQ) (trInfoE trm)
-    nds = map (Ann DSD . replace (wipeInfo l) r) (trInfoD r)
-
-specDef trm@(Trm t ts is) = otr { trInfo = nds }
-  where
-    (nds, otr) = pas ods trm
-    ods = map (Ann DIM) (trInfoI trm) ++ map (Ann DEQ) (trInfoE trm)
-
-    pas ds t | isTrm t
-      = let (nd, as) = foldr arg (ds, []) (trArgs t)
-        in  (nd, t { trArgs = as })
-    pas ds t = (ds, t)
-
-    arg a (ds, as)
-      = let (ad, na) = pas ds a
-            (nd, is) = foldr tst (ad, []) (trInfo a)
-        in  (nd, na { trInfo = is } : as)
-
-    tst a@(Ann DEQ d) (nd, ds)
-      = case dive Top 0 d
-        of  Just f  ->  (Ann DSD f : nd, ds)
-            _       ->  (nd, a : ds)
-    tst a@(Ann DSD d) (nd, ds)
-      = case dive Top 0 d
-        of  Just f  ->  (Ann DSD f : nd, ds)
-            _       ->  (nd, a : ds)
-    tst a (nd, ds)  =   (nd, a : ds)
-
-    dive gs _ (Iff (Trm "=" [l@(Var v@('?':_) _), t] _) f)
-      | isTrm t && not (occurs l t) = fine gs t $ subst t v f
-    dive gs _ (Iff t f) | isTrm t   = fine gs t f
-    dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
-    dive gs n (Imp g f) = dive (bool $ And gs g) n f
-    dive gs n (And f g) = dive gs n f `mplus` dive gs n g
-    dive _ _ _          = mzero
-
-    fine gs tr@(Trm t _ _) fr =
-      do  nfr <- match tr wtr `ap` return fr; guard $ green nfr
-          ngs <- match tr trm `ap` return gs; guard $ green ngs
-          guard $ rapid ngs; return nfr
-
-    wtr = wipeInfo trm
-
-specDef f = f
+    sct (Not t) = map Not (trInfoD t) ++ concatMap sct (trInfoO t)
+    sct t       =          trInfoD t  ++ concatMap sct (trInfoI t)
 
 
 -- Deductor
@@ -110,36 +59,29 @@ trigger prd cnt trm = fld (sr Top 0) cnt
                 | prd   = sm Top f ps
                 | True  = fld (sl ps f) $ offspring f
 
-    sl ps gl s  = [ g | gut s, ngl <- sq ps gl s,
-                        let im = map (Ann DIM) (dlv ngl),
-                        let sd = map (Ann DSD) (tnt ngl),
-                        g <- sd ++ filter (occurs trm) im ]
+    sl ps gl s  | gut s = map (Ann DIM) $ sq ps gl s
+                | True  = []
 
     sm ps gl (Or  f g)  = sm ps gl f +++ sm ps gl g
     sm ps gl (And f g)  = sm (bool $ And f ps) gl g +++
                           sm (bool $ And g ps) gl f
     sm ps gl (Ann _ f)  = sm ps gl f
     sm ps gl f  | bad f = []
-    sm ps gl (Not f)    = map (Ann DOR) $ sq ps gl f >>= dlv
-    sm ps gl f          = map (Ann DIM) $ sq ps gl f >>= dlv
+    sm ps gl (Not f)    = map (Ann DOR) $ sq ps gl f
+    sm ps gl f          = map (Ann DIM) $ sq ps gl f
 
-    sq ps gl s  = [ ngl | ngl <- match s wtr `ap` [gl], green ngl,
-                          nps <- match s trm `ap` [ps], green nps,
-                          rapid nps ]
+    sq ps gl s  = [ g | ngl <- match s wtr `ap` [gl], green ngl,
+                        nps <- match s trm `ap` [ps], green nps,
+                        rapid nps, let g = dlv ngl ]
 
-    dlv (Not f)   = Not (wipeInfo f) : trInfoO f
-    dlv f         = wipeInfo f       : trInfoI f
-
-    tnt (Not f)   = map Not (trInfoD f)
-    tnt f         = trInfoD f
-
-    fld f = foldr ((+++) . f) []
-
-    gut s = not (isVar s) || green s
+    dlv (Not f) = Not $ skipInfo wipeInfo f
+    dlv f       =       skipInfo wipeInfo f
 
     bad (Not f) = not $ isTrm f
-    bad f = not $ isTrm f
+    bad f       = not $ isTrm f
 
+    gut s = not (isVar s) || green s
+    fld f = foldr ((+++) . f) []
     wtr = wipeInfo trm
 
 
@@ -159,7 +101,11 @@ reduce f  | isTrm f = nfr
 
     plv = [ f | f <- lvs, isTrm f ]
     nlv = [ f | Not f <- lvs ]
-    lvs = concatMap trInfoI $ offspring f
+
+    lvs = concatMap sct $ offspring f
+
+    sct (Not t) = trInfoO t ++ concatMap sct (trInfoO t)
+    sct t       = trInfoI t ++ concatMap sct (trInfoI t)
 
     triv (Trm "=" [l,r] _)  = twins l r
     triv f                  = isTop f
