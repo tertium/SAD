@@ -67,18 +67,19 @@ specDef trm@(Trm t ts is) | not (null $ trInfo ntr) = ntr
     tst d (nd, ds)  =   (nd, d : ds)
 
     dive gs _ (Iff (Trm "=" [Var v _, t] _) f) | isTrm t
-                        = fine gs t $ subst t v f
-    dive gs _ (Iff t f) = fine gs t f
+                                  = fine gs t $ subst t v f
+    dive gs _ (Iff t f) | isTrm t = fine gs t f
     dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
-    dive gs n (And f g) = dive gs n f `mplus` dive gs n g
     dive gs n (Imp g f) = dive (bool $ And gs g) n f
+    dive gs n (And f g) = dive gs n f `mplus` dive gs n g
     dive _ _ _          = mzero
 
     fine gs tr@(Trm t _ _) fr =
-      do  ngs <- match tr trm `ap` return gs
-          nfr <- match tr (wipeInfo trm) `ap` return fr
-          guard $ grune ngs && grune nfr && rapid ngs
-          return nfr
+      do  nfr <- match tr wtr `ap` return fr; guard $ grune nfr
+          ngs <- match tr trm `ap` return gs; guard $ grune ngs
+          guard $ rapid ngs; return nfr
+
+    wtr = wipeInfo trm
 
 specDef f = f
 
@@ -89,36 +90,31 @@ trigger :: Bool -> [Formula] -> Formula -> [Formula]
 trigger prd cnt trm = fld (sr Top 0) cnt
   where
     sr ps nn (All _ f)  = sr ps (succ nn) $ inst ('?':show nn) f
-    sr ps nn (Iff f g)  = sr ps nn $ zIff f g
-    sr ps nn (And f g)  = sr ps nn f +++ sr ps nn g
     sr ps nn (Imp f g)  = sr (bool $ And ps f) nn g
+    sr ps nn (And f g)  = sr ps nn f +++ sr ps nn g
+    sr ps nn (Iff f g)  = sr ps nn $ zIff f g
     sr ps nn (Ann _ f)  = sr ps nn f
     sr ps nn f  | bad f = []
                 | prd   = sm Top f ps
                 | True  = fld (sl ps f) $ offspring f
 
     sl ps gl s  = [ Ann DIM g | not (isVar s) || grune s,
-                                g <- sq ps gl s,
-                                occurs trm g ]
+                                g <- sq ps gl s, occurs trm g ]
 
     sm ps gl (Or  f g)  = sm ps gl f +++ sm ps gl g
     sm ps gl (And f g)  = sm (bool $ And f ps) gl g +++
                           sm (bool $ And g ps) gl f
     sm ps gl (Ann _ f)  = sm ps gl f
     sm ps gl f  | bad f = []
-                | True  = map (Ann DIM) (sq ps gl f) +++
-                          map (Ann DOR) (sq ps gl (neg f))
+    sm ps gl (Not f)    = map (Ann DOR) $ sq ps gl f
+    sm ps gl f          = map (Ann DIM) $ sq ps gl f
 
-    sq ps gl s  = [ f | ngl <- match s wtr `ap` [gl],
-                        nps <- match s trm `ap` [dequa ps],
-                        grune ngl, grune nps, rapid nps,
-                        f <- dlv ngl ]
+    sq ps gl s  = [ f | ngl <- match s wtr `ap` [gl], grune ngl,
+                        nps <- match s trm `ap` [ps], grune nps,
+                        rapid nps, f <- dlv ngl ]
 
     dlv (Not f)   = Not (wipeInfo f) : trInfoO f
     dlv f         = wipeInfo f       : trInfoI f
-
-    dequa (All _ _) = zHole ; dequa f | isTrm f = f
-    dequa (Exi _ _) = zHole ; dequa f = mapF dequa f
 
     fld f = foldr ((+++) . f) []
 

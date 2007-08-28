@@ -63,9 +63,11 @@ findDef trm cx  = dive Top 0 $ cnForm cx
 
     fine gs tr@(Trm t _ _) fr =
       do  ngs <- match otr trm `ap` return gs
-          nfr <- match otr (wipeInfo trm) `ap` return fr
+          nfr <- match otr wtr `ap` return fr
           return (cx, ngs, trm { trName = t, trInfo = [nfr] })
       where otr = tr { trName = takeWhile (/= ':') t }
+
+    wtr = wipeInfo trm
 
 testDef :: Bool -> [Context] -> Context -> Formula -> DefTrio -> RM Formula
 testDef hard cnt cx trm (dc, gs, nt)
