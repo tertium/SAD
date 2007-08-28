@@ -28,9 +28,7 @@ unfold tsk  = do  when (null exs) $ ntu >> mzero
 
 unfoldF cnt cx = fill [] (Just True) 0 (cnForm cx)
   where
-    fill fc sg n f | isTrm f  = let nct = cnRaise cnt cx fc
-                                    nfr = unfoldA (fromJust sg) f
-                                in  fillInfo nct $ setForm cx nfr
+    fill fc sg n f | isTrm f  = unfoldA (fromJust sg) f
     fill fc sg n (Iff f g)    = roundF fill fc sg n (zIff f g)
     fill fc sg n f            = roundF fill fc sg n f
 
