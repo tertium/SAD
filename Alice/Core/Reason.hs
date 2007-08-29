@@ -23,7 +23,6 @@ reason cnt tc = do  dlp <- askRSII IIdpth 7
 goalseq :: Int -> [Context] -> Context -> [Formula] -> RM ()
 goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
                               trv <> launch cnt ntc <> dlp
-                              unless (null fs) dga
                               goalseq n (ntc : cnt) tc fs
   where
     rfr = reduce f
@@ -35,7 +34,6 @@ goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
               goalseq (pred n) nct tc $ splitG nfr
 
     rde = whenIB IBPrsn False $ rlog0 $ "reasoning depth exceeded"
-    dga = whenIB IBPrsn False $ rlog0 $ "pass to the next subgoal"
     sbg = whenIB IBPrsn False $ rlog0 $ tri ++ "subgoal: " ++ show f
     tri = if (isTop rfr) then "trivial " else ""
 
@@ -50,7 +48,8 @@ launch cnt tc = do  incRSCI CIprov; whenIB IBPtsk False debug
                     let prv = justIO $ export prd ins cnt tc
                     timer CTprov prv >>= guard ; account
   where
-    account = do  CntrT _ td <- liftM head $ askRS rsCntr
+    account = do  whenIB IBPrsn False $ rlog0 $ "...proved"
+                  CntrT _ td <- liftM head $ askRS rsCntr
                   addRSTI CTprvy td ; incRSCI CIprvy
 
     debug = do  rlog0 "prover task:"
