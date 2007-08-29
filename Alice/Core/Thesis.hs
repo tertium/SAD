@@ -77,7 +77,7 @@ tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
                                           _           -> return h
         dive h@(Exi u f)    = case sg of  Just False  -> qua u f h
                                           _           -> return h
-        dive h@(Trm _ _ is) = return h `mplus` dfs h
+        dive h@(Trm _ _ _)  = return h `mplus` dfs h
         dive h              = roundFM pass fc sg n h
 
         qua u f = mplus (tmVars u f >>= dive) . roundFM pass fc sg n
