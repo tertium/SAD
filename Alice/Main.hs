@@ -71,7 +71,7 @@ readOpts :: IO [Instr]
 readOpts  =
   do  let rio = ReturnInOrder $ InStr ISread
       (is, _, es) <- liftM (getOpt rio options) getArgs
-      unless (null es) $ die $ concatMap ("[Main] " ++) es
+      unless (all wf is && null es) $ die es >> exitFailure
       if askIB is IBhelp False then helper else return is
   where
     helper  = do  putStr $ usageInfo header options
@@ -144,5 +144,9 @@ readOpts  =
       ((n,[]):_) | n >= 0 -> n
       _ -> error $ "invalid numeric argument: " ++ s
 
-    die s = putStr s >> exitFailure
+    wf (InBin _ v)  = v == v
+    wf (InInt _ v)  = v == v
+    wf _            = True
+
+    die = putStr . concatMap ("[Main] " ++)
 
