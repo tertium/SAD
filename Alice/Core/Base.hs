@@ -21,12 +21,11 @@ data RState = RState {  rsInst :: [Instr],
 
 data Count  = CntrT CntrT TimeDiff
             | CntrI CntrI Int
-            deriving Show
 
 data CntrT  = CTpars
             | CTprov
             | CTprvy
-            deriving (Eq,Show)
+            deriving Eq
 
 data CntrI  = CIsect
             | CIgoal
@@ -39,7 +38,7 @@ data CntrI  = CIsect
             | CIchkh
             | CIchky
             | CIunfl
-            deriving (Eq,Show)
+            deriving Eq
 
 initRS :: RState
 initRS  = RState [] [] []
