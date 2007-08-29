@@ -94,7 +94,7 @@ tatm =  tru -/- fls -/- eql -/- atm
     equ t = liftM (zEqu t) $ string "=" >> arg
     neq t = liftM (Not . zEqu t) $ string "!=" >> arg
     ars = optEx [] $ expar $ chainEx (char ',') arg
-    arg = liftM zVar tvr -/- liftM2 zTrm sym ars
+    arg = liftM sVar tvr -/- liftM2 sTrm sym ars
 
 tvr = do  v@(c:_) <- nextTkLex; guard (isUpper c); skipSpace (return v)
 sym = do  s@(c:_) <- nextTkLex; guard (isLower c); skipSpace (return s)
@@ -108,6 +108,9 @@ prmcnj = (p >> return False) -/- (c >> return True)
     p = wordOf ["axiom","hypothesis","definition","lemma","theorem","plain"]
     c = wordOf ["conjecture","lemma_conjecture","negated_conjecture"]
 
-free (Trm v@(c:_) _ _) | isUpper c = [v]
-free f  = nub $ foldF free f
+sTrm  = zTrm . ('s':)
+sVar  = zVar . ('x':)
+
+free (Var v _)  = [v]
+free f          = nub $ foldF free f
 

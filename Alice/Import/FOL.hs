@@ -56,7 +56,7 @@ equ_form  = do  t <- sin_term; optEx t (equ t -/- neq t)
     equ t = equ_op >> liftM (zEqu t) sin_term
     neq t = neq_op >> liftM (Not . zEqu t) sin_term
 
-sin_term  = liftM2 zTrm sym seq_term -/- liftM zVar sym
+sin_term  = liftM2 sTrm sym seq_term -/- liftM sVar sym
 seq_term  = char '(' >> after (com_seq sin_term) (char ')')
 
 sym = do  s <- nextTkLex
@@ -69,6 +69,9 @@ bi_form lf rf op cn cm =
     lf >>= \ f -> (op >> liftM (cn f) rf) -/- (return $ cm f)
 
 com_seq p = bi_form p (com_seq p) (char ',') (:) (:[])
+
+sTrm  = zTrm . ('s':)
+sVar  = zVar . ('x':)
 
 iff_op  = char '~' -/- word "iff"
 imp_op  = char '>' -/- word "implies"
