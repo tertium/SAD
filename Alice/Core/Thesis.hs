@@ -5,7 +5,7 @@ import Data.List
 import Data.Maybe
 
 import Alice.Core.Base
-import Alice.Core.Local
+import Alice.Core.Info
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Text

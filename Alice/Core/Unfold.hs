@@ -8,7 +8,7 @@ import Alice.Data.Instr
 import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Core.Base
-import Alice.Core.Local
+import Alice.Core.Info
 
 -- Definition expansion
 
@@ -22,8 +22,8 @@ unfold tsk  = do  when (null exs) $ ntu >> mzero
 
     exp c cnt = setForm c (unfoldF cnt c) : cnt
 
-    ntu = whenIB IBunfl False $ rlog0 $ "nothing to unfold"
-    unf = whenIB IBunfl False $ rlog0 $ "unfold: " ++ out
+    ntu = whenIB IBPunf False $ rlog0 $ "nothing to unfold"
+    unf = whenIB IBPunf False $ rlog0 $ "unfold: " ++ out
     out = foldr (. showChar ' ') "" exs
 
 unfoldF cnt cx = fill [] (Just True) 0 (cnForm cx)

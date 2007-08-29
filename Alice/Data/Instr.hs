@@ -18,37 +18,38 @@ data Idrop  = IdCom InCom
 -- Instructions
 
 data InCom  = ICexit  --  exit
-            | ICthes  --  print current thesis
-            | ICsimp  --  print current simplified context
+            | ICPths  --  print current thesis
+            | ICPcnt  --  print current simplified context
             deriving (Eq,Show)
 
 data InInt  = IItlim  --  time limit per prover launch  (3 sec)
             | IIdpth  --  number of reasoner iterations (7)
             | IIchtl  --  time limit for checker's tasks (1 sec)
-            | IIchdl  --  depth limit for checker's tasks (3)
+            | IIchdp  --  depth limit for checker's tasks (3)
             deriving (Eq,Show)
 
 data InBin  = IBprov  --  prove goals (yes)
-            | IBdefn  --  look for applicable definitions (yes)
+            | IBchck  --  look for applicable definitions (yes)
+            | IBsign  --  rename symbols with diverging defs (yes)
             | IBinfo  --  accumulate evidences (yes)
+            | IBthes  --  modify thesis (yes)
             | IBfilt  --  simplify the context (yes)
+            | IBskip  --  ignore failed goals (no)
             | IBflat  --  do not descend into proofs (no)
-            | IBmotv  --  modify thesis (yes)
-            | IBigno  --  ignore failed proofs (no)
-            | IBgoal  --  print current goal (yes)
-            | IBtran  --  print current sentence (no)
-            | IBdchk  --  print definition checks (no)
-            | IBunfl  --  print definition unfolds (no)
-            | IBrlog  --  print reasoner's log (no)
-            | IBplog  --  print prover's log (no)
-            | IBtask  --  print inference tasks (no)
-            | IBdump  --  dump tasks in prover's syntax (no)
-            | IBtext  --  translation only
-            | IBverb  --  verbosity control
-            | IBhelp  --  print help
+            | IBPgls  --  print current goal (yes)
+            | IBPrsn  --  print reasoner's log (no)
+            | IBPsct  --  print current sentence (no)
+            | IBPchk  --  print definition checks (no)
+            | IBPprv  --  print prover's log (no)
+            | IBPunf  --  print definition unfolds (no)
+            | IBPtsk  --  print inference tasks (no)
+            | IBPdmp  --  print tasks in prover's syntax (no)
+            | IBtext  --  translation only (comline only)
+            | IBverb  --  verbosity control (comline only)
+            | IBhelp  --  print help (comline only)
             deriving (Eq,Show)
 
-data InStr  = ISinit  --  init file
+data InStr  = ISinit  --  init file (init.opt)
             | ISread  --  read file
             | ISprdb  --  prover database
             | ISprvr  --  current prover
@@ -90,31 +91,32 @@ dropI _ _ = []
 
 setIC :: [(InCom, [String])]
 setIC = [ (ICexit,  ["exit", "quit"]),
-          (ICthes,  ["thesis"]),
-          (ICsimp,  ["rules"]) ]
+          (ICPths,  ["thesis"]),
+          (ICPcnt,  ["rules"]) ]
 
 setII :: [(InInt, [String])]
 setII = [ (IItlim,  ["timelimit"]),
           (IIdpth,  ["depthlimit"]),
           (IIchtl,  ["checktime"]),
-          (IIchdl,  ["checkdepth"]) ]
+          (IIchdp,  ["checkdepth"]) ]
 
 setIB :: [(InBin, [String])]
 setIB = [ (IBprov,  ["prove"]),
-          (IBdefn,  ["check"]),
+          (IBchck,  ["check"]),
+          (IBsign,  ["sign"]),
           (IBinfo,  ["info"]),
+          (IBthes,  ["thesis"]),
           (IBfilt,  ["filter"]),
+          (IBskip,  ["skipfail"]),
           (IBflat,  ["flat"]),
-          (IBmotv,  ["trim"]),
-          (IBigno,  ["skipfail"]),
-          (IBgoal,  ["printgoal"]),
-          (IBtran,  ["printsection"]),
-          (IBdchk,  ["printcheck"]),
-          (IBunfl,  ["printunfold"]),
-          (IBrlog,  ["printreason"]),
-          (IBplog,  ["printprover"]),
-          (IBtask,  ["printfulltask"]),
-          (IBdump,  ["dump"]) ]
+          (IBPgls,  ["printgoal"]),
+          (IBPsct,  ["printsection"]),
+          (IBPchk,  ["printcheck"]),
+          (IBPunf,  ["printunfold"]),
+          (IBPrsn,  ["printreason"]),
+          (IBPprv,  ["printprover"]),
+          (IBPtsk,  ["printfulltask"]),
+          (IBPdmp,  ["dump"]) ]
 
 setIS :: [(InStr, [String])]
 setIS = [ (ISread,  ["read"]),

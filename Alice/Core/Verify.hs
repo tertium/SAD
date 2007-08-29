@@ -3,8 +3,8 @@ module Alice.Core.Verify (verify) where
 import Control.Monad
 
 import Alice.Core.Base
-import Alice.Core.Define
-import Alice.Core.Local
+import Alice.Core.Check
+import Alice.Core.Info
 import Alice.Core.Reason
 import Alice.Core.Thesis
 import Alice.Data.Formula
@@ -22,7 +22,7 @@ vLoop :: Bool -> Context -> [Block] -> [Context] -> [Text] -> RM [Text]
 vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
   do  let sect = blLabl bl ++ showForm 0 bl ""
           sout = '[' : la ++ "] " ++ sect
-      whenIB IBtran False $ putStrRM sout
+      whenIB IBPsct False $ putStrRM sout
       incRSCI CIsect
 
       let nbr = bl : brn
@@ -39,7 +39,7 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
       npr <- if smt then splitTh smt sth nbr cnt spr
                     else splitTh smt ths nbr cnt pr
 
-      mtv <- askRSIB IBmotv True
+      mtv <- askRSIB IBthes True
       let nbl = bl { blForm = deICH nfr, blBody = npr }
           nct = Context (formulate nbl) nbr : cnt
           (nmt, nth) = if mtv then thesis nct ths
@@ -56,9 +56,9 @@ vLoop True ths brn cnt [] = whenIB IBprov True prove >> return []
   where
     prove = do  let rl = rlog bl $ "goal: " ++ tx
                     bl = cnHead ths ; tx = blText bl
-                incRSCI CIgoal ; whenIB IBgoal True rl
+                incRSCI CIgoal ; whenIB IBPgls True rl
                 reason cnt ths <>
-                  (guardIB IBigno False >> incRSCI CIfail)
+                  (guardIB IBskip False >> incRSCI CIfail)
 
 vLoop mot ths brn cnt (TI ins : bs) =
       procTI mot ths brn cnt ins >> vLoop mot ths brn cnt bs
@@ -92,11 +92,11 @@ deICH = dive id
 
 procTI mot ths brn cnt = proc
   where
-    proc (InCom ICthes)
+    proc (InCom ICPths)
       = do  let smt = if mot then "(mot): " else "(nmt): "
             rlog0 $ "current thesis " ++ smt ++ show (cnForm ths)
 
-    proc (InCom ICsimp)
+    proc (InCom ICPcnt)
       = do  let tlb = filter cnTopL cnt
                 tlf = map (lichten . cnForm) tlb
                 srl = filter (not . isTop) tlf
@@ -106,34 +106,30 @@ procTI mot ths brn cnt = proc
     proc (InCom _)  = rlog0 $ "unsupported instruction"
 
     proc (InBin IBverb False)
-      = do  addRSIn $ InBin IBgoal False
-            addRSIn $ InBin IBtran False
-            addRSIn $ InBin IBdchk False
-            addRSIn $ InBin IBunfl False
-            addRSIn $ InBin IBrlog False
-            addRSIn $ InBin IBplog False
-            addRSIn $ InBin IBtask False
+      = do  addRSIn $ InBin IBPgls False
+            addRSIn $ InBin IBPrsn False
+            addRSIn $ InBin IBPsct False
+            addRSIn $ InBin IBPchk False
+            addRSIn $ InBin IBPprv False
+            addRSIn $ InBin IBPunf False
+            addRSIn $ InBin IBPtsk False
 
     proc (InBin IBverb True)
-      = do  try IBgoal True
-        <>  try IBrlog False
-        <>  try IBtran False
-        <>  try IBdchk False
-        <>  try IBplog False
-        <>  try IBunfl False
-        <>  try IBtask False
-        <>  return ()
-      where
-        try i d = askRSIB i d >>= guard . not
-                    >> addRSIn (InBin i True)
+      = do (guardNotIB IBPgls True  >> addRSIn (InBin IBPgls True))
+        <> (guardNotIB IBPrsn False >> addRSIn (InBin IBPrsn True))
+        <> (guardNotIB IBPsct False >> addRSIn (InBin IBPsct True))
+        <> (guardNotIB IBPchk False >> addRSIn (InBin IBPchk True))
+        <> (guardNotIB IBPprv False >> addRSIn (InBin IBPprv True))
+        <> (guardNotIB IBPunf False >> addRSIn (InBin IBPunf True))
+        <> (guardNotIB IBPtsk False >> addRSIn (InBin IBPtsk True))
+        <> return ()
 
     proc (InStr ISread "-") = proc (InStr ISread "")
 
     proc (InStr ISread file)
       = do  let fn = if null file then "stdin" else file
             txt <- timer CTpars $ justIO $ readText file
-            trn <- askRSIB IBtext False
-            if trn then mapM_ printRM txt else
+            (guardIB IBtext False >> mapM_ printRM txt) <>
               do  rlog0 $ fn ++ ": verification started"
                   let success = rlog0 $ fn ++ ": verification successful"
                       failure = rlog0 $ fn ++ ": verification failed"

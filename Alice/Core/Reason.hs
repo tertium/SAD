@@ -3,7 +3,7 @@ module Alice.Core.Reason where
 import Control.Monad
 
 import Alice.Core.Base
-import Alice.Core.Local
+import Alice.Core.Info
 import Alice.Core.Unfold
 import Alice.Data.Formula
 import Alice.Data.Kit
@@ -16,7 +16,7 @@ import Alice.Export.Prover
 reason :: [Context] -> Context -> RM ()
 reason cnt tc = do  dlp <- askRSII IIdpth 7
                     flt <- askRSIB IBfilt True
-                    dfl <- askRSIB IBdefn True
+                    dfl <- askRSIB IBchck True
                     let nct = context (flt && dfl) cnt tc
                     goalseq dlp nct tc $ splitG $ cnForm tc
 
@@ -34,9 +34,9 @@ goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
               let Context {cnForm = Not nfr} : nct = tsk
               goalseq (pred n) nct tc $ splitG nfr
 
-    rde = whenIB IBrlog False $ rlog0 $ "reasoning depth exceeded"
-    dga = whenIB IBrlog False $ rlog0 $ "pass to the next subgoal"
-    sbg = whenIB IBrlog False $ rlog0 $ tri ++ "subgoal: " ++ show f
+    rde = whenIB IBPrsn False $ rlog0 $ "reasoning depth exceeded"
+    dga = whenIB IBPrsn False $ rlog0 $ "pass to the next subgoal"
+    sbg = whenIB IBPrsn False $ rlog0 $ tri ++ "subgoal: " ++ show f
     tri = if (isTop rfr) then "trivial " else ""
 
 goalseq _ _ _ _ = return ()
@@ -45,7 +45,7 @@ goalseq _ _ _ _ = return ()
 -- Call prover
 
 launch :: [Context] -> Context -> RM ()
-launch cnt tc = do  incRSCI CIprov; whenIB IBtask False debug
+launch cnt tc = do  incRSCI CIprov; whenIB IBPtsk False debug
                     prd <- askRS rsPrdb ; ins <- askRS rsInst
                     let prv = justIO $ export prd ins cnt tc
                     timer CTprov prv >>= guard ; account

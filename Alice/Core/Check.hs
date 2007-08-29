@@ -1,4 +1,4 @@
-module Alice.Core.Define (fillDef) where
+module Alice.Core.Check (fillDef) where
 
 import Control.Monad
 import Data.Maybe
@@ -8,7 +8,7 @@ import Alice.Data.Kit
 import Alice.Data.Instr
 import Alice.Data.Text
 import Alice.Core.Base
-import Alice.Core.Local
+import Alice.Core.Info
 import Alice.Core.Reason
 
 fillDef :: Context -> [Context] -> Context -> RM Formula
@@ -37,15 +37,16 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
 setDef nw cnt cx trm@(Trm t _ _)
     =  (guard (elem ':' t) >> return trm)
-    <> (guardNotIB IBdefn True >> return trm)
+    <> (guardNotIB IBchck True >> return trm)
     <> (msum $ map (testDef False cnt cx trm) dfs)
     <> (guard (t == "=" || elem '#' t) >> return trm)
     <> (msum $ map (testDef True  cnt cx trm) dfs)
-    <> (guard nw >> return str)
+    <> (guard nw >> nwt)
     <> (out >> mzero)
   where
     dfs = mapMaybe (findDef trm) cnt
     str = trm { trName = t ++ ':' : show (length dfs) }
+    nwt = (guardIB IBsign True >> return str) <> return trm
     out = rlog (cnHead cx) $ "unrecognized: " ++ showsPrec 2 trm ""
 
 
@@ -85,7 +86,7 @@ testDef hard cnt cx trm (dc, gs, nt)
                           whdchk $ "trivial " ++ header
 
     setup   | hard  = do  askRSII IIchtl 1 >>= addRSIn . InInt IItlim
-                          askRSII IIchdl 3 >>= addRSIn . InInt IIdpth
+                          askRSII IIchdp 3 >>= addRSIn . InInt IIdpth
             | True  = return ()
 
     cleanup | hard  = do  drpRSIn $ IdInt IItlim
@@ -93,7 +94,7 @@ testDef hard cnt cx trm (dc, gs, nt)
             | True  = return ()
 
     header  = "check: " ++ showsPrec 2 trm " vs " ++ cnName dc
-    whdchk  = whenIB IBdchk False . rlog0
+    whdchk  = whenIB IBPchk False . rlog0
 
 
 -- Infer ad hoc definitions

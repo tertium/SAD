@@ -1,4 +1,4 @@
-module Alice.Core.Local where
+module Alice.Core.Info where
 
 import Control.Monad
 import Data.List

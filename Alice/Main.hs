@@ -83,46 +83,48 @@ readOpts  =
         Option ""  ["provers"] (ReqArg (InStr ISprdb) "FILE")
             "import prover descriptions",
         Option "t" ["timelimit"] (ReqArg (InInt IItlim . number) "N")
-            "N seconds for a prover call (def: 3)",
+            "N seconds per prover call (def: 3)",
         Option ""  ["depthlimit"] (ReqArg (InInt IIdpth . number) "N")
             "N reasoner loops per goal (def: 7)",
         Option ""  ["checktime"] (ReqArg (InInt IIchtl . number) "N")
             "timelimit for checker's tasks (def: 1)",
-        Option ""  ["checkdepth"] (ReqArg (InInt IIchdl . number) "N")
+        Option ""  ["checkdepth"] (ReqArg (InInt IIchdp . number) "N")
             "depthlimit for checker's tasks (def: 3)",
         Option "n" [] (NoArg (InBin IBprov False))
             "cursory mode (equivalent to --prove off)",
         Option "" ["prove"] (ReqArg (InBin IBprov . binary) "{on|off}")
             "prove goals in the text (default: on)",
-        Option "" ["check"] (ReqArg (InBin IBdefn . binary) "{on|off}")
+        Option "" ["check"] (ReqArg (InBin IBchck . binary) "{on|off}")
             "check symbols for definedness (def: on)",
-        Option "" ["collect"] (ReqArg (InBin IBinfo . binary) "{on|off}")
+        Option "" ["symsign"] (ReqArg (InBin IBsign . binary) "{on|off}")
+            "prevent ill-typed unification (def: on)",
+        Option "" ["info"] (ReqArg (InBin IBinfo . binary) "{on|off}")
             "collect \"evidence\" literals (def: on)",
-        Option "" ["trim"] (ReqArg (InBin IBmotv . binary) "{on|off}")
+        Option "" ["thesis"] (ReqArg (InBin IBthes . binary) "{on|off}")
             "maintain current thesis (def: on)",
         Option "" ["filter"] (ReqArg (InBin IBfilt . binary) "{on|off}")
             "filter prover tasks (def: on)",
-        Option "" ["skipfail"] (ReqArg (InBin IBigno . binary) "{on|off}")
+        Option "" ["skipfail"] (ReqArg (InBin IBskip . binary) "{on|off}")
             "ignore failed goals (def: off)",
         Option "" ["flat"] (ReqArg (InBin IBflat . binary) "{on|off}")
             "do not read proofs (def: off)",
         Option "v" [] (NoArg (InBin IBverb True))
-            "print more details (-vv, -vvv, ...)",
+            "print more details (-vv, -vvv...)",
         Option "q" [] (NoArg (InBin IBverb False))
             "print no details",
-        Option "" ["printgoal"] (ReqArg (InBin IBgoal . binary) "{on|off}")
+        Option "" ["printgoal"] (ReqArg (InBin IBPgls . binary) "{on|off}")
             "print current goal (def: on)",
-        Option "" ["printreason"] (ReqArg (InBin IBrlog . binary) "{on|off}")
-            "print reasoner's logs (def: off)",
-        Option "" ["printsection"] (ReqArg (InBin IBtran . binary) "{on|off}")
+        Option "" ["printreason"] (ReqArg (InBin IBPrsn . binary) "{on|off}")
+            "print reasoner's messages (def: off)",
+        Option "" ["printsection"] (ReqArg (InBin IBPsct . binary) "{on|off}")
             "print sentence translations (def: off)",
-        Option "" ["printcheck"] (ReqArg (InBin IBdchk . binary) "{on|off}")
-            "print checker's logs (def: off)",
-        Option "" ["printprover"] (ReqArg (InBin IBplog . binary) "{on|off}")
-            "print prover's logs (def: off)",
-        Option "" ["printunfold"] (ReqArg (InBin IBunfl . binary) "{on|off}")
-            "print unfolded definitions (def: off)",
-        Option "" ["printfulltask"] (ReqArg (InBin IBtask . binary) "{on|off}")
+        Option "" ["printcheck"] (ReqArg (InBin IBPchk . binary) "{on|off}")
+            "print checker's messages (def: off)",
+        Option "" ["printprover"] (ReqArg (InBin IBPprv . binary) "{on|off}")
+            "print prover's messages (def: off)",
+        Option "" ["printunfold"] (ReqArg (InBin IBPunf . binary) "{on|off}")
+            "print definition unfoldings (def: off)",
+        Option "" ["printfulltask"] (ReqArg (InBin IBPtsk . binary) "{on|off}")
             "print full prover tasks (def: off)" ]
 
     binary "yes"  = True

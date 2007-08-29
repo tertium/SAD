@@ -40,7 +40,7 @@ export prs ins cnt gl =
                   Otter -> otterOut ; Moses -> mosesOut
           tsk = dmp prv tlm cnt gl
 
-      when (askIB ins IBdump False) $ putStrLn tsk
+      when (askIB ins IBPdmp False) $ putStrLn tsk
       hPutStrLn wh tsk ; hClose wh
 
       ofl <- hGetContents rh ; efl <- hGetContents eh
@@ -48,7 +48,7 @@ export prs ins cnt gl =
           out = map (("[" ++ lbl ++ "] ") ++) lns
 
       when (null lns) $ die "empty response"
-      when (askIB ins IBplog False) $ mapM_ putStrLn out
+      when (askIB ins IBPprv False) $ mapM_ putStrLn out
 
       let pos = any (\ l -> any (`isPrefixOf` l) yes) lns
           neg = any (\ l -> any (`isPrefixOf` l) nos) lns
