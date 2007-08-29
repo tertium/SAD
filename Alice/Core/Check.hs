@@ -35,14 +35,14 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
     sinfo _ _ _       = id
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
-setDef nw cnt cx trm@(Trm t _ _)
-    =  (guard (elem ':' t) >> return trm)
+setDef nw cnt cx trm@(Trm t _ _)  = incRSCI CIsymb >>
+      ((guard (elem ':' t) >> return trm)
     <> (guardNotIB IBchck True >> return trm)
     <> (msum $ map (testDef False cnt cx trm) dfs)
     <> (guard (t == "=" || elem '#' t) >> return trm)
     <> (msum $ map (testDef True  cnt cx trm) dfs)
     <> (guard nw >> nwt)
-    <> (out >> mzero)
+    <> (out >> mzero))
   where
     dfs = mapMaybe (findDef trm) cnt
     str = trm { trName = t ++ ':' : show (length dfs) }
@@ -80,9 +80,9 @@ testDef :: Bool -> [Context] -> Context -> Formula -> DefTrio -> RM Formula
 testDef hard cnt cx trm (dc, gs, nt)
     = setup >> (guards <> (cleanup >> mzero)) >> cleanup >> return nt
   where
-    guards  | hard  = do  whdchk $ header
-                          reason cnt $ setForm cx gs
-            | True  = do  guard $ rapid gs
+    guards  | hard  = do  whdchk $ header; incRSCI CIchkh
+                          reason cnt $ setForm cx gs; incRSCI CIchky
+            | True  = do  guard $ rapid gs; incRSCI CIchkt
                           whdchk $ "trivial " ++ header
 
     setup   | hard  = do  askRSII IIchtl 1 >>= addRSIn . InInt IItlim

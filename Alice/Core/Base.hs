@@ -34,6 +34,10 @@ data CntrI  = CIsect
             | CIsubt
             | CIprov
             | CIprvy
+            | CIsymb
+            | CIchkt
+            | CIchkh
+            | CIchky
             | CIunfl
             deriving (Eq,Show)
 

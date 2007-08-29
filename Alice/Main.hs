@@ -36,6 +36,7 @@ main  =
           cntr = rsCntr stat
           igno = cumulCI CIfail 0 cntr
           subt = cumulCI CIsubt 0 cntr
+          chkt = cumulCI CIchkt 0 cntr
           prst = cumulCT CTpars strt cntr
           prvt = cumulCT CTprov prst cntr
 
@@ -47,6 +48,12 @@ main  =
               ++ " - subgoals " ++ show (cumulCI CIprov subt cntr)
               ++ " - trivial "  ++ show subt
               ++ " - proved "   ++ show (cumulCI CIprvy 0 cntr)
+      putStrLn $ "[Main] "
+              ++ "symbols "     ++ show (cumulCI CIsymb 0 cntr)
+              ++ " - checks "   ++ show (cumulCI CIchkh chkt cntr)
+              ++ " - trivial "  ++ show chkt
+              ++ " - proved "   ++ show (cumulCI CIchky 0 cntr)
+              ++ " - unfolds "  ++ show (cumulCI CIunfl 0 cntr)
       putStrLn $ "[Main] "
               ++ "parser "      ++ showTimeDiff (getTimeDiff prst strt)
               ++ " - reason "   ++ showTimeDiff (getTimeDiff fint prvt)
