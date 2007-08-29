@@ -104,3 +104,26 @@ lichten = sr
     sm f | isUnit f = f
     sm _            = Bot
 
+
+-- Service stuff
+
+isDefn (Iff (Tag DHD _) _)  = True
+isDefn (All _ f)            = isDefn f
+isDefn (Imp _ f)            = isDefn f
+isDefn _                    = False
+
+isSign (Imp (Tag DHD _) _)  = True
+isSign (All _ f)            = isSign f
+isSign (Imp _ f)            = isSign f
+isSign _                    = False
+
+isUnit (Not f)              = isUnit f
+isUnit f                    = isTrm f || isTop f || isBot f
+
+isSort (Trm _ (_:ts) _)     = all ground ts
+isSort (Trm ('a':_) _ _)    = True
+isSort (Not (Trm "=" _ _))  = True
+isSort f                    = isTop f || isBot f
+
+ground f  = not (isVar f) && allF ground f
+

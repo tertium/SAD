@@ -1,6 +1,7 @@
 module Alice.Data.Kit where
 
 import Control.Monad
+import Data.Char
 import Data.Maybe
 
 import Alice.Data.Formula
@@ -146,58 +147,10 @@ occursH = occurs zHole
 occursS = occurs zSlot
 
 
--- Special formulas
-
-isDefn (Iff (Tag DHD _) _)  = True
-isDefn (All _ f)            = isDefn f
-isDefn (Imp _ f)            = isDefn f
-isDefn _                    = False
-
-isSign (Imp (Tag DHD _) _)  = True
-isSign (All _ f)            = isSign f
-isSign (Imp _ f)            = isSign f
-isSign _                    = False
-
-isUnit (Not f)              = isUnit f
-isUnit f                    = isTrm f || isTop f || isBot f
-
-isSort (Trm _ (_:ts) _)     = all ground ts
-isSort (Trm ('a':_) _ _)    = True
-isSort (Not (Trm "=" _ _))  = True
-isSort f                    = isTop f || isBot f
-
-ground f  = not (isVar f) && allF ground f
+-- Misc stuff
 
 strip (Tag _ f) = strip f
 strip f         = f
-
-
--- Info handling
-
-hasInfo f = isTrm f || isVar f || isInd f
-
-nullInfo f  | hasInfo f = f {trInfo = []}
-            | otherwise = f
-
-wipeInfo f  = mapF wipeInfo $ nullInfo f
-
-skipInfo fn f | hasInfo f = (fn $ nullInfo f) {trInfo = trInfo f}
-              | otherwise = fn f
-
-selInfo ts f  = [ i | i@(Tag t _) <- trInfo f, t `elem` ts ]
-remInfo ts f  = [ i | i@(Tag t _) <- trInfo f, t `notElem` ts ]
-
-trInfoI t = [ e | Tag DIM e <- trInfo t ]
-trInfoO t = [ e | Tag DOR e <- trInfo t ]
-trInfoE t = [ e | Tag DEQ e <- trInfo t ]
-trInfoS t = [ e | Tag DSD e <- trInfo t ]
-trInfoC t = [ e | Tag DCN e <- trInfo t ]
-trInfoN t = [ e | Tag DNC e <- trInfo t ]
-trInfoD t = trInfoE t ++ trInfoS t
-trInfoA t = trInfoD t ++ trInfoI t
-
-
--- Misc stuff
 
 infilt vs v = guard (v `elem` vs) >> return v
 nifilt vs v = guard (v `notElem` vs) >> return v
@@ -228,7 +181,7 @@ showFormula p d = dive
 
       dive (Trm "#TH#" _ _)   = showString "thesis"
       dive (Trm "=" [l,r] _)  = sinfix " = " l r
-      dive (Trm ('s':s) ts _) = showString s . sargs ts
+      dive (Trm ('s':s) ts _) = showString (symDecode s) . sargs ts
       dive (Trm s ts _)       = showString s . sargs ts
       dive (Var ('x':s) _)    = showString s
       dive (Var s _)          = showString s
@@ -248,4 +201,63 @@ showArgs sh (t:ts)  = showParen True $ sh t . showTail sh ts
 showArgs sh _       = id
 
 showTail sh ts      = foldr ((.) . ((showChar ',' .) . sh)) id ts
+
+
+-- Symbolic names
+
+symChars    = "`~!@$%^&*()-+=[]{}:'\"<>/?\\|;,"
+
+symEncode s = let (c:cs) = concatMap chc s
+              in  toUpper c : cs
+  where
+    chc '`' = "bq" ; chc '~'  = "tl" ; chc '!' = "ex"
+    chc '@' = "at" ; chc '$'  = "dl" ; chc '%' = "pc"
+    chc '^' = "cf" ; chc '&'  = "et" ; chc '*' = "as"
+    chc '(' = "lp" ; chc ')'  = "rp" ; chc '-' = "mn"
+    chc '+' = "pl" ; chc '='  = "eq" ; chc '[' = "lb"
+    chc ']' = "rb" ; chc '{'  = "lc" ; chc '}' = "rc"
+    chc ':' = "cl" ; chc '\'' = "qt" ; chc '"' = "dq"
+    chc '<' = "ls" ; chc '>'  = "gt" ; chc '/' = "sl"
+    chc '?' = "qu" ; chc '\\' = "bs" ; chc '|' = "br"
+    chc ';' = "sc" ; chc ','  = "cm" ; chc c   = ['z', c]
+
+symDecode s = sname [] s
+  where
+    sname ac (c:cs)
+              | isUpper c = sname ac (toLower c:cs)
+    sname ac ('z':c:cs)   = sname (c:ac) cs
+    sname ac ('b':'q':cs) = sname ('`':ac) cs
+    sname ac ('t':'l':cs) = sname ('~':ac) cs
+    sname ac ('e':'x':cs) = sname ('!':ac) cs
+    sname ac ('a':'t':cs) = sname ('@':ac) cs
+    sname ac ('d':'l':cs) = sname ('$':ac) cs
+    sname ac ('p':'c':cs) = sname ('%':ac) cs
+    sname ac ('c':'f':cs) = sname ('^':ac) cs
+    sname ac ('e':'t':cs) = sname ('&':ac) cs
+    sname ac ('a':'s':cs) = sname ('*':ac) cs
+{-
+    sname ac ('l':'p':cs) = sname ('(':ac) cs
+    sname ac ('r':'p':cs) = sname (')':ac) cs
+-}
+    sname ac ('m':'n':cs) = sname ('-':ac) cs
+    sname ac ('p':'l':cs) = sname ('+':ac) cs
+    sname ac ('e':'q':cs) = sname ('=':ac) cs
+    sname ac ('l':'b':cs) = sname ('[':ac) cs
+    sname ac ('r':'b':cs) = sname (']':ac) cs
+    sname ac ('l':'c':cs) = sname ('{':ac) cs
+    sname ac ('r':'c':cs) = sname ('}':ac) cs
+    sname ac ('c':'l':cs) = sname (':':ac) cs
+    sname ac ('q':'t':cs) = sname ('\'':ac) cs
+    sname ac ('d':'q':cs) = sname ('"':ac) cs
+    sname ac ('l':'s':cs) = sname ('<':ac) cs
+    sname ac ('g':'t':cs) = sname ('>':ac) cs
+    sname ac ('s':'l':cs) = sname ('/':ac) cs
+    sname ac ('q':'u':cs) = sname ('?':ac) cs
+    sname ac ('b':'s':cs) = sname ('\\':ac) cs
+    sname ac ('b':'r':cs) = sname ('|':ac) cs
+    sname ac ('s':'c':cs) = sname (';':ac) cs
+    sname ac ('c':'m':cs) = sname (',':ac) cs
+    sname ac cs@(':':_)   = reverse ac ++ cs
+    sname ac []           = reverse ac
+    sname _ _             = s
 

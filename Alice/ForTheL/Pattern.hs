@@ -111,23 +111,9 @@ sexp t@(Trm s vs _) f = (pt, nf)
     get_patt "#" = Vr
     get_patt  w  = Sm w
 
-    get_name (Sm s:ls)  = chcode s ++ get_name ls
+    get_name (Sm s:ls)  = symEncode s ++ get_name ls
     get_name (_:ls)     = get_name ls
     get_name []         = ""
-
-    chcode s@(c:_)  = let (c:cs) = concatMap chc s
-                      in  toUpper c : cs
-
-    chc '`' = "bq" ; chc '~'  = "tl" ; chc '!' = "ex"
-    chc '@' = "at" ; chc '$'  = "dl" ; chc '%' = "pc"
-    chc '^' = "cf" ; chc '&'  = "et" ; chc '*' = "as"
-    chc '(' = "lp" ; chc ')'  = "rp" ; chc '-' = "mn"
-    chc '+' = "pl" ; chc '='  = "eq" ; chc '[' = "lb"
-    chc ']' = "rb" ; chc '{'  = "lc" ; chc '}' = "rc"
-    chc ':' = "cl" ; chc '\'' = "qt" ; chc '"' = "dq"
-    chc '<' = "ls" ; chc '>'  = "gt" ; chc '/' = "sl"
-    chc '?' = "qu" ; chc '\\' = "bs" ; chc '|' = "br"
-    chc ';' = "sc" ; chc ','  = "cm" ; chc c   = ['z', c]
 
 
 -- New patterns
@@ -205,8 +191,7 @@ wlexem  = do  l <- wlx; guard $ all isAlpha l; return $ map toLower l
 slexem  = slex -|- wlx
   where
     slex  = skipSpace $ chnopEx $ nextTkChr >>= nxc
-    nxc c = guard (c `elem` opch) >> return c
-    opch  = "`~!@$%^&*()-+=[]{}:'\"<>/?\\|;,"
+    nxc c = guard (c `elem` symChars) >> return c
 
 wlx = do  l <- liftM (const "?") (nvr -/- avr) -/- readTkLex
           guard $ all isAlphaNum l &&

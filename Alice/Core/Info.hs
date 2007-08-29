@@ -130,6 +130,31 @@ green (Var ('!':_:_) _) = False
 green f                 = allF green $ nullInfo f
 
 
+-- Info handling
+
+hasInfo f = isTrm f || isVar f || isInd f
+
+nullInfo f  | hasInfo f = f {trInfo = []}
+            | otherwise = f
+
+wipeInfo f  = mapF wipeInfo $ nullInfo f
+
+skipInfo fn f | hasInfo f = (fn $ nullInfo f) {trInfo = trInfo f}
+              | otherwise = fn f
+
+selInfo ts f  = [ i | i@(Tag t _) <- trInfo f, t `elem` ts ]
+remInfo ts f  = [ i | i@(Tag t _) <- trInfo f, t `notElem` ts ]
+
+trInfoI t = [ e | Tag DIM e <- trInfo t ]
+trInfoO t = [ e | Tag DOR e <- trInfo t ]
+trInfoE t = [ e | Tag DEQ e <- trInfo t ]
+trInfoS t = [ e | Tag DSD e <- trInfo t ]
+trInfoC t = [ e | Tag DCN e <- trInfo t ]
+trInfoN t = [ e | Tag DNC e <- trInfo t ]
+trInfoD t = trInfoE t ++ trInfoS t
+trInfoA t = trInfoD t ++ trInfoI t
+
+
 -- Service stuff
 
 (+++) = unionBy ism
