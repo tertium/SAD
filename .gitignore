@@ -1,15 +1,6 @@
 .*.swp
-
-/tmp
-/examples/tmp
-
 /alice
 /.build
-/init.opt
-/Notes
-
-/*.ftl
-/*.seq
-
 /provers/*
 !/provers/provers.dat
+/tmp
