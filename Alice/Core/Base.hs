@@ -136,8 +136,9 @@ printRM     = justIO . print
 
 rlog0 tx = putStrLnRM $ "[Reason] " ++ tx
 
-rlog bl tx = rlog0 $ blLabl bl ++ tx
+rlog bl tx = do tfn <- askRSIS ISread ""
+                rlog0 $ blLabl tfn bl ++ tx
 
-blLabl (Block { blFile = f, blLine = l })
-  = (if null f then "line " else f ++ ":") ++ show l ++ ": "
+blLabl tf (Block { blFile = f, blLine = l })
+  = (if null f || f == tf then "line " else f ++ ":") ++ show l ++ ": "
 

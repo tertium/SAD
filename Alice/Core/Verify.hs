@@ -20,10 +20,8 @@ verify rst bs = runRM (vLoop False (Context Bot []) [] [] bs) rst
 
 vLoop :: Bool -> Context -> [Block] -> [Context] -> [Text] -> RM [Text]
 vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
-  do  let sect = blLabl bl ++ showForm 0 bl ""
-          sout = '[' : la ++ "] " ++ sect
-      whenIB IBPsct False $ putStrRM sout
-      incRSCI CIsect
+  do  incRSCI CIsect ; tfn <- askRSIS ISread "" ; whenIB IBPsct False $
+        putStrRM $ '[' : la ++ "] " ++ blLabl tfn bl ++ showForm 0 bl ""
 
       let nbr = bl : brn
           cbl = Context fr nbr
@@ -126,11 +124,11 @@ procTI mot ths brn cnt = proc
 
     proc (InStr ISread "-") = proc (InStr ISread "")
 
-    proc (InStr ISread file)
+    proc i@(InStr ISread file)
       = do  let fn = if null file then "stdin" else file
             txt <- timer CTpars $ justIO $ readText file
             (guardIB IBtext False >> mapM_ printRM txt) <>
-              do  rlog0 $ fn ++ ": verification started"
+              do  rlog0 $ fn ++ ": verification started"; addRSIn i
                   let success = rlog0 $ fn ++ ": verification successful"
                       failure = rlog0 $ fn ++ ": verification failed"
                   (vLoop mot ths brn cnt txt >> success) <> failure
