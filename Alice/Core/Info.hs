@@ -26,10 +26,9 @@ fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
 setInfo :: Bool -> [Context] -> Formula -> Formula
 setInfo prd cnt trm = {-wfInfo [] ntr `seq`-} ntr
   where
-    ntr = trm { trInfo = nte ++ nts ++ nti }
-    nte = map (Tag DEQ) $ trInfoE trm
-    nts = map (Tag DSD) $ trInfoS trm
+    ntr = trm { trInfo = nte ++ nti }
     nti = eqi trm +++ trigger prd nct trm
+    nte = selInfo [DEQ,DSD] trm
 
     eqi (Trm "=" [l@(Var _ []), r] _)
           = map (Tag DIM . replace l r) (trInfoI r)

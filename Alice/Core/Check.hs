@@ -33,10 +33,7 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
 
     sinfo uin pr cnt trm
       | uin   = setInfo pr cnt trm
-      | True  = trm { trInfo = osd }
-      where
-        osd = map (Tag DEQ) (trInfoE trm) ++
-              map (Tag DSD) (trInfoS trm)
+      | True  = trm { trInfo = selInfo [DEQ,DSD] trm }
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
 setDef nw cnt cx trm@(Trm t _ _)  = incRSCI CIsymb >>
@@ -104,46 +101,37 @@ testDef hard cnt cx trm (dc, gs, nt)
 -- Infer ad hoc definitions
 
 specDef :: Formula -> Formula
-specDef trm@(Trm "=" [l, r] _) | not (null nds)  = ntr
+specDef trm@(Trm "=" [l, r] _) | not (null sds)  = ntr
   where
-    ntr = Trm "=" [l, r { trInfo = map (Tag DIM) $ trInfoI r }] (ods ++ nds)
-    ods = map (Tag DIM) (trInfoI trm) ++ map (Tag DEQ) (trInfoE trm)
-    nds = map (Tag DSD . replace (wipeInfo l) r) $ trInfoD r
+    ntr = Trm "=" [l, r { trInfo = remInfo [DEQ,DSD] r }] nds
+    sds = map (Tag DSD . replace (wipeInfo l) r) $ trInfoD r
+    nds = sds ++ remInfo [DSD] trm
 
 specDef trm | isTrm trm = otr { trInfo = nds }
   where
-    (nds, otr) = pas ods trm
-    ods = map (Tag DIM) (trInfoI trm) ++ map (Tag DEQ) (trInfoE trm)
+    (nds, otr) = pas (remInfo [DSD] trm) trm
 
-    pas ds t | isTrm t
-      = let (nd, as) = foldr arg (ds, []) $ trArgs t
-        in  (nd, t { trArgs = as })
-    pas ds t = (ds, t)
+    pas ds t  | isTrm t = let (nd, as) = foldr arg (ds, []) $ trArgs t
+                          in  (nd, t { trArgs = as })
+              | True    = (ds, t)
 
-    arg a (ds, as)
-      = let (ad, na) = pas ds a
-            (nd, is) = foldr tst (ad, []) $ trInfo a
-        in  (nd, na { trInfo = is } : as)
+    arg a (ds, as)  = let (ad, na) = pas ds a
+                          (nd, is) = foldr tst (ad, []) $ trInfo a
+                      in  (nd, na { trInfo = is } : as)
 
-    tst a@(Tag DEQ d) (nd, ds)
-      = case specDig trm d
-        of  Just f  ->  (Tag DSD f : nd, ds)
-            _       ->  (nd, a : ds)
-
-    tst a@(Tag DSD d) (nd, ds)
-      = case specDig trm d
-        of  Just f  ->  (Tag DSD f : nd, ds)
-            _       ->  (nd, a : ds)
-
-    tst a@(Tag DIM (Not d)) (nd, ds)
-      = let (ni, _) = foldr tst (nd, []) $ concatMap trInfo $ trInfoO d
-        in  (ni, a : ds)
-
-    tst a@(Tag DIM d) (nd, ds)
-      = let (ni, _) = foldr tst (nd, []) $ trInfo d
-        in  (ni, a : ds)
-
-    tst a (nd, ds)  = (nd, a : ds)
+    tst a (nd, ds)  = case a of
+      Tag DEQ d ->        case specDig trm d of
+                            Just f  ->  (Tag DSD f : nd, ds)
+                            _       ->  (nd, a : ds)
+      Tag DSD d ->        case specDig trm d of
+                            Just f  ->  (Tag DSD f : nd, ds)
+                            _       ->  (nd, a : ds)
+      Tag DIM (Not d) ->  let ods = concatMap trInfo $ trInfoO d
+                              (ni, _) = foldr tst (nd, []) ods
+                          in  (ni, a : ds)
+      Tag DIM d ->        let (ni, _) = foldr tst (nd, []) $ trInfo d
+                          in  (ni, a : ds)
+      _ ->                (nd, a : ds)
 
 specDef f = f
 

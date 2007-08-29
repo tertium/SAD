@@ -59,12 +59,10 @@ markDCN f = f { trInfo = map mrk (trInfo f) }
     mrk (Tag DSD f) = Tag DCN f   -- DEQ lost!!!
     mrk f           = f
 
-wipeDCN (Tag DCN _) = Top
-wipeDCN f@(Tag DIM _) = f
-wipeDCN f@(Tag DOR _) = f
-wipeDCN f@(Tag DEQ _) = f
-wipeDCN f@(Tag DSD _) = f
-wipeDCN f = mapF wipeDCN f
+nullDCN f = f { trInfo = remInfo [DCN] f }
+
+wipeDCN f | hasInfo f = skipInfo (mapF wipeDCN) $ nullDCN f
+          | otherwise = mapF wipeDCN f
 
 
 -- Service stuff

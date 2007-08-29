@@ -16,7 +16,7 @@ data Formula  = All String  Formula       | Exi String  Formula
 
 data Tag  = DIG | DMS | DMP | DHD | DIH | DCH
           | DIM | DOR | DEQ | DSD | DCN | DNC
-          deriving Show
+          deriving (Eq,Show)
 
 
 -- Traversing functions

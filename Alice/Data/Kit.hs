@@ -184,6 +184,9 @@ wipeInfo f  = mapF wipeInfo $ nullInfo f
 skipInfo fn f | hasInfo f = (fn $ nullInfo f) {trInfo = trInfo f}
               | otherwise = fn f
 
+selInfo ts f  = [ i | i@(Tag t _) <- trInfo f, t `elem` ts ]
+remInfo ts f  = [ i | i@(Tag t _) <- trInfo f, t `notElem` ts ]
+
 trInfoI t = [ e | Tag DIM e <- trInfo t ]
 trInfoO t = [ e | Tag DOR e <- trInfo t ]
 trInfoE t = [ e | Tag DEQ e <- trInfo t ]
