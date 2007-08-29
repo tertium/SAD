@@ -17,7 +17,7 @@ BUILDDIR = .build
 
 all: $(ALICE) $(MOSES)
 
-.PHONY: $(ALICE) clean depend
+.PHONY: all $(ALICE) release binary clean depend
 
 ### Alice ###
 
@@ -46,6 +46,21 @@ $(BUILDDIR):
 
 $(BUILDDIR)/$(MOSESDIR):
 	mkdir -p $@
+
+### Release ###
+
+RELNAME = sad-$(shell date +%y%m%d)
+RELBIN  = $(RELNAME)-$(shell uname -m)
+
+release:
+	tar -czf $(RELNAME).tar.gz --transform='s=^=$(RELNAME)/=' \
+	    Alice COPYING Makefile doc examples init.opt moses \
+	    provers/provers.dat
+
+binary: all
+	tar -cjf $(RELBIN).tar.bz2 --transform='s=^=$(RELNAME)/=' \
+	    Alice COPYING Makefile doc examples init.opt moses \
+	    alice provers
 
 ### Janitory ###
 
