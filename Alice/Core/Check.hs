@@ -14,8 +14,8 @@ import Alice.Core.Reason
 fillDef :: Context -> [Context] -> Context -> RM Formula
 fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
   where
-    fill pr nw fc sg n (Ann DHD f)
-      = liftM (Ann DHD) $ fill pr True fc sg n f
+    fill pr nw fc sg n (Tag DHD f)
+      = liftM (Tag DHD) $ fill pr True fc sg n f
     fill _ _ fc _ _ t | isThesis t
       = return $ cnForm ths
     fill pr _ fc _ _ v | isVar v
@@ -57,12 +57,12 @@ type DefTrio = (Context, Formula, Formula)
 findDef :: (MonadPlus m) => Formula -> Context -> m DefTrio
 findDef trm cx  = dive Top 0 $ cnForm cx
   where
-    dive gs _ (Iff (Ann DHD (Trm "=" [Var v _, t] _)) f) | isTrm t
-                                  = fine gs t $ Ann DEQ $ subst t v f
-    dive gs _ (Imp (Ann DHD (Trm "=" [Var v _, t] _)) f) | isTrm t
-                                  = fine gs t $ Ann DIM $ subst t v f
-    dive gs _ (Iff (Ann DHD t) f) = fine gs t $ Ann DEQ f
-    dive gs _ (Imp (Ann DHD t) f) = fine gs t $ Ann DIM f
+    dive gs _ (Iff (Tag DHD (Trm "=" [Var v _, t] _)) f) | isTrm t
+                                  = fine gs t $ Tag DEQ $ subst t v f
+    dive gs _ (Imp (Tag DHD (Trm "=" [Var v _, t] _)) f) | isTrm t
+                                  = fine gs t $ Tag DIM $ subst t v f
+    dive gs _ (Iff (Tag DHD t) f) = fine gs t $ Tag DEQ f
+    dive gs _ (Imp (Tag DHD t) f) = fine gs t $ Tag DIM f
 
     dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
     dive gs n (Imp g f) = dive (bool $ And gs g) n f
@@ -102,14 +102,14 @@ testDef hard cnt cx trm (dc, gs, nt)
 specDef :: Formula -> Formula
 specDef trm@(Trm "=" [l, r] _) | not (null nds)  = ntr
   where
-    ntr = Trm "=" [l, r { trInfo = map (Ann DIM) $ trInfoI r }] (ods ++ nds)
-    ods = map (Ann DIM) (trInfoI trm) ++ map (Ann DEQ) (trInfoE trm)
-    nds = map (Ann DSD . replace (wipeInfo l) r) $ trInfoD r
+    ntr = Trm "=" [l, r { trInfo = map (Tag DIM) $ trInfoI r }] (ods ++ nds)
+    ods = map (Tag DIM) (trInfoI trm) ++ map (Tag DEQ) (trInfoE trm)
+    nds = map (Tag DSD . replace (wipeInfo l) r) $ trInfoD r
 
 specDef trm | isTrm trm = otr { trInfo = nds }
   where
     (nds, otr) = pas ods trm
-    ods = map (Ann DIM) (trInfoI trm) ++ map (Ann DEQ) (trInfoE trm)
+    ods = map (Tag DIM) (trInfoI trm) ++ map (Tag DEQ) (trInfoE trm)
 
     pas ds t | isTrm t
       = let (nd, as) = foldr arg (ds, []) $ trArgs t
@@ -121,21 +121,21 @@ specDef trm | isTrm trm = otr { trInfo = nds }
             (nd, is) = foldr tst (ad, []) $ trInfo a
         in  (nd, na { trInfo = is } : as)
 
-    tst a@(Ann DEQ d) (nd, ds)
+    tst a@(Tag DEQ d) (nd, ds)
       = case specDig trm d
-        of  Just f  ->  (Ann DSD f : nd, ds)
+        of  Just f  ->  (Tag DSD f : nd, ds)
             _       ->  (nd, a : ds)
 
-    tst a@(Ann DSD d) (nd, ds)
+    tst a@(Tag DSD d) (nd, ds)
       = case specDig trm d
-        of  Just f  ->  (Ann DSD f : nd, ds)
+        of  Just f  ->  (Tag DSD f : nd, ds)
             _       ->  (nd, a : ds)
 
-    tst a@(Ann DIM (Not d)) (nd, ds)
+    tst a@(Tag DIM (Not d)) (nd, ds)
       = let (ni, _) = foldr tst (nd, []) $ concatMap trInfo $ trInfoO d
         in  (ni, a : ds)
 
-    tst a@(Ann DIM d) (nd, ds)
+    tst a@(Tag DIM d) (nd, ds)
       = let (ni, _) = foldr tst (nd, []) $ trInfo d
         in  (ni, a : ds)
 

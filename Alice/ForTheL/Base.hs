@@ -219,7 +219,7 @@ decl vs f = dive f
   where
     dive (All _ f)  = dive f
     dive (Exi _ f)  = dive f
-    dive (Ann _ f)  = dive f
+    dive (Tag _ f)  = dive f
     dive (Imp f g)  = filter (noc f) (dive g)
     dive (And f g)  = dive f `union` filter (noc f) (dive g)
     dive (Trm ('a':_) (v@(Var u@('x':_) _):ts) _)

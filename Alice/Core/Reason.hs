@@ -86,22 +86,22 @@ context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
 lichten :: Formula -> Formula
 lichten = sr
   where
-    sr (Iff (Ann DHD (Trm "=" [_, t] _)) f)
+    sr (Iff (Tag DHD (Trm "=" [_, t] _)) f)
          | isTrm t  = sr $ subst t "." $ inst "." f
-    sr (Imp (Ann DHD (Trm "=" [_, t] _)) f)
+    sr (Imp (Tag DHD (Trm "=" [_, t] _)) f)
          | isTrm t  = sr $ subst t "." $ inst "." f
     sr (Iff f g)    = sr $ zIff f g
     sr (All v f)    = bool $ All v $ sr f
     sr (And f g)    = bool $ And (sr f) (sr g)
     sr (Imp f g)    = bool $ Imp (sm f) (sr g)
-    sr (Ann _ f)    = sr f
+    sr (Tag _ f)    = sr f
     sr f | isEqu f  = sr $ foldr And Top $ trInfoA f
     sr f | isSort f = f
     sr _            = Top
 
     sm (Or  f g)    = bool $ Or  (sm f) (sm g)
     sm (And f g)    = bool $ And (sm f) (sm g)
-    sm (Ann _ f)    = sm f
+    sm (Tag _ f)    = sm f
     sm f | isUnit f = f
     sm _            = Bot
 

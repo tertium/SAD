@@ -63,7 +63,7 @@ extPrim bl  = liftM nbb $ ext $ blForm lbl
     ext (All u f) = liftM (zAll u) $ ext $ inst u f
     ext (Iff l r) = liftM (`Iff` r) (ext l)
     ext (Imp l r) = liftM (`Imp` r) (ext l)
-    ext (Ann a f) = liftM (Ann a)   (ext f)
+    ext (Tag a f) = liftM (Tag a)   (ext f)
     ext f = getS >>= newExpr f f
 
 
@@ -73,12 +73,12 @@ definition  = def_prd -|- def_ntn
 signaturex  = sig_prd -|- sig_ntn
 
 def_prd = do  f <- old_prd mnn ; g <- statement
-              prdvars f g ; return $ Iff (Ann DHD f) g
+              prdvars f g ; return $ Iff (Tag DHD f) g
   where
     mnn = iff -|- string "<=>"
 
 sig_prd = do  f <- old_prd mnn ; g <- statement -|- atm
-              prdvars f g ; return $ Imp (Ann DHD f) g
+              prdvars f g ; return $ Imp (Tag DHD f) g
   where
     mnn = word "is" -|- word "implies" -|- string "=>"
     atm = an >> wordOf ["atom","relation"] >> return Top
@@ -86,20 +86,20 @@ sig_prd = do  f <- old_prd mnn ; g <- statement -|- atm
 def_ntn = do  (n, u) <- old_ntn ieq; (q, f) <- anotion
               let v = zVar u ; fn = replace v (trm n)
               h <- liftM (fn . q) $ dig (set f) [v]
-              ntnvars n h ; return $ zAll u $ Iff (Ann DHD n) h
+              ntnvars n h ; return $ zAll u $ Iff (Tag DHD n) h
   where
     ieq = char '=' -|- iqt
     iqt = is >> opt () (word "equal" >> word "to")
     trm (Trm "=" [_,t] _) = t ; trm t = t
 
-    set (Ann DIG (Trm "=" [l, r@(Trm _ _ [Ann DEQ d])] _))
-          = Ann DIG $ replace l r d
+    set (Tag DIG (Trm "=" [l, r@(Trm _ _ [Tag DEQ d])] _))
+          = Tag DIG $ replace l r d
     set n = n
 
 sig_ntn = do  (n, u) <- old_ntn is; (q, f) <- anotion -|- nmn
               let v = zVar u ; fn = replace v (trm n)
               h <- liftM (fn . q) $ dig f [v]
-              ntnvars n h ; return $ zAll u $ Imp (Ann DHD n) h
+              ntnvars n h ; return $ zAll u $ Imp (Tag DHD n) h
   where
     nmn = an >> wordOf ["notion","function","constant"] >> return (id,Top)
     trm (Trm "=" [_,t] _) = t ; trm t = t

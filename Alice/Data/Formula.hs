@@ -7,16 +7,16 @@ import qualified Data.Monoid as Monoid
 data Formula  = All String  Formula       | Exi String  Formula
               | Iff Formula Formula       | Imp Formula Formula
               | Or  Formula Formula       | And Formula Formula
-              | Ann Annotat Formula       | Not Formula
+              | Tag Tag Formula           | Not Formula
               | Top                       | Bot
               | Trm { trName :: String,
                       trArgs :: [Formula],  trInfo :: [Formula] }
               | Var { trName :: String,     trInfo :: [Formula] }
               | Ind { trIndx :: Int,        trInfo :: [Formula] }
 
-data Annotat  = DIG | DMS | DMP | DHD | DIH | DCH
-              | DIM | DOR | DEQ | DSD | DCN | DNC
-              deriving Show
+data Tag  = DIG | DMS | DMP | DHD | DIH | DCH
+          | DIM | DOR | DEQ | DSD | DCN | DNC
+          deriving Show
 
 
 -- Traversing functions
@@ -28,7 +28,7 @@ mapF fn (Iff f g)       = Iff (fn f) (fn g)
 mapF fn (Imp f g)       = Imp (fn f) (fn g)
 mapF fn (Or  f g)       = Or  (fn f) (fn g)
 mapF fn (And f g)       = And (fn f) (fn g)
-mapF fn (Ann a f)       = Ann a (fn f)
+mapF fn (Tag a f)       = Tag a (fn f)
 mapF fn (Not f)         = Not (fn f)
 mapF fn (Top)           = Top
 mapF fn (Bot)           = Bot
@@ -43,7 +43,7 @@ mapFM fn (Iff f g)      = liftM2 Iff (fn f) (fn g)
 mapFM fn (Imp f g)      = liftM2 Imp (fn f) (fn g)
 mapFM fn (Or  f g)      = liftM2 Or  (fn f) (fn g)
 mapFM fn (And f g)      = liftM2 And (fn f) (fn g)
-mapFM fn (Ann a f)      = liftM (Ann a) (fn f)
+mapFM fn (Tag a f)      = liftM (Tag a) (fn f)
 mapFM fn (Not f)        = liftM  Not (fn f)
 mapFM fn (Top)          = return Top
 mapFM fn (Bot)          = return Bot
@@ -103,7 +103,7 @@ foldF fn (Iff f g)      = Monoid.mappend (fn f) (fn g)
 foldF fn (Imp f g)      = Monoid.mappend (fn f) (fn g)
 foldF fn (Or  f g)      = Monoid.mappend (fn f) (fn g)
 foldF fn (And f g)      = Monoid.mappend (fn f) (fn g)
-foldF fn (Ann _ f)      = fn f
+foldF fn (Tag _ f)      = fn f
 foldF fn (Not f)        = fn f
 foldF fn (Top)          = Monoid.mempty
 foldF fn (Bot)          = Monoid.mempty

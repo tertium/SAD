@@ -81,7 +81,7 @@ proof p = do  m1 <- shw; bl <- p
 
     iths fr Top _       = return fr
     iths fr it vs       = liftM (iapp it) $ icnt vs fr
-    iapp it cn          = cn $ Ann DIH $ substH it $ cn $ zLess it zHole
+    iapp it cn          = cn $ Tag DIH $ substH it $ cn $ zLess it zHole
 
     icnt vs (Imp g f)   = liftM (Imp g .) $ icnt vs f
     icnt vs (All v f)   = liftM (zAll v .) $ icnt (delete v vs) f
@@ -131,7 +131,7 @@ castext = u1
     u4  = qed >> return []
 
 cassect = do  bl@(Block { blForm = fr }) <- cashyp
-              prfsect $ bl { blForm = Imp (Ann DCH fr) zThesis }
+              prfsect $ bl { blForm = Imp (Tag DCH fr) zThesis }
 
 frame   = do  li <- nulText ; nm <- frm
               tx <- getText ; bs <- dot lowtext

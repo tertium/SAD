@@ -82,16 +82,16 @@ isa_literal = u1 -|- u2
   where
     u1  = do  (q, f) <- anotion; return $ q f
     u2  = do  word "not"; (q, f) <- anotion; let unf = dig f [zHole]
-              optEx (q $ Not f) $ liftM (q . Ann DIG . Not) unf
+              optEx (q $ Not f) $ liftM (q . Tag DIG . Not) unf
 
 has_literal = u1 -|- u2 -|- u3 -|- u4
   where
-    u1  = liftM (Ann DIG . hchain) (comma $ art >> possess)
+    u1  = liftM (Tag DIG . hchain) (comma $ art >> possess)
     u2  = art >> word "common" >> liftM hchain (comma $ liftM digadd possess)
     u3  = do  word "no"; (q, f, v) <- possess
-              return $ q $ Ann DIG $ Not $ foldr mbExi f v
+              return $ q $ Tag DIG $ Not $ foldr mbExi f v
     u4  = do  word "no"; word "common"; (q, f, v) <- possess
-              return $ q $ Not $ foldr mbExi (Ann DIG f) v
+              return $ q $ Not $ foldr mbExi (Tag DIG f) v
 
     hchain ((q, f, v):ns) = q $ foldr mbExi (bool $ And f $ hchain ns) v
     hchain _  = Top
@@ -101,13 +101,13 @@ m_literal p = mpositive p -|- (word "not" >> mnegative p)
 mpositive p = spositive p -|- (word "pairwise" >> ppositive p)
 mnegative p = snegative p -|- (word "pairwise" >> pnegative p)
 
-positive p  = do  (q, f) <- p term; return $ q $ Ann DIG f
-spositive p = do  (q, f) <- p term; return $ q $ Ann DMS f
-ppositive p = do  (q, f) <- p term; return $ q $ Ann DMP f
+positive p  = do  (q, f) <- p term; return $ q $ Tag DIG f
+spositive p = do  (q, f) <- p term; return $ q $ Tag DMS f
+ppositive p = do  (q, f) <- p term; return $ q $ Tag DMP f
 
-negative p  = do  (q, f) <- p term; return $ q $ Ann DIG $ Not f
-snegative p = do  (q, f) <- p term; return $ q $ Not $ Ann DMS f
-pnegative p = do  (q, f) <- p term; return $ q $ Not $ Ann DMP f
+negative p  = do  (q, f) <- p term; return $ q $ Tag DIG $ Not f
+snegative p = do  (q, f) <- p term; return $ q $ Not $ Tag DMS f
+pnegative p = do  (q, f) <- p term; return $ q $ Not $ Tag DMP f
 
 
 -- Notion syntax
@@ -115,7 +115,7 @@ pnegative p = do  (q, f) <- p term; return $ q $ Not $ Ann DMP f
 anotion = art >> gnotion basentn rat >>= single >>= hol
   where
     hol (q, f, v) = return (q, subst zHole v f)
-    rat = liftM (Ann DIG) stattr
+    rat = liftM (Tag DIG) stattr
 
 notion  = gnotion (basentn -|- sym_notion) stattr >>= digntn
 
@@ -135,7 +135,7 @@ basentn = liftM digadd (prim_ntn term -|- cm -|- sym_eqnt -|- set_eqnt)
 
 stattr  = such >> that >> statement
 
-digadd (q, f, v)  = (q, Ann DIG f, v)
+digadd (q, f, v)  = (q, Tag DIG f, v)
 
 digntn (q, f, v)  = dig f (map zVar v) >>= \ g -> return (q, g, v)
 
@@ -280,7 +280,7 @@ retset v fe = do  (_:h) <- hidden ; let u = zVar v
                   let ex = zAll v $ Iff (zElm u zHole) fe
                       nt = zSSS h $ map zVar (free [] ex)
                       nf = And (zSet nt) (substH nt ex)
-                  return $ nt { trInfo = [Ann DEQ nf] }
+                  return $ nt { trInfo = [Tag DEQ nf] }
 
 
 -- Digger
@@ -288,9 +288,9 @@ retset v fe = do  (_:h) <- hidden ; let u = zVar v
 dig f [_] | occursS f  = fail "too few subjects for an m-predicate"
 dig f ts  = return (dive f)
   where
-    dive (Ann DIG f)  = down (digS) f
-    dive (Ann DMS f)  = down (digM $ zip ts $ tail ts) f
-    dive (Ann DMP f)  = down (digM $ pairMP ts) f
+    dive (Tag DIG f)  = down (digS) f
+    dive (Tag DMS f)  = down (digM $ zip ts $ tail ts) f
+    dive (Tag DMP f)  = down (digM $ pairMP ts) f
     dive f  | isTrm f = f
     dive f  = mapF dive f
 

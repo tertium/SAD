@@ -27,12 +27,12 @@ setInfo :: Bool -> [Context] -> Formula -> Formula
 setInfo prd cnt trm = ntr
   where
     ntr = trm { trInfo = nte ++ nts ++ nti }
-    nte = map (Ann DEQ) $ trInfoE trm
-    nts = map (Ann DSD) $ trInfoS trm
+    nte = map (Tag DEQ) $ trInfoE trm
+    nts = map (Tag DSD) $ trInfoS trm
     nti = eqi trm +++ trigger prd nct trm
 
     eqi (Trm "=" [l@(Var _ []), r] _)
-          = map (Ann DIM . replace l r) (trInfoI r)
+          = map (Tag DIM . replace l r) (trInfoI r)
     eqi _ = []
 
     nct =  act (trInfoA trm)
@@ -54,21 +54,21 @@ trigger prd cnt trm = fld (sr Top 0) cnt
     sr ps nn (Imp f g)  = sr (bool $ And ps f) nn g
     sr ps nn (And f g)  = sr ps nn f +++ sr ps nn g
     sr ps nn (Iff f g)  = sr ps nn $ zIff f g
-    sr ps nn (Ann _ f)  = sr ps nn f
+    sr ps nn (Tag _ f)  = sr ps nn f
     sr ps nn f  | bad f = []
                 | prd   = sm Top f ps
                 | True  = fld (sl ps f) $ offspring f
 
-    sl ps gl s  | gut s = map (Ann DIM) $ sq ps gl s
+    sl ps gl s  | gut s = map (Tag DIM) $ sq ps gl s
                 | True  = []
 
     sm ps gl (Or  f g)  = sm ps gl f +++ sm ps gl g
     sm ps gl (And f g)  = sm (bool $ And f ps) gl g +++
                           sm (bool $ And g ps) gl f
-    sm ps gl (Ann _ f)  = sm ps gl f
+    sm ps gl (Tag _ f)  = sm ps gl f
     sm ps gl f  | bad f = []
-    sm ps gl (Not f)    = map (Ann DOR) $ sq ps gl f
-    sm ps gl f          = map (Ann DIM) $ sq ps gl f
+    sm ps gl (Not f)    = map (Tag DOR) $ sq ps gl f
+    sm ps gl f          = map (Tag DIM) $ sq ps gl f
 
     sq ps gl s  = [ g | ngl <- match s wtr `ap` [gl], green ngl,
                         nps <- match s trm `ap` [ps], green nps,
@@ -135,8 +135,8 @@ green f               = allF green $ nullInfo f
 
 (+++) = unionBy ism
   where
-    ism (Ann DIM f) (Ann DIM g) = twins f g
-    ism (Ann DOR f) (Ann DOR g) = twins f g
+    ism (Tag DIM f) (Tag DIM g) = twins f g
+    ism (Tag DOR f) (Tag DOR g) = twins f g
     ism f g                     = False
 
 children f  | isTrm f = trArgs f

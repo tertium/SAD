@@ -55,15 +55,15 @@ markup tsk  = map mrk loc ++ glb
 
 markDCN f = f { trInfo = map mrk (trInfo f) }
   where
-    mrk (Ann DEQ f) = Ann DCN f   -- DEQ lost!!!
-    mrk (Ann DSD f) = Ann DCN f   -- DEQ lost!!!
+    mrk (Tag DEQ f) = Tag DCN f   -- DEQ lost!!!
+    mrk (Tag DSD f) = Tag DCN f   -- DEQ lost!!!
     mrk f           = f
 
-wipeDCN (Ann DCN _) = Top
-wipeDCN f@(Ann DIM _) = f
-wipeDCN f@(Ann DOR _) = f
-wipeDCN f@(Ann DEQ _) = f
-wipeDCN f@(Ann DSD _) = f
+wipeDCN (Tag DCN _) = Top
+wipeDCN f@(Tag DIM _) = f
+wipeDCN f@(Tag DOR _) = f
+wipeDCN f@(Tag DEQ _) = f
+wipeDCN f@(Tag DSD _) = f
 wipeDCN f = mapF wipeDCN f
 
 

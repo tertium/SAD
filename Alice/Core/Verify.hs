@@ -71,9 +71,9 @@ vLoop _ _ _ _ _ = return []
 
 splitTh mot ths brn cnt bs = dive id cnt $ cnForm ths
   where
-    dive c cn (Imp (Ann DIH f) g)  | closed f
+    dive c cn (Imp (Tag DIH f) g)  | closed f
                                    = dive c (setForm ths f : cn) g
-    dive c cn (Imp (Ann DCH f) g)  | closed f
+    dive c cn (Imp (Tag DCH f) g)  | closed f
                                    = dive c (setForm ths f : cn) g
     dive c cn (Imp f g)            = dive (c . Imp f) cn g
     dive c cn (All v f)            = dive (c . All v) cn f
@@ -81,8 +81,8 @@ splitTh mot ths brn cnt bs = dive id cnt $ cnForm ths
 
 deICH = dive id
   where
-    dive c (Imp (Ann DIH f) g)  = c g
-    dive c (Imp (Ann DCH f) g)  = c $ Not f
+    dive c (Imp (Tag DIH f) g)  = c g
+    dive c (Imp (Tag DCH f) g)  = c $ Not f
     dive c (Imp f g)            = dive (c . Imp f) g
     dive c (All v f)            = dive (c . All v) f
     dive c f                    = c f

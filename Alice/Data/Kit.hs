@@ -51,8 +51,8 @@ bool (And Top f)  = f
 bool (And f Top)  = f
 bool (And Bot f)  = Bot
 bool (And f Bot)  = Bot
-bool (Ann a Top)  = Top
-bool (Ann a Bot)  = Bot
+bool (Tag a Top)  = Top
+bool (Tag a Bot)  = Bot
 bool (Not Top)    = Bot
 bool (Not Bot)    = Top
 bool f            = f
@@ -67,7 +67,7 @@ mbBind v  = dive id
   where
     dive c s (All u f)  = dive (c . bool . All u) s f
     dive c s (Exi u f)  = dive (c . bool . Exi u) s f
-    dive c s (Ann a f)  = dive (c . bool . Ann a) s f
+    dive c s (Tag a f)  = dive (c . bool . Tag a) s f
     dive c s (Not f)    = dive (c . bool . Not) (not s) f
     dive c False (Imp f g)  = dive (c . bool . (`Imp` g)) True f
                       `mplus` dive (c . bool . (f `Imp`)) False g
@@ -148,12 +148,12 @@ occursS = occurs zSlot
 
 -- Special formulas
 
-isDefn (Iff (Ann DHD _) _)  = True
+isDefn (Iff (Tag DHD _) _)  = True
 isDefn (All _ f)            = isDefn f
 isDefn (Imp _ f)            = isDefn f
 isDefn _                    = False
 
-isSign (Imp (Ann DHD _) _)  = True
+isSign (Imp (Tag DHD _) _)  = True
 isSign (All _ f)            = isSign f
 isSign (Imp _ f)            = isSign f
 isSign _                    = False
@@ -168,7 +168,7 @@ isSort f                    = isTop f || isBot f
 
 ground f  = not (isVar f) && allF ground f
 
-strip (Ann _ f) = strip f
+strip (Tag _ f) = strip f
 strip f         = f
 
 
@@ -184,12 +184,12 @@ wipeInfo f  = mapF wipeInfo $ nullInfo f
 skipInfo fn f | hasInfo f = (fn $ nullInfo f) {trInfo = trInfo f}
               | otherwise = fn f
 
-trInfoI t = [ e | Ann DIM e <- trInfo t ]
-trInfoO t = [ e | Ann DOR e <- trInfo t ]
-trInfoE t = [ e | Ann DEQ e <- trInfo t ]
-trInfoS t = [ e | Ann DSD e <- trInfo t ]
-trInfoC t = [ e | Ann DCN e <- trInfo t ]
-trInfoN t = [ e | Ann DNC e <- trInfo t ]
+trInfoI t = [ e | Tag DIM e <- trInfo t ]
+trInfoO t = [ e | Tag DOR e <- trInfo t ]
+trInfoE t = [ e | Tag DEQ e <- trInfo t ]
+trInfoS t = [ e | Tag DSD e <- trInfo t ]
+trInfoC t = [ e | Tag DCN e <- trInfo t ]
+trInfoN t = [ e | Tag DNC e <- trInfo t ]
 trInfoD t = trInfoE t ++ trInfoS t
 trInfoA t = trInfoD t ++ trInfoI t
 
@@ -217,7 +217,7 @@ showFormula p d = dive
       dive (Imp f g)  = showParen True $ sinfix " implies " f g
       dive (Or  f g)  = showParen True $ sinfix " or "  f g
       dive (And f g)  = showParen True $ sinfix " and " f g
-      dive (Ann a f)  = showParen True $ shows a
+      dive (Tag a f)  = showParen True $ shows a
                       . showString " :: " . dive f
       dive (Not f)    = showString "not " . dive f
       dive Top        = showString "truth"
