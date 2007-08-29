@@ -76,11 +76,11 @@ un_formula  = uqu -/- equ -/- neg -/- tatm -/- expar formula
   where
     uqu = do  char '!'; char '['; vs <- chainEx (char ',') tvr
               char ']'; char ':'; f <- un_formula
-              return $ foldr zAll f vs
+              return $ foldr sAll f vs
 
     equ = do  char '?'; char '['; vs <- chainEx (char ',') tvr
               char ']'; char ':'; f <- un_formula
-              return $ foldr zExi f vs
+              return $ foldr sExi f vs
 
     neg = liftM Not $ char '~' >> un_formula
 
@@ -108,8 +108,10 @@ prmcnj = (p >> return False) -/- (c >> return True)
     p = wordOf ["axiom","hypothesis","definition","lemma","theorem","plain"]
     c = wordOf ["conjecture","lemma_conjecture","negated_conjecture"]
 
-sTrm  = zTrm . ('s':)
+sAll  = zAll . ('x':)
+sExi  = zExi . ('x':)
 sVar  = zVar . ('x':)
+sTrm  = zTrm . ('s':)
 
 free (Var v _)  = [v]
 free f          = nub $ foldF free f

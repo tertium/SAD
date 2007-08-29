@@ -41,8 +41,8 @@ par_form  = (char '(' >> after iff_form (char ')')) -/- all_form
 
 -- Quantifiers
 
-all_form  = (all_op >> qu_head zAll) -/- exi_form
-exi_form  = (exi_op >> qu_head zExi) -/- neg_form
+all_form  = (all_op >> qu_head sAll) -/- exi_form
+exi_form  = (exi_op >> qu_head sExi) -/- neg_form
 qu_head o = liftM2 (flip $ foldr o) (com_seq sym) dot_form
 
 -- Unary formulas
@@ -70,8 +70,10 @@ bi_form lf rf op cn cm =
 
 com_seq p = bi_form p (com_seq p) (char ',') (:) (:[])
 
-sTrm  = zTrm . ('s':)
+sAll  = zAll . ('x':)
+sExi  = zExi . ('x':)
 sVar  = zVar . ('x':)
+sTrm  = zTrm . ('s':)
 
 iff_op  = char '~' -/- word "iff"
 imp_op  = char '>' -/- word "implies"
