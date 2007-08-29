@@ -24,7 +24,7 @@ fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
         nts = map (fill False fc sg n) (trArgs fr)
 
 setInfo :: Bool -> [Context] -> Formula -> Formula
-setInfo prd cnt trm = ntr
+setInfo prd cnt trm = {-wfInfo [] ntr `seq`-} ntr
   where
     ntr = trm { trInfo = nte ++ nts ++ nti }
     nte = map (Tag DEQ) $ trInfoE trm
@@ -126,9 +126,9 @@ match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
 match _ _         = mzero
 
 green :: Formula -> Bool
-green (Var ('?':_) _) = False
-green (Var ('!':_) _) = False
-green f               = allF green $ nullInfo f
+green (Var ('?':_:_) _) = False
+green (Var ('!':_:_) _) = False
+green f                 = allF green $ nullInfo f
 
 
 -- Service stuff
@@ -145,18 +145,30 @@ children f  | isTrm f = trArgs f
 offspring f = let x = children f
               in  x ++ concatMap offspring x
 
-wfcheck f | hasInfo f = all wfinfo (trInfoI f)
-                    &&  all wfinfo (trInfoO f)
-                    &&  all wfcheck (trInfoD f)
-                    &&  allF wfcheck (nullInfo f)
-          | otherwise = allF wfcheck f
+
+-- Well-formedness checking
+
+wfForm fs f | hasInfo f     = wfInfo fs f &&
+                              allF (wfForm fs) (nullInfo f)
+            | otherwise     = allF (wfForm fs) f
+
+wfInfo fs f = all (wfevid (f:fs)) (trInfoI f) &&
+              all (wfevid (f:fs)) (trInfoO f) &&
+              all (wfForm (f:fs)) (trInfoD f)
   where
-    wfinfo (Not (Trm _ ts []))  = all wfinfo ts
-    wfinfo (Trm _ ts [])        = all wfinfo ts
-    wfinfo t  | not (hasInfo t) = error $ "wfcheck: " ++ show f
-                                  ++ show (trInfo f) ++ '\n' : show t
-              | null (trInfo t) = True
-              | otherwise       = error $ "wfcheck: " ++ show f
-                                  ++ show (trInfo f) ++ '\n' : show t
-                                  ++ show (trInfo t)
+    wfevid fs (Not f) | isTrm f = all (wfargs fs) (trArgs f) && wfInfo fs f
+    wfevid fs f | isTrm f       = all (wfargs fs) (trArgs f) && wfInfo fs f
+    wfevid fs f                 = wferr "ill-formed info" (f:fs)
+
+    wfargs ts t | not (hasInfo t)       = wferr "non-term argument" (t:ts)
+                | not (null $ trInfo t) = wferr "nonempty trInfo" (t:ts)
+                | isTrm t               = all (wfargs ts) (trArgs t)
+                | not (green t)         = wferr "non-green var" (t:ts)
+                | otherwise             = True
+
+    wferr es ts = error $ "wfcheck: " ++ es ++ concatMap trout ts
+
+    trout t = " in\n" ++ show t ++ trinf t
+    trinf t | hasInfo t = show $ trInfo t
+            | otherwise = ""
 
