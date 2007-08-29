@@ -23,10 +23,10 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
   do  incRSCI CIsect ; tfn <- askRSIS ISread "" ; whenIB IBPsct False $
         putStrRM $ '[' : la ++ "] " ++ blLabl tfn bl ++ showForm 0 bl ""
 
-      let nbr = bl : brn
-          cbl = Context fr nbr
+      let nbr = bl : brn; cbl = Context fr nbr
 
-      nfr <- fillDef ths cnt cbl
+      nfr <- if noForm bl then return fr
+                          else fillDef ths cnt cbl
 
       flt <- askRSIB IBflat False
       let sth = Context (foldr zExi nfr dv) nbr
