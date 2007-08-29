@@ -31,8 +31,12 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
             return $ sinfo uin pr nct $ specDef ntr
     fill pr nw fc sg n f = roundFM (fill pr nw) fc sg n f
 
-    sinfo True pr cnt = setInfo pr cnt
-    sinfo _ _ _       = id
+    sinfo uin pr cnt trm
+      | uin   = setInfo pr cnt trm
+      | True  = trm { trInfo = osd }
+      where
+        osd = map (Tag DEQ) (trInfoE trm) ++
+              map (Tag DSD) (trInfoS trm)
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
 setDef nw cnt cx trm@(Trm t _ _)  = incRSCI CIsymb >>
