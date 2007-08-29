@@ -27,8 +27,6 @@ import System.Console.GetOpt
 import System.Environment
 import System.Exit
 import System.IO
-import System.IO.Error
-import System.Locale
 import System.Time
 
 import Alice.Core.Base
