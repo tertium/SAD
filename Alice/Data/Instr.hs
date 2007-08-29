@@ -123,7 +123,7 @@ setII = [ (IItlim,  ["timelimit"]),
 setIB :: [(InBin, [String])]
 setIB = [ (IBprov,  ["prove"]),
           (IBchck,  ["check"]),
-          (IBsign,  ["sign"]),
+          (IBsign,  ["symsign"]),
           (IBinfo,  ["info"]),
           (IBthes,  ["thesis"]),
           (IBfilt,  ["filter"]),
