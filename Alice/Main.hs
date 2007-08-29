@@ -85,10 +85,10 @@ readOpts  =
             "init file, empty to skip (def: init.opt)",
         Option "T" [] (NoArg (InBin IBtext True))
             "translate input text and exit",
-        Option "P" ["prover"] (ReqArg (InStr ISprvr) "NAME")
-            "use prover NAME (def: first listed)",
         Option ""  ["provers"] (ReqArg (InStr ISprdb) "FILE")
             "import prover descriptions",
+        Option "P" ["prover"] (ReqArg (InStr ISprvr) "NAME")
+            "use prover NAME (def: first listed)",
         Option "t" ["timelimit"] (ReqArg (InInt IItlim . number) "N")
             "N seconds per prover call (def: 3)",
         Option ""  ["depthlimit"] (ReqArg (InInt IIdpth . number) "N")
@@ -115,10 +115,10 @@ readOpts  =
             "ignore failed goals (def: off)",
         Option "" ["flat"] (ReqArg (InBin IBflat . binary) "{on|off}")
             "do not read proofs (def: off)",
-        Option "v" [] (NoArg (InBin IBverb True))
-            "print more details (-vv, -vvv...)",
         Option "q" [] (NoArg (InBin IBverb False))
             "print no details",
+        Option "v" [] (NoArg (InBin IBverb True))
+            "print more details (-vv, -vvv, etc)",
         Option "" ["printgoal"] (ReqArg (InBin IBPgls . binary) "{on|off}")
             "print current goal (def: on)",
         Option "" ["printreason"] (ReqArg (InBin IBPrsn . binary) "{on|off}")
