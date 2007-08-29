@@ -85,7 +85,8 @@ addRSTI c i = updateRS $ \ rs -> rs { rsCntr = CntrT c i : rsCntr rs }
 addRSCI c i = updateRS $ \ rs -> rs { rsCntr = CntrI c i : rsCntr rs }
 incRSCI c   = addRSCI c 1
 
-timer c a   = do  b <- justIO $ getClockTime ; r <- a
+timer c a   = do  b <- justIO $ getClockTime
+                  r <- a
                   e <- justIO $ getClockTime
                   addRSTI c $ getTimeDiff e b
                   return r
@@ -134,10 +135,8 @@ putStrRM    = justIO . putStr
 printRM a   = justIO $ print a
 
 rlog0  tx = putStrLnRM $ "[Reason] " ++ tx
-rlog0_ tx = putStrRM   $ "[Reason] " ++ tx
 
 rlog  bl tx = rlog0  $ blLabl bl ++ tx
-rlog_ bl tx = rlog0_ $ blLabl bl ++ tx
 
 blLabl (Block { blFile = f, blLine = l })
   = (if null f then "line " else f ++ ":") ++ show l ++ ": "
