@@ -128,15 +128,15 @@ showTimeDiff t
 
 -- IO management
 
-justIO k    = RM $ const $ liftM Just k
+justIO      = RM . const . liftM Just
 
 putStrLnRM  = justIO . putStrLn
 putStrRM    = justIO . putStr
-printRM a   = justIO $ print a
+printRM     = justIO . print
 
-rlog0  tx = putStrLnRM $ "[Reason] " ++ tx
+rlog0 tx = putStrLnRM $ "[Reason] " ++ tx
 
-rlog  bl tx = rlog0  $ blLabl bl ++ tx
+rlog bl tx = rlog0 $ blLabl bl ++ tx
 
 blLabl (Block { blFile = f, blLine = l })
   = (if null f then "line " else f ++ ":") ++ show l ++ ": "
