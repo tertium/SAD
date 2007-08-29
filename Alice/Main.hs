@@ -99,6 +99,8 @@ readOpts  =
             "depthlimit for checker's tasks (def: 3)",
         Option "n" [] (NoArg (InBin IBprov False))
             "cursory mode (equivalent to --prove off)",
+        Option "r" [] (NoArg (InBin IBchck False))
+            "raw mode (equivalent to --check off)",
         Option "" ["prove"] (ReqArg (InBin IBprov . binary) "{on|off}")
             "prove goals in the text (default: on)",
         Option "" ["check"] (ReqArg (InBin IBchck . binary) "{on|off}")
