@@ -138,7 +138,7 @@ sexp t@(Trm s vs _) f = (pt, nf)
 
 -- New patterns
 
-new_prd tvr = una -/- mul -/- new_sym tvr
+new_prd tvr = mul -/- una -/- new_sym tvr
   where
     una = do  v <- tvr; (t, vs) <- uad -|- uve
               return $ zTrm t (v:vs)
