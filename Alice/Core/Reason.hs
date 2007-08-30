@@ -93,7 +93,7 @@ splitG fr = spl $ albet $ strip fr
 context :: Bool -> [Context] -> Context -> [Context]
 context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
   where
-    chk c | tst c = c { cnForm = lichten $ cnForm c }
+    chk c | tst c = c { cnForm = lichten 0 $ cnForm c }
           | True  = c
 
     tst c | cnLowL c  = False
@@ -102,15 +102,16 @@ context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
 
     ls = cnLink tc
 
-lichten :: Formula -> Formula
-lichten = sr
+lichten :: Int -> Formula -> Formula
+lichten n = sr
   where
+    sr (All v f)    = let nn = show n ; fn = lichten (succ n)
+                      in  bool $ All v $ bind nn $ fn $ inst nn f
     sr (Iff (Tag DHD (Trm "=" [_, t] _)) f)
          | isTrm t  = sr $ subst t "." $ inst "." f
     sr (Imp (Tag DHD (Trm "=" [_, t] _)) f)
          | isTrm t  = sr $ subst t "." $ inst "." f
     sr (Iff f g)    = sr $ zIff f g
-    sr (All v f)    = bool $ All v $ sr f
     sr (And f g)    = bool $ And (sr f) (sr g)
     sr (Imp f g)    = bool $ Imp (sm f) (sr g)
     sr (Tag _ f)    = sr f

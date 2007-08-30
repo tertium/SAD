@@ -119,7 +119,7 @@ procTI mot ths brn cnt = proc
 
     proc (InCom ICPcnt)
       = do  let tlb = filter cnTopL cnt
-                tlf = map (lichten . cnForm) tlb
+                tlf = map (lichten 0 . cnForm) tlb
                 srl = filter (not . isTop) tlf
             rlog0 $ "current simple rules:"
             mapM_ printRM srl
