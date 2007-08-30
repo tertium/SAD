@@ -55,6 +55,7 @@ tmComp n f g  = cmp (albet f) (albet g)
     cmp (Exi _ a) (Exi _ b) = tmComp (succ n) (inst nvr a) (inst nvr b)
     cmp (And a b) (And c d) = tmComp n a c && tmComp n b d
     cmp (Or a b) (Or c d)   = tmComp n a c && tmComp n b d
+    cmp (Not a) (Not b)     = tmComp n a b
     cmp (Tag _ a) b         = tmComp n a b
     cmp a (Tag _ b)         = tmComp n a b
     cmp a b                 = twins a b
