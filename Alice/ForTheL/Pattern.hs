@@ -216,7 +216,7 @@ slexem  = slex -|- wlx
 wlx = do  l <- liftM (const "?") (nvr -/- avr) -/- readTkLex
           guard $ all isAlphaNum l &&
             not (isAlpha (head l) && null (tail l)) &&
-            l `notElem` ["a", "an", "the", "is", "are", "be"]
+            map toLower l `notElem` ["a","an","the","is","are","be"]
           return l
 
 nvr = do  v <- var; dvs <- getDecl; tvs <- askS tvr_expr
