@@ -152,7 +152,9 @@ int unify(Node n1, Node n2)
     Map * l, * c;
 
     if (!unifier(n1, n2)) goto fail;
-    while (eqind) if (!as_unifier(eqarr[--eqind], eqarr[--eqind])) goto fail;
+
+    for (; eqind; eqind -= 2)
+        if (!as_unifier(eqarr[eqind - 1], eqarr[eqind - 2])) goto fail;
 
     forlist(l, bound) for (c = l->cons; c; c = c->cons)
         if (!constr(c->node, c->prim)) return 0;
