@@ -80,10 +80,10 @@ reader fs ss@((ps, st):_) [TI (InStr ISread file)] =
 reader fs ss (t:ts) = liftM (t:) $ reader fs ss ts
 
 reader fs ((sps, sst):(ps,st):ss) [] =
-  do  let fi = psFile sps
+  do  let fi = psFile sps ; la = psLang sps
           fn = if null fi then "stdin" else fi
-      putStrLn $ '[' : psLang sps ++ "] "
-          ++ fn ++ ": parsing successful"
+      unless (null la) $ putStrLn $ '[' : la ++ "] "
+                     ++ fn ++ ": parsing successful"
       let rps = ps { psOffs = psOffs sps }
           rst = sst { tvr_expr = tvr_expr st }
           (res, err) = runLPM (runStateT text rst) rps
