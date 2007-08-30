@@ -107,10 +107,10 @@ lichten n = sr
   where
     sr (All v f)    = let nn = show n ; fn = lichten (succ n)
                       in  bool $ All v $ bind nn $ fn $ inst nn f
-    sr (Iff (Tag DHD (Trm "=" [_, t] _)) f)
-         | isTrm t  = sr $ subst t "." $ inst "." f
-    sr (Imp (Tag DHD (Trm "=" [_, t] _)) f)
-         | isTrm t  = sr $ subst t "." $ inst "." f
+    sr (Iff (Tag DHD (Trm "=" [Var v _, t] _)) f)
+         | isTrm t  = sr $ subst t v f
+    sr (Imp (Tag DHD (Trm "=" [Var v _, t] _)) f)
+         | isTrm t  = sr $ subst t v f
     sr (Iff f g)    = sr $ zIff f g
     sr (And f g)    = bool $ And (sr f) (sr g)
     sr (Imp f g)    = bool $ Imp (sm f) (sr g)
