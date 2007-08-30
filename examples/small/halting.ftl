@@ -1,9 +1,8 @@
-[an integer/integers] [a program/programs] [a code/codes of x] 
-[x succeeds/succeed on y and z] [x decides/decide halting]
-[x halts on y] 
+[integer/integers] [program/programs] [code/codes]
+[succeeds/succeed] [decides/decide] [halts/halt]
 
-#Signature PrgSort.  Program is a notion.
-#Signature IntSort.  Integer is a notion.
+Signature PrgSort.  A program is a notion.
+Signature IntSort.  An integer is a notion.
 
 Let U,V,W stand for programs.
 Let x,y,z stand for integers.
@@ -11,8 +10,8 @@ Let x,y,z stand for integers.
 Signature CodeInt.  A code of W is an integer.
 Axiom ExiCode.      Every program has a code.
 
-#Signature HaltRel.  W halts on x is a relation.
-#Signature SuccRel.  W succeeds on x and y is a relation.
+Signature HaltRel.  W halts on x is an atom.
+Signature SuccRel.  W succeeds on x and y is an atom.
 
 Definition DefDH.   W decides halting iff
     for every z and every code x of every V

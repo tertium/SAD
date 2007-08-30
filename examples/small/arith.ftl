@@ -2,15 +2,14 @@
 # Axioms of zero and the successor
 #
 
-[a number/numbers] [the zero]
-[the successor/successors of x]
-[x is nonzero @ x is not equal to zero]
+[number/numbers] [successor/successors]
 
-Signature NatSort.  Number is a notion.
+Signature NatSort.  A number is a notion.
 
 Let A,B,C stand for numbers.
 
-Signature NatZero.  Zero is a number.
+Signature NatZero.  The zero is a number.
+Let X is nonzero stand for X is not equal to zero.
 
 Signature NatSucc.  The successor of A is a nonzero number.
 
@@ -22,13 +21,11 @@ Axiom SuccEquSucc.
 # Axioms of addition
 #
 
-[the sum of x and y]
-
 Signature NatSum.   The sum of A and B is a number.
 
 Axiom AddZero.      The sum of A and zero is equal to A.
 
-Axiom AddSucc.      The sum of A and the successor of B 
+Axiom AddSucc.      The sum of A and the successor of B
         is equal to the successor of the sum of A and B.
 
 #
@@ -54,11 +51,11 @@ Axiom Diff.
 # Definition of order on natural numbers
 #
 
-[x is less than y] [x is greater than y @ y is less than x]
-
 Definition DefLess.
     A is less than B  iff  B is equal to
         the sum of A and the successor of some number.
+
+Let X is greater than Y stand for Y is less than X.
 
 #
 # Basic properties of order
@@ -111,13 +108,11 @@ qed.
 # Axioms of multiplication
 #
 
-[the product of x and y]
-
 Signature NatMul.   The product of A and B is a number.
 
 Axiom MulZero.      The product of A and zero is equal to zero.
 
-Axiom MulSucc.      The product of A and the successor of B 
+Axiom MulSucc.      The product of A and the successor of B
         is equal to the sum of A and the product of A and B.
 
 Axiom Monot.
