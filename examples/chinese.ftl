@@ -54,8 +54,9 @@ Definition DefSInt. X ** Y = { h | h << X and h << Y }.
 [ideal/ideals]
 
 Definition DefIdeal.
-    An ideal is a set X such that for every x,y << X
-        and every z  (x + y), (z * x) << X.
+    An ideal is a set X such that for every x << X
+        forall y << X (x + y) << X and
+        forall z (z * x) << X.
 
 Let I,J denote ideals.
 
