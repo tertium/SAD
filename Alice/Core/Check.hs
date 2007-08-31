@@ -79,9 +79,9 @@ findDef :: (MonadPlus m) => Formula -> Context -> m DefTrio
 findDef trm cx  = dive Top 0 $ cnForm cx
   where
     dive gs _ (Iff (Tag DHD (Trm "=" [Var v _, t] _)) f) | isTrm t
-                                  = fine gs t $ Tag DEQ $ subst t v f
+                                  = fine gs t $ Tag DEQ $ safeSubst t v f
     dive gs _ (Imp (Tag DHD (Trm "=" [Var v _, t] _)) f) | isTrm t
-                                  = fine gs t $ Tag DIM $ subst t v f
+                                  = fine gs t $ Tag DIM $ safeSubst t v f
     dive gs _ (Iff (Tag DHD t) f) = fine gs t $ Tag DEQ f
     dive gs _ (Imp (Tag DHD t) f) = fine gs t $ Tag DIM f
 
@@ -160,7 +160,7 @@ specDig :: (MonadPlus m) => Formula -> Formula -> m Formula
 specDig trm = dive Top 0
   where
     dive gs _ (Iff (Trm "=" [l@(Var v@('?':_) _), t] _) f)
-      | isTrm t && not (occurs l t) = fine gs t $ subst t v f
+      | isTrm t && not (occurs l t) = fine gs t $ safeSubst t v f
     dive gs _ (Iff t f) | isTrm t   = fine gs t f
     dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
     dive gs n (Imp g f) = dive (bool $ And gs g) n f
@@ -176,6 +176,6 @@ specDig trm = dive Top 0
 
 wipeDef :: Formula -> Formula
 wipeDef f | hasInfo f = let nf = f { trInfo = remInfo [DEQ,DSD] f }
-                        in  skipInfo (mapF wipeDef) nf
+                        in  mapF wipeDef nf
           | otherwise = mapF wipeDef f
 

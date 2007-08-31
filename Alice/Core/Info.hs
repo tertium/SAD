@@ -44,7 +44,7 @@ fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
         nts = map (fill False fc sg n) (trArgs fr)
 
 setInfo :: Bool -> [Context] -> Formula -> Formula
-setInfo prd cnt trm = {-wfInfo [] ntr `seq`-} ntr
+setInfo prd cnt trm = wfInfo [] ntr `seq` ntr
   where
     ntr = trm { trInfo = nte ++ nti }
     nti = eqi trm +++ trigger prd nct trm
@@ -133,7 +133,7 @@ reduce f  | isTrm f = nfr
 -- Match
 
 match :: (MonadPlus m) => Formula -> Formula -> m (Formula -> Formula)
-match (Var v@('?':_) _) t       = return  $ subst t v
+match (Var v@('?':_) _) t       = return  $ safeSubst t v
 match (Var u _)    (Var v _)    | u == v  = return id
 match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
   where
@@ -148,6 +148,17 @@ green :: Formula -> Bool
 green (Var ('?':_:_) _) = False
 green (Var ('!':_:_) _) = False
 green f                 = allF green $ nullInfo f
+
+safeSubst :: Formula -> String -> Formula -> Formula
+safeSubst t _ | not (closed t)
+        = error $ "safeSubst: " ++ show t
+safeSubst t v = dive
+  where
+    dive (Var u _)  | u == v  = t
+    dive f  | hasInfo f = let nti = map (safeSubst wtr v) $ trInfo f
+                          in  skipInfo (mapF dive) f { trInfo = nti }
+            | otherwise = mapF dive f
+    wtr = wipeInfo t
 
 
 -- Info handling
