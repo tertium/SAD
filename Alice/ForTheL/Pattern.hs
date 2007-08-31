@@ -131,9 +131,11 @@ sexp t@(Trm s vs _) f = (pt, nf)
     get_patt "#" = Vr
     get_patt  w  = Sm w
 
-    get_name (Sm s:ls)  = symEncode s ++ get_name ls
-    get_name (_:ls)     = get_name ls
-    get_name []         = ""
+    get_name (Vr:Sm s:ls) = let (c:cs) = symEncode s
+                            in  toUpper c : cs ++ get_name ls
+    get_name (Sm s:ls)    = symEncode s ++ get_name ls
+    get_name (_:ls)       = get_name ls
+    get_name []           = ""
 
 
 -- New patterns

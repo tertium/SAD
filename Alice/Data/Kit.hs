@@ -227,8 +227,7 @@ showTail sh ts      = foldr ((.) . ((showChar ',' .) . sh)) id ts
 
 symChars    = "`~!@$%^&*()-+=[]{}:'\"<>/?\\|;,"
 
-symEncode s = let (c:cs) = concatMap chc s
-              in  toUpper c : cs
+symEncode s = concatMap chc s
   where
     chc '`' = "bq" ; chc '~'  = "tl" ; chc '!' = "ex"
     chc '@' = "at" ; chc '$'  = "dl" ; chc '%' = "pc"
@@ -244,7 +243,7 @@ symEncode s = let (c:cs) = concatMap chc s
 symDecode s = sname [] s
   where
     sname ac (c:cs)
-              | isUpper c = sname ac (toLower c:cs)
+              | isUpper c = sname ('.':ac) (toLower c:cs)
     sname ac ('z':c:cs)   = sname (c:ac) cs
     sname ac ('b':'q':cs) = sname ('`':ac) cs
     sname ac ('t':'l':cs) = sname ('~':ac) cs
@@ -255,10 +254,8 @@ symDecode s = sname [] s
     sname ac ('c':'f':cs) = sname ('^':ac) cs
     sname ac ('e':'t':cs) = sname ('&':ac) cs
     sname ac ('a':'s':cs) = sname ('*':ac) cs
-{-
     sname ac ('l':'p':cs) = sname ('(':ac) cs
     sname ac ('r':'p':cs) = sname (')':ac) cs
--}
     sname ac ('m':'n':cs) = sname ('-':ac) cs
     sname ac ('p':'l':cs) = sname ('+':ac) cs
     sname ac ('e':'q':cs) = sname ('=':ac) cs
