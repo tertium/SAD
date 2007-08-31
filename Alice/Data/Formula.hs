@@ -191,6 +191,7 @@ substs f vs ts = dive f
 -- Compare and replace
 
 twins :: Formula -> Formula -> Bool
+twins (Ind u _)    (Ind v _)    = u == v
 twins (Var u _)    (Var v _)    = u == v
 twins (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
   where
