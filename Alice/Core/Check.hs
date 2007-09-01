@@ -92,7 +92,7 @@ findDef trm cx  = dive Top 0 $ cnForm cx
     fine gs tr@(Trm t _ _) fr =
       do  ngs <- match otr trm `ap` return gs
           nfr <- match otr wtr `ap` return fr
-          return (cx, ngs, trm { trName = t, trInfo = [nfr] })
+          return (cx, ngs, trm { trName = t, trInfo = [reduce nfr] })
       where otr = tr { trName = takeWhile (/= ':') t }
 
     wtr = wipeDef trm
@@ -170,7 +170,7 @@ specDig trm = dive Top 0
     fine gs tr@(Trm t _ _) fr =
       do  nfr <- match tr wtr `ap` return fr; guard $ green nfr
           ngs <- match tr trm `ap` return gs; guard $ green ngs
-          guard $ rapid ngs; return nfr
+          guard $ rapid ngs; return $ reduce nfr
 
     wtr = wipeDef trm
 
