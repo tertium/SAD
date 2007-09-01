@@ -92,11 +92,10 @@ findDef trm cx  = dive Top 0 $ cnForm cx
     fine gs tr@(Trm t _ _) fr =
       do  ngs <- match otr trm `ap` return gs
           nfr <- match otr wtr `ap` return fr
-          return (cx, ngs, trm { trName = t, trInfo = [reduce nfr] })
+          return (cx, ngs, trm { trName = t, trInfo = [nfr] })
       where otr = tr { trName = takeWhile (/= ':') t }
 
-    wtr = wipeDef trm
-
+    wtr = wipeInfo trm
 
 testDef :: Bool -> [Context] -> Context -> Formula -> DefTrio -> RM Formula
 testDef hard cnt cx trm (dc, gs, nt)
@@ -170,12 +169,7 @@ specDig trm = dive Top 0
     fine gs tr@(Trm t _ _) fr =
       do  nfr <- match tr wtr `ap` return fr; guard $ green nfr
           ngs <- match tr trm `ap` return gs; guard $ green ngs
-          guard $ rapid ngs; return $ reduce nfr
+          guard $ rapid ngs; return nfr
 
-    wtr = wipeDef trm
-
-wipeDef :: Formula -> Formula
-wipeDef f | hasInfo f = let nf = f { trInfo = remInfo [DEQ,DSD] f }
-                        in  mapF wipeDef nf
-          | otherwise = mapF wipeDef f
+    wtr = wipeInfo trm
 
