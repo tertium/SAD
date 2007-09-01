@@ -60,7 +60,7 @@ unfoldA sg fr = nfr
 
     expS h  = foldF expT $ nullInfo h
     expT h  = expS h ++ expA h
-    expA h  = getDCN h
+    expA h  = map reduce $ getDCN h
 
 
 -- Trivial markup
