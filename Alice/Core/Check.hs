@@ -18,7 +18,7 @@
  -  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -}
 
-module Alice.Core.Check (fillDef,fillInfo) where
+module Alice.Core.Check (fillDef) where
 
 import Control.Monad
 import Data.Maybe
@@ -29,6 +29,7 @@ import Alice.Data.Instr
 import Alice.Data.Text
 import Alice.Core.Base
 import Alice.Core.Info
+import Alice.Core.Extras
 import Alice.Core.Reason
 
 fillDef :: Context -> [Context] -> Context -> RM Formula
@@ -54,17 +55,6 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
     sinfo uin pr cnt trm
       | uin   = setInfo pr cnt trm
       | True  = trm { trInfo = selInfo [DEQ,DSD] trm }
-
-fillInfo :: Int -> [Context] -> Context -> Formula
-fillInfo n cnt cx = reduce $ fill True [] (Just True) n $ cnForm cx
-  where
-    fill pr fc sg n fr
-      | isVar fr    = sti fr
-      | isTrm fr    = sti $ specDef $ fr { trArgs = nts }
-      | otherwise   = roundF (fill pr) fc sg n fr
-      where
-        sti = setInfo pr $ cnRaise cnt cx fc
-        nts = map (fill False fc sg n) (trArgs fr)
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
 setDef nw cnt cx trm@(Trm t _ _)  = incRSCI CIsymb >>
@@ -127,60 +117,4 @@ testDef hard cnt cx trm (dc, gs, nt)
 
     header  = "check: " ++ showsPrec 2 trm " vs " ++ cnName dc
     whdchk  = whenIB IBPchk False . rlog0
-
-
--- Infer ad hoc definitions
-
-specDef :: Formula -> Formula
-specDef trm@(Trm "=" [l, r] _) | not (null sds)  = ntr
-  where
-    ntr = Trm "=" [l, r { trInfo = remInfo [DEQ,DSD] r }] nds
-    sds = map (Tag DSD . replace (wipeInfo l) r) $ trInfoD r
-    nds = sds ++ remInfo [DSD] trm
-
-specDef trm | isTrm trm = otr { trInfo = nds }
-  where
-    (nds, otr) = pas (remInfo [DSD] trm) trm
-
-    pas ds t  | isTrm t = let (nd, as) = foldr arg (ds, []) $ trArgs t
-                          in  (nd, t { trArgs = as })
-              | True    = (ds, t)
-
-    arg a (ds, as)  = let (ad, na) = pas ds a
-                          (nd, is) = foldr tst (ad, []) $ trInfo a
-                      in  (nd, na { trInfo = is } : as)
-
-    tst a (nd, ds)  = case a of
-      Tag DEQ d ->        case specDig trm d of
-                            Just f  ->  (Tag DSD f : nd, ds)
-                            _       ->  (nd, a : ds)
-      Tag DSD d ->        case specDig trm d of
-                            Just f  ->  (Tag DSD f : nd, ds)
-                            _       ->  (nd, a : ds)
-      Tag DIM (Not d) ->  let ods = concatMap trInfo $ trInfoO d
-                              (ni, _) = foldr tst (nd, []) ods
-                          in  (ni, a : ds)
-      Tag DIM d ->        let (ni, _) = foldr tst (nd, []) $ trInfo d
-                          in  (ni, a : ds)
-      _ ->                (nd, a : ds)
-
-specDef f = f
-
-specDig :: (MonadPlus m) => Formula -> Formula -> m Formula
-specDig trm = dive Top 0
-  where
-    dive gs _ (Iff (Trm "=" [l@(Var v@('?':_) _), t] _) f)
-      | isTrm t && not (occurs l t) = fine gs t $ safeSubst t v f
-    dive gs _ (Iff t f) | isTrm t   = fine gs t f
-    dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
-    dive gs n (Imp g f) = dive (bool $ And gs g) n f
-    dive gs n (And f g) = dive gs n f `mplus` dive gs n g
-    dive _ _ _          = mzero
-
-    fine gs tr@(Trm t _ _) fr =
-      do  nfr <- match tr wtr `ap` return fr; guard $ green nfr
-          ngs <- match tr trm `ap` return gs; guard $ green ngs
-          guard $ rapid ngs; return nfr
-
-    wtr = wipeInfo trm
 

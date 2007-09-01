@@ -25,12 +25,13 @@ import Data.List
 import Data.Maybe
 
 import Alice.Core.Base
-import Alice.Core.Check
 import Alice.Core.Info
+import Alice.Core.Extras
 import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Text
 
+-- Infer new thesis
 
 thesis :: [Context] -> Context -> (Bool, Context)
 thesis cnt@(ct:_) tc = (nmt, setForm tc nth)

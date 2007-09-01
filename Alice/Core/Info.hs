@@ -186,32 +186,3 @@ children f  | isTrm f = trArgs f
 offspring f = let x = children f
               in  x ++ concatMap offspring x
 
-
--- Well-formedness checking
-
-wfForm fs f | hasInfo f     = 1 + wfInfo fs f +
-                                     sumF (wfForm fs) (nullInfo f)
-            | otherwise     = 1 + sumF (wfForm fs) f
-
-wfInfo fs f = sumap (wfevid (f:fs)) (trInfoI f) +
-              sumap (wfevid (f:fs)) (trInfoO f) +
-              sumap (wfForm (f:fs)) (trInfoD f)
-  where
-    wfevid fs (Not f) | isTrm f = 1 + sumap (wfargs fs) (trArgs f) + wfInfo fs f
-    wfevid fs f | isTrm f       = 1 + sumap (wfargs fs) (trArgs f) + wfInfo fs f
-    wfevid fs f                 = wferr "ill-formed info" (f:fs)
-
-    wfargs ts t | not (hasInfo t)       = wferr "non-term argument" (t:ts)
-                | not (null $ trInfo t) = wferr "nonempty trInfo" (t:ts)
-                | isTrm t               = 1 + sumap (wfargs ts) (trArgs t)
-                | not (green t)         = wferr "non-green var" (t:ts)
-                | otherwise             = 1
-
-    wferr es ts = error $ "wfcheck: " ++ es ++ concatMap trout ts
-
-    sumap = (sum .) . map
-
-    trout t = " in\n" ++ show t ++ trinf t
-    trinf t | hasInfo t = show $ trInfo t
-            | otherwise = ""
-
