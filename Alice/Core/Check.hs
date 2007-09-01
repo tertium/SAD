@@ -103,7 +103,7 @@ testDef hard cnt cx trm (dc, gs, nt)
     = setup >> (guards <> (cleanup >> mzero)) >> cleanup >> return nt
   where
     guards  | hard  = do  whdchk $ header; incRSCI CIchkh
-                          reason cnt $ setForm cx gs; incRSCI CIchky
+                          reason cnt $ setForm ccx gs; incRSCI CIchky
             | True  = do  guard $ rapid gs; incRSCI CIchkt
                           whdchk $ "trivial " ++ header
 
@@ -117,4 +117,6 @@ testDef hard cnt cx trm (dc, gs, nt)
 
     header  = "check: " ++ showsPrec 2 trm " vs " ++ cnName dc
     whdchk  = whenIB IBPchk False . rlog0
+
+    ccx = let bl:bs = cnBran cx in cx { cnBran = bl { blLink = [] } : bs }
 
