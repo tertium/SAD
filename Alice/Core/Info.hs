@@ -32,7 +32,7 @@ import Alice.Core.Base
 -- Collect evidence
 
 setInfo :: Bool -> [Context] -> Formula -> Formula
-setInfo prd cnt trm = {-wfInfo [] ntr `seq`-} ntr
+setInfo prd cnt trm = ntr
   where
     ntr = trm { trInfo = nte ++ nti }
     nti = eqi trm +++ trigger prd nct trm
