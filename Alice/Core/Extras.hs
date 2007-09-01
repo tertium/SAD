@@ -71,7 +71,7 @@ specDef trm | isTrm trm = otr { trInfo = nds }
       Tag DSD d ->        case specDig trm d of
                             Just f  ->  (Tag DSD f : nd, ds)
                             _       ->  (nd, a : ds)
-      Tag DIM (Not d) ->  let ods = concatMap trInfo $ trInfoO d
+      Tag DIM (Not d) ->  let ods = map (Tag DIM) $ trInfoO d
                               (ni, _) = foldr tst (nd, []) ods
                           in  (ni, a : ds)
       Tag DIM d ->        let (ni, _) = foldr tst (nd, []) $ trInfo d
