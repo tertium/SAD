@@ -21,7 +21,6 @@
 module Alice.Data.Kit where
 
 import Control.Monad
-import Data.Char
 import Data.Maybe
 
 import Alice.Data.Formula
@@ -238,13 +237,11 @@ symEncode s = concatMap chc s
     chc ':' = "cl" ; chc '\'' = "qt" ; chc '"' = "dq"
     chc '<' = "ls" ; chc '>'  = "gt" ; chc '/' = "sl"
     chc '?' = "qu" ; chc '\\' = "bs" ; chc '|' = "br"
-    chc ';' = "sc" ; chc ','  = "cm" ; chc c   = ['z', c]
+    chc ';' = "sc" ; chc ','  = "cm" ; chc '.' = "dt"
+    chc c   = ['z', c]
 
 symDecode s = sname [] s
   where
-    sname ac (c:cs)
-              | isUpper c = sname ('.':ac) (toLower c:cs)
-    sname ac ('z':c:cs)   = sname (c:ac) cs
     sname ac ('b':'q':cs) = sname ('`':ac) cs
     sname ac ('t':'l':cs) = sname ('~':ac) cs
     sname ac ('e':'x':cs) = sname ('!':ac) cs
@@ -274,6 +271,8 @@ symDecode s = sname [] s
     sname ac ('b':'r':cs) = sname ('|':ac) cs
     sname ac ('s':'c':cs) = sname (';':ac) cs
     sname ac ('c':'m':cs) = sname (',':ac) cs
+    sname ac ('d':'t':cs) = sname ('.':ac) cs
+    sname ac ('z':c:cs)   = sname (c:ac) cs
     sname ac cs@(':':_)   = reverse ac ++ cs
     sname ac []           = reverse ac
     sname _ _             = s
