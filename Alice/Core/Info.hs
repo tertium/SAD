@@ -150,8 +150,6 @@ green (Var ('!':_:_) _) = False
 green f                 = allF green $ nullInfo f
 
 safeSubst :: Formula -> String -> Formula -> Formula
-safeSubst t _ | not (closed t)
-        = error $ "safeSubst: " ++ show t
 safeSubst t v = dive
   where
     dive (Var u _)  | u == v  = t

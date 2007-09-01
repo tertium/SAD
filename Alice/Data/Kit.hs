@@ -21,6 +21,7 @@
 module Alice.Data.Kit where
 
 import Control.Monad
+import Data.Char
 import Data.Maybe
 
 import Alice.Data.Formula
@@ -176,4 +177,104 @@ nifilt vs v = guard (v `notElem` vs) >> return v
 
 dups (v:vs) = infilt vs v `mplus` dups vs
 dups _      = mzero
+
+
+-- Show instances
+
+instance Show Formula where
+  showsPrec p = showFormula p 0
+
+showFormula :: Int -> Int -> Formula -> ShowS
+showFormula p d = dive
+    where
+      dive (All v f)  = showString "forall " . binder f
+      dive (Exi v f)  = showString "exists " . binder f
+      dive (Iff f g)  = showParen True $ sinfix " iff " f g
+      dive (Imp f g)  = showParen True $ sinfix " implies " f g
+      dive (Or  f g)  = showParen True $ sinfix " or "  f g
+      dive (And f g)  = showParen True $ sinfix " and " f g
+      dive (Tag a f)  = showParen True $ shows a
+                      . showString " :: " . dive f
+      dive (Not f)    = showString "not " . dive f
+      dive Top        = showString "truth"
+      dive Bot        = showString "contradiction"
+
+      dive (Trm "#TH#" _ _)   = showString "thesis"
+      dive (Trm "=" [l,r] _)  = sinfix " = " l r
+      dive (Trm ('s':s) ts _) = showString (symDecode s) . sargs ts
+      dive (Trm s ts _)       = showString s . sargs ts
+      dive (Var ('x':s) _)    = showString s
+      dive (Var s _)          = showString s
+      dive (Ind i _)  | i < d = showChar 'v' . shows (d - i - 1)
+                      | True  = showChar 'v' . showChar '?'
+
+      sargs []  = id
+      sargs _   | p == 1  = showString "(...)"
+      sargs ts  = showArgs (showFormula (pred p) d) ts
+
+      binder f      = showFormula p (succ d) (Ind 0 []) . showChar ' '
+                    . showFormula p (succ d) f
+
+      sinfix o f g  = dive f . showString o . dive g
+
+showArgs sh (t:ts)  = showParen True $ sh t . showTail sh ts
+showArgs sh _       = id
+
+showTail sh ts      = foldr ((.) . ((showChar ',' .) . sh)) id ts
+
+
+-- Symbolic names
+
+symChars    = "`~!@$%^&*()-+=[]{}:'\"<>/?\\|;,"
+
+symEncode s = concatMap chc s
+  where
+    chc '`' = "bq" ; chc '~'  = "tl" ; chc '!' = "ex"
+    chc '@' = "at" ; chc '$'  = "dl" ; chc '%' = "pc"
+    chc '^' = "cf" ; chc '&'  = "et" ; chc '*' = "as"
+    chc '(' = "lp" ; chc ')'  = "rp" ; chc '-' = "mn"
+    chc '+' = "pl" ; chc '='  = "eq" ; chc '[' = "lb"
+    chc ']' = "rb" ; chc '{'  = "lc" ; chc '}' = "rc"
+    chc ':' = "cl" ; chc '\'' = "qt" ; chc '"' = "dq"
+    chc '<' = "ls" ; chc '>'  = "gt" ; chc '/' = "sl"
+    chc '?' = "qu" ; chc '\\' = "bs" ; chc '|' = "br"
+    chc ';' = "sc" ; chc ','  = "cm" ; chc c   = ['z', c]
+
+symDecode s = sname [] s
+  where
+    sname ac (c:cs)
+              | isUpper c = sname ('.':ac) (toLower c:cs)
+    sname ac ('z':c:cs)   = sname (c:ac) cs
+    sname ac ('b':'q':cs) = sname ('`':ac) cs
+    sname ac ('t':'l':cs) = sname ('~':ac) cs
+    sname ac ('e':'x':cs) = sname ('!':ac) cs
+    sname ac ('a':'t':cs) = sname ('@':ac) cs
+    sname ac ('d':'l':cs) = sname ('$':ac) cs
+    sname ac ('p':'c':cs) = sname ('%':ac) cs
+    sname ac ('c':'f':cs) = sname ('^':ac) cs
+    sname ac ('e':'t':cs) = sname ('&':ac) cs
+    sname ac ('a':'s':cs) = sname ('*':ac) cs
+    sname ac ('l':'p':cs) = sname ('(':ac) cs
+    sname ac ('r':'p':cs) = sname (')':ac) cs
+    sname ac ('m':'n':cs) = sname ('-':ac) cs
+    sname ac ('p':'l':cs) = sname ('+':ac) cs
+    sname ac ('e':'q':cs) = sname ('=':ac) cs
+    sname ac ('l':'b':cs) = sname ('[':ac) cs
+    sname ac ('r':'b':cs) = sname (']':ac) cs
+    sname ac ('l':'c':cs) = sname ('{':ac) cs
+    sname ac ('r':'c':cs) = sname ('}':ac) cs
+    sname ac ('c':'l':cs) = sname (':':ac) cs
+    sname ac ('q':'t':cs) = sname ('\'':ac) cs
+    sname ac ('d':'q':cs) = sname ('"':ac) cs
+    sname ac ('l':'s':cs) = sname ('<':ac) cs
+    sname ac ('g':'t':cs) = sname ('>':ac) cs
+    sname ac ('s':'l':cs) = sname ('/':ac) cs
+    sname ac ('q':'u':cs) = sname ('?':ac) cs
+    sname ac ('b':'s':cs) = sname ('\\':ac) cs
+    sname ac ('b':'r':cs) = sname ('|':ac) cs
+    sname ac ('s':'c':cs) = sname (';':ac) cs
+    sname ac ('c':'m':cs) = sname (',':ac) cs
+    sname ac cs@(':':_)   = reverse ac ++ cs
+    sname ac []           = reverse ac
+    sname _ _             = s
 
