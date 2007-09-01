@@ -18,7 +18,7 @@
  -  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -}
 
-module Alice.Core.Check (fillDef) where
+module Alice.Core.Check (fillDef,fillInfo) where
 
 import Control.Monad
 import Data.Maybe
@@ -54,6 +54,18 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
     sinfo uin pr cnt trm
       | uin   = setInfo pr cnt trm
       | True  = trm { trInfo = selInfo [DEQ,DSD] trm }
+
+fillInfo :: [Context] -> Context -> Formula
+fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
+  where
+    fill pr fc sg n fr
+      | isThesis fr = fr
+      | isVar fr    = sti fr
+      | isTrm fr    = sti $ fr { trArgs = nts }
+      | otherwise   = roundF (fill pr) fc sg n fr
+      where
+        sti = setInfo pr $ cnRaise cnt cx fc
+        nts = map (fill False fc sg n) (trArgs fr)
 
 setDef :: Bool -> [Context] -> Context -> Formula -> RM Formula
 setDef nw cnt cx trm@(Trm t _ _)  = incRSCI CIsymb >>

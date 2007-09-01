@@ -31,18 +31,6 @@ import Alice.Core.Base
 
 -- Collect evidence
 
-fillInfo :: [Context] -> Context -> Formula
-fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
-  where
-    fill pr fc sg n fr
-      | isThesis fr = fr
-      | isVar fr    = sti fr
-      | isTrm fr    = sti $ fr { trArgs = nts }
-      | otherwise   = roundF (fill pr) fc sg n fr
-      where
-        sti = setInfo pr $ cnRaise cnt cx fc
-        nts = map (fill False fc sg n) (trArgs fr)
-
 setInfo :: Bool -> [Context] -> Formula -> Formula
 setInfo prd cnt trm = {-wfInfo [] ntr `seq`-} ntr
   where
