@@ -55,13 +55,12 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
       | uin   = setInfo pr cnt trm
       | True  = trm { trInfo = selInfo [DEQ,DSD] trm }
 
-fillInfo :: [Context] -> Context -> Formula
-fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
+fillInfo :: Int -> [Context] -> Context -> Formula
+fillInfo n cnt cx = reduce $ fill True [] (Just True) n $ cnForm cx
   where
     fill pr fc sg n fr
-      | isThesis fr = fr
       | isVar fr    = sti fr
-      | isTrm fr    = sti $ fr { trArgs = nts }
+      | isTrm fr    = sti $ specDef $ fr { trArgs = nts }
       | otherwise   = roundF (fill pr) fc sg n fr
       where
         sti = setInfo pr $ cnRaise cnt cx fc

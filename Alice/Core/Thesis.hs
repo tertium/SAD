@@ -103,7 +103,7 @@ tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
         dive h              = roundFM pass fc sg n h
 
         qua u f = mplus (tmVars u f >>= dive) . roundFM pass fc sg n
-        dfs = msum . map (dive . fillInfo nct . setForm tc) . trInfoD
+        dfs = msum . map (dive . fillInfo n nct . setForm tc) . trInfoD
         nct = cnRaise cnt tc fc
 
 tmVars u f  = TM (vrs [])
