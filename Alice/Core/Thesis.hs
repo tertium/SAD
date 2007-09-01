@@ -37,7 +37,8 @@ thesis :: [Context] -> Context -> (Bool, Context)
 thesis cnt@(ct:_) tc = (nmt, setForm tc nth)
   where
     nmt = cnSign ct || isJust ith
-    nth = tmWipe (tmDown $ cnForm ct) jth
+    nth = fillInfo 0 cnt $ setForm tc kth
+    kth = tmWipe (tmDown $ cnForm ct) jth
     jth | cnSign ct = ths
         | otherwise = fromMaybe ths ith
     ith = tmInst cnt tc
