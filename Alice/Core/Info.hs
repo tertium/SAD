@@ -44,7 +44,7 @@ fillInfo cnt cx = reduce $ fill True [] (Just True) 0 $ cnForm cx
         nts = map (fill False fc sg n) (trArgs fr)
 
 setInfo :: Bool -> [Context] -> Formula -> Formula
-setInfo prd cnt trm = wfInfo [] ntr `seq` ntr
+setInfo prd cnt trm = {-wfInfo [] ntr `seq`-} ntr
   where
     ntr = trm { trInfo = nte ++ nti }
     nti = eqi trm +++ trigger prd nct trm
@@ -144,11 +144,6 @@ match (Trm p ps _) (Trm q qs _) | p == q  = pairs ps qs
     pairs _ _           = mzero
 match _ _         = mzero
 
-green :: Formula -> Bool
-green (Var ('?':_:_) _) = False
-green (Var ('!':_:_) _) = False
-green f                 = allF green $ nullInfo f
-
 safeSubst :: Formula -> String -> Formula -> Formula
 safeSubst t v = dive
   where
@@ -157,6 +152,11 @@ safeSubst t v = dive
                           in  skipInfo (mapF dive) f { trInfo = nti }
             | otherwise = mapF dive f
     wtr = wipeInfo t
+
+green :: Formula -> Bool
+green (Var ('?':_:_) _) = False
+green (Var ('!':_:_) _) = False
+green f                 = allF green $ nullInfo f
 
 
 -- Info handling
