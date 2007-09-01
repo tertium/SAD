@@ -126,7 +126,8 @@ met = opt Raw $ word "by" >> (u1 -|- u2 -|- u3)
 
 -- Low-level sections: proofs, proof cases and frames
 
-prfsent bl  = do  lb <- lowsent ; return bl { blBody = [TB lb] }
+prfsent bl  = do  bs <- lowsent >>= pretvr (return [])
+                  return bl { blBody = bs }
 
 prfsect bl  = do  bs <- lowtext ; ls <- link
                   return bl { blBody = bs, blLink = blLink bl ++ ls }
