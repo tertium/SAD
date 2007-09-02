@@ -178,9 +178,11 @@ trInfoA t = trInfoD t ++ trInfoI t
 
 (+++) = unionBy ism
   where
-    ism (Tag DIM f) (Tag DIM g) = twins f g
-    ism (Tag DOR f) (Tag DOR g) = twins f g
-    ism f g                     = False
+    ism (Tag DIM f) (Tag DIM g) = ism f g
+    ism (Tag DOR f) (Tag DOR g) = ism f g
+    ism (Tag _ f)   (Tag _ g)   = False
+    ism (Not f)     (Not g)     = ism f g
+    ism f g                     = twins f g
 
 children f  | isTrm f = trArgs f
             | True    = foldF children $ nullInfo f
