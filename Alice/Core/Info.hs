@@ -106,16 +106,18 @@ reduce f  | isTrm f = nfr
         | any (twins f) nlv = Bot
         | otherwise         = f
 
-    plv = [ f | f <- lvs, isTrm f ]
-    nlv = [ f | Not f <- lvs ]
-
-    lvs = concatMap sct $ offspring f
-
-    sct (Not t) = trInfoO t ++ concatMap sct (trInfoO t)
-    sct t       = trInfoI t ++ concatMap sct (trInfoI t)
+    plv = [ f | f@(Trm _ _ _) <- alv ]
+    nlv = [ f | Not f <- alv ]
+    alv = infos f
 
     triv (Trm "=" [l,r] _)  = twins l r
     triv f                  = isTop f
+
+infos :: Formula -> [Formula]
+infos = concatMap sct . offspring
+  where
+    sct (Not t) = trInfoO t ++ concatMap sct (trInfoO t)
+    sct t       = trInfoI t ++ concatMap sct (trInfoI t)
 
 
 -- Match
