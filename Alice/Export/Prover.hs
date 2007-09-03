@@ -39,7 +39,7 @@ import Alice.Export.Moses
 
 -- Prover interface
 
-export :: [Prover] -> [Instr] -> [Context] -> Context -> IO Bool
+export :: [Prover] -> [Instr] -> [Context] -> Context -> IO (IO Bool)
 export prs ins cnt gl =
   do  when (null prs) $ die "no provers"
 
@@ -52,33 +52,35 @@ export prs ins cnt gl =
           tlm = askII ins IItlim 3; agl = map (setTlim tlm) ags
           run = runInteractiveProcess pth agl Nothing Nothing
 
-      rpr@(wh,rh,eh,ph) <- catch run
-          $ \ e -> die $ "run error: " ++ ioeGetErrorString e
-
       let dmp = case fmt of
                   DFG   -> dfgOut   ; TPTP  -> tptpOut
                   Otter -> otterOut ; Moses -> mosesOut
           tsk = dmp prv tlm cnt gl
 
       when (askIB ins IBPdmp False) $ putStrLn tsk
-      hPutStrLn wh tsk ; hClose wh
 
-      ofl <- hGetContents rh ; efl <- hGetContents eh
-      let lns = filter (not . null) $ lines $ ofl ++ efl
-          out = map (("[" ++ lbl ++ "] ") ++) lns
+      seq (length tsk) $ return $
+        do  rpr@(wh,rh,eh,ph) <- catch run
+                $ \ e -> die $ "run error: " ++ ioeGetErrorString e
 
-      when (null lns) $ die "empty response"
-      when (askIB ins IBPprv False) $ mapM_ putStrLn out
+            hPutStrLn wh tsk ; hClose wh
 
-      let pos = any (\ l -> any (`isPrefixOf` l) yes) lns
-          neg = any (\ l -> any (`isPrefixOf` l) nos) lns
-          unk = any (\ l -> any (`isPrefixOf` l) uns) lns
+            ofl <- hGetContents rh ; efl <- hGetContents eh
+            let lns = filter (not . null) $ lines $ ofl ++ efl
+                out = map (("[" ++ lbl ++ "] ") ++) lns
 
-      unless (pos || neg || unk) $ die "bad response"
+            when (null lns) $ die "empty response"
+            when (askIB ins IBPprv False) $ mapM_ putStrLn out
 
-      hClose eh ; waitForProcess ph
+            let pos = any (\ l -> any (`isPrefixOf` l) yes) lns
+                neg = any (\ l -> any (`isPrefixOf` l) nos) lns
+                unk = any (\ l -> any (`isPrefixOf` l) uns) lns
 
-      return pos
+            unless (pos || neg || unk) $ die "bad response"
+
+            hClose eh ; waitForProcess ph
+
+            return pos
   where
     setTlim tl ('%':'d':rs) = show tl ++ rs
     setTlim tl (s:rs)       = s : setTlim tl rs

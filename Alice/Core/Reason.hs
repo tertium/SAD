@@ -65,13 +65,12 @@ goalseq _ _ _ _ = return ()
 launch :: [Context] -> Context -> RM ()
 launch cnt tc = do  incRSCI CIprov; whenIB IBPtsk False debug
                     prd <- askRS rsPrdb ; ins <- askRS rsInst
-                    let prv = justIO $ export prd ins cnt tc
-                    timer CTprov prv >>= guard ; account
+                    let exp = justIO $ export prd ins cnt tc
+                    exp >>= timer CTprov . justIO >>= guard
+                    whenIB IBPrsn False $ rlog0 $ "...proved"
+                    CntrT _ td <- liftM head $ askRS rsCntr
+                    addRSTI CTprvy td ; incRSCI CIprvy
   where
-    account = do  whenIB IBPrsn False $ rlog0 $ "...proved"
-                  CntrT _ td <- liftM head $ askRS rsCntr
-                  addRSTI CTprvy td ; incRSCI CIprvy
-
     debug = do  rlog0 "prover task:"
                 let tlb = map cnForm (tc:cnt)
                 mapM_ printRM $ reverse tlb
