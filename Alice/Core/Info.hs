@@ -176,13 +176,13 @@ trInfoA t = trInfoD t ++ trInfoI t
 
 -- Service stuff
 
-(+++) = unionBy ism
-  where
-    ism (Tag DIM f) (Tag DIM g) = ism f g
-    ism (Tag DOR f) (Tag DOR g) = ism f g
-    ism (Tag _ f)   (Tag _ g)   = False
-    ism (Not f)     (Not g)     = ism f g
-    ism f g                     = twins f g
+(+++) = unionBy sameInfo
+
+sameInfo (Tag DIM f) (Tag DIM g) = sameInfo f g
+sameInfo (Tag DOR f) (Tag DOR g) = sameInfo f g
+sameInfo (Tag _ f)   (Tag _ g)   = False
+sameInfo (Not f)     (Not g)     = sameInfo f g
+sameInfo f g                     = twins f g
 
 children f  | isTrm f = trArgs f
             | True    = foldF children $ nullInfo f
