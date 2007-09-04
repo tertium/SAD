@@ -78,32 +78,24 @@ data InStr  = ISinit  --  init file (init.opt)
 
 -- Ask functions
 
-askIC :: [Instr] -> InCom -> Bool
-askIC (InCom n : _) m | n == m  = True
-askIC (_ : rs) m = askIC rs m
-askIC _ _ = False
+askIC :: InCom -> [Instr] -> Bool
+askIC i is    = any id [ True | InCom j <- is, i == j ]
 
-askII :: [Instr] -> InInt -> Int -> Int
-askII (InInt n v : _) m _ | n == m  = v
-askII (_ : rs) m d  = askII rs m d
-askII _ _ d = d
+askII :: InInt -> Int -> [Instr] -> Int
+askII i d is  = head $  [ v | InInt j v <- is, i == j ] ++ [d]
 
-askIB :: [Instr] -> InBin -> Bool -> Bool
-askIB (InBin n v : _) m _ | n == m  = v
-askIB (_ : rs) m d  = askIB rs m d
-askIB _ _ d = d
+askIB :: InBin -> Bool -> [Instr] -> Bool
+askIB i d is  = head $  [ v | InBin j v <- is, i == j ] ++ [d]
 
-askIS :: [Instr] -> InStr -> String -> String
-askIS (InStr n v : _) m _ | n == m  = v
-askIS (_ : rs) m d  = askIS rs m d
-askIS _ _ d = d
+askIS :: InStr -> String -> [Instr] -> String
+askIS i d is  = head $  [ v | InStr j v <- is, i == j ] ++ [d]
 
-dropI :: [Instr] -> Idrop -> [Instr]
-dropI (InCom n   : rs) (IdCom m)  | n == m  = rs
-dropI (InInt n _ : rs) (IdInt m)  | n == m  = rs
-dropI (InBin n _ : rs) (IdBin m)  | n == m  = rs
-dropI (InStr n _ : rs) (IdStr m)  | n == m  = rs
-dropI (r : rs) i  = r : dropI rs i
+dropI :: Idrop -> [Instr] -> [Instr]
+dropI (IdCom m) (InCom n   : rs)  | n == m  = rs
+dropI (IdInt m) (InInt n _ : rs)  | n == m  = rs
+dropI (IdBin m) (InBin n _ : rs)  | n == m  = rs
+dropI (IdStr m) (InStr n _ : rs)  | n == m  = rs
+dropI i (r : rs)  = r : dropI i rs
 dropI _ _ = []
 
 

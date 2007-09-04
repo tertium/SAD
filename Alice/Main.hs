@@ -41,7 +41,7 @@ main :: IO ()
 main  =
   do  hSetBuffering stdout LineBuffering
       cmdl <- readOpts
-      init <- readInit $ askIS cmdl ISinit "init.opt"
+      init <- readInit $ askIS ISinit "init.opt" cmdl
       rstt <- newIORef initRS
       strt <- getClockTime
 
@@ -90,7 +90,7 @@ readOpts  =
   do  let rio = ReturnInOrder $ InStr ISread
       (is, _, es) <- liftM (getOpt rio options) getArgs
       unless (all wf is && null es) $ die es >> exitFailure
-      if askIB is IBhelp False then helper else return is
+      if askIB IBhelp False is then helper else return is
   where
     helper  = do  putStr $ usageInfo header options
                   exitWith ExitSuccess

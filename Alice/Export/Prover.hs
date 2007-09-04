@@ -43,13 +43,13 @@ export :: [Prover] -> [Instr] -> [Context] -> Context -> IO (IO Bool)
 export prs ins cnt gl =
   do  when (null prs) $ die "no provers"
 
-      let prn = askIS ins ISprvr $ prName $ head prs
+      let prn = askIS ISprvr (prName $ head prs) ins
           prr = filter ((==) prn . prName) prs
 
       when (null prr) $ die $ "no prover: " ++ prn
 
       let prv@(Prover _ lbl pth ags fmt yes nos uns) = head prr
-          tlm = askII ins IItlim 3; agl = map (setTlim tlm) ags
+          tlm = askII IItlim 3 ins; agl = map (setTlim tlm) ags
           run = runInteractiveProcess pth agl Nothing Nothing
 
       let dmp = case fmt of
@@ -57,7 +57,7 @@ export prs ins cnt gl =
                   Otter -> otterOut ; Moses -> mosesOut
           tsk = dmp prv tlm cnt gl
 
-      when (askIB ins IBPdmp False) $ putStrLn tsk
+      when (askIB IBPdmp False ins) $ putStrLn tsk
 
       seq (length tsk) $ return $
         do  rpr@(wh,rh,eh,ph) <- catch run
@@ -70,7 +70,7 @@ export prs ins cnt gl =
                 out = map (("[" ++ lbl ++ "] ") ++) lns
 
             when (null lns) $ die "empty response"
-            when (askIB ins IBPprv False) $ mapM_ putStrLn out
+            when (askIB IBPprv False ins) $ mapM_ putStrLn out
 
             let pos = any (\ l -> any (`isPrefixOf` l) yes) lns
                 neg = any (\ l -> any (`isPrefixOf` l) nos) lns

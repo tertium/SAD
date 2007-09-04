@@ -95,12 +95,12 @@ askRS f     = RM $ \ rs -> liftM (Just . f) $ readIORef rs
 setRS r     = RM $ \ rs -> liftM Just $ writeIORef rs r
 updateRS f  = RM $ \ rs -> liftM Just $ modifyIORef rs f
 
-askRSII i d = liftM (\ is -> askII is i d) (askRS rsInst)
-askRSIB i d = liftM (\ is -> askIB is i d) (askRS rsInst)
-askRSIS i d = liftM (\ is -> askIS is i d) (askRS rsInst)
+askRSII i d = liftM (askII i d) (askRS rsInst)
+askRSIB i d = liftM (askIB i d) (askRS rsInst)
+askRSIS i d = liftM (askIS i d) (askRS rsInst)
 
 addRSIn ins = updateRS $ \ rs -> rs { rsInst = ins : rsInst rs }
-drpRSIn ind = updateRS $ \ rs -> rs { rsInst = dropI (rsInst rs) ind }
+drpRSIn ind = updateRS $ \ rs -> rs { rsInst = dropI ind $ rsInst rs }
 addRSTI c i = updateRS $ \ rs -> rs { rsCntr = CntrT c i : rsCntr rs }
 addRSCI c i = updateRS $ \ rs -> rs { rsCntr = CntrI c i : rsCntr rs }
 incRSCI c   = addRSCI c 1
@@ -119,13 +119,8 @@ unlessIB i d a  = askRSIB i d >>= \ b -> unless b a
 
 -- Counter management
 
-fetchCI c (CntrI d i : cs) | c == d = i : fetchCI c cs
-fetchCI c (_ : cs) = fetchCI c cs
-fetchCI _ _ = []
-
-fetchCT c (CntrT d i : cs) | c == d = i : fetchCT c cs
-fetchCT c (_ : cs) = fetchCT c cs
-fetchCT _ _ = []
+fetchCI c cs  = [ i | CntrI d i <- cs, c == d ]
+fetchCT c cs  = [ i | CntrT d i <- cs, c == d ]
 
 cumulCI c t = foldr (+) t . fetchCI c
 cumulCT c t = foldr addToClockTime t . fetchCT c
