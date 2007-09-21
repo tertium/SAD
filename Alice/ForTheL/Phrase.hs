@@ -54,11 +54,11 @@ atomic  = atom -|- thereis -|- (wehve >> (smform -|- thesis))
 
 smform  = liftM2 (flip ($)) s_form $ opt id qu_chain
 
-thesis  = u1 -|- u2 -|- u3
+thesis  = art >> (u1 -|- u2 -|- u3)
   where
-    u1  = the >> word "thesis" >> return zThesis
-    u2  = the >> word "contrary" >> return (Not zThesis)
-    u3  = an  >> word "contradiction" >> return Bot
+    u1  = word "thesis" >> return zThesis
+    u2  = word "contrary" >> return (Not zThesis)
+    u3  = word "contradiction" >> return Bot
 
 thereis = there >> (u1 -|- u2)
   where
@@ -197,9 +197,9 @@ qu_chain  = liftM (foldl fld id) $ word "for" >> comma qu_notion
   where
     fld x (y, _)  = x . y
 
-nn_term   = sym_term -|- set_term -|- paren (opt () the >> prim_fun term)
+nn_term   = sym_term -|- paren (art >> (set_term -|- prim_fun term))
 
-fo_term   = sym_term -|- set_term -|- paren (opt () the >> prim_fun fo_term)
+fo_term   = sym_term -|- paren (art >> (set_term -|- prim_fun fo_term))
 
 
 -- Symbolic notation
@@ -269,7 +269,7 @@ s_var     = liftM zVar var
 set_eqnt  = do  sets; v <- namlist; t <- set_of
                 return (id, zEqu zHole t, v)
 
-set_term  = paren $ sets >> namlist >> liftM ((,) id) set_of
+set_term  = sets >> namlist >> liftM ((,) id) set_of
 
 set_of  = word "of" >> (u1 -|- u2 -|- u3)
   where
@@ -348,7 +348,7 @@ has   = wordOf ["has", "have"]
 with  = wordOf ["with", "of", "having"]
 such  = wordOf ["such", "so"]
 that  = wordOf ["that"]
-sets  = the >> wordOf ["set", "sets"]
+sets  = wordOf ["set", "sets"]
 does  = opt () $ wordOf ["does", "do"]
 wehve = opt () $ word "we" >> word "have"
 art   = opt () $ wordOf ["a", "an", "the"]
