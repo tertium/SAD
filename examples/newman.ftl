@@ -1,4 +1,4 @@
-[element/elements] [system/systems] [reduct/reducts]
+[element/-s] [system/-s] [reduct/-s]
 
 Signature ElmSort.  An element is a notion.
 Signature RelSort.  A rewriting system is a notion.

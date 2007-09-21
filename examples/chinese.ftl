@@ -1,4 +1,4 @@
-[element/elements]
+[element/-s]
 
 Signature ElmSort. An element is a notion.
 
@@ -33,7 +33,7 @@ Axiom Cancel.  If x * y = 0 then x = 0 or y = 0.
 
 Axiom UnNeZr.  1 != 0.
 
-[set/sets] [belongs/belong]
+[set/-s] [belong/-s]
 
 Signature SetSort.  A set is a notion.
 
@@ -51,7 +51,7 @@ Definition DefSSum. X + Y = { x + y | x << X and y << Y }.
 
 Definition DefSInt. X ** Y = { h | h << X and h << Y }.
 
-[ideal/ideals]
+[ideal/-s]
 
 Definition DefIdeal.
     An ideal is a set X such that for every x << X
@@ -101,7 +101,7 @@ Proof.
 qed.
 
 
-[number/numbers]
+[number/-s]
 
 Signature NatSort.  A natural number is a notion.
 
@@ -117,7 +117,7 @@ Axiom Division.
         x = (q * y) + r and (r != 0 => |r| -<- |y|).
 
 
-[divisor/divisors] [divides/divide]
+[divisor/-s] [divide/-s]
 
 Definition DefDiv.
     x divides y  iff  for some z (x * z = y).

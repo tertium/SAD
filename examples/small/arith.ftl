@@ -2,7 +2,7 @@
 # Axioms of zero and the successor
 #
 
-[number/numbers] [successor/successors]
+[number/-s]
 
 Signature NatSort.  A number is a notion.
 

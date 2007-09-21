@@ -1,4 +1,4 @@
-[element/elements] [relation/relations]
+[element/-s] [relation/-s]
 
 Signature ElmSort.  An element is a notion.
 Signature RelSort.  A relation is a notion.

@@ -1,4 +1,4 @@
-[set/sets] [subset/subsets] [element/elements] [belongs/belong]
+[set/-s] [subset/-s] [element/-s] [belong/-s]
 
 Signature SetSort. A set is a notion.
 Signature ElmSort. An element is a notion.
@@ -24,7 +24,7 @@ Axiom ARefl. x <= x.
 Axiom ASymm. x <= y <= x => x = y.
 Axiom Trans. x <= y <= z => x <= z.
 
-[bound/bounds] [supremum/supremums] [infimum/infimums] [lattice/lattices]
+[bound/-s] [supremum/-s] [infimum/-s] [lattice/-s]
 
 Definition DefLB.   Let S be a subset of T.
     A lower bound of S in T is an element u of T
@@ -57,7 +57,7 @@ Definition DefCLat.
         has an infimum in S and a supremum in S.
 
 
-[function/functions] [point/points]
+[function/-s] [point/-s]
 
 Signature ConMap.   A function is a notion.
 

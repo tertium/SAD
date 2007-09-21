@@ -1,5 +1,4 @@
-[set/sets] [element/elements]
-[belongs/belong] [subset/subsets]
+[set/-s] [element/-s] [belong/-s] [subset/-s]
 
 Signature SetSort.  A set is a notion.
 Signature ElmSort.  An element is a notion.

@@ -1,5 +1,5 @@
-[integer/integers] [program/programs] [code/codes]
-[succeeds/succeed] [decides/decide] [halts/halt]
+[integer/-s] [program/-s] [code/-s]
+[succeed/-s] [decide/-s] [halt/-s]
 
 Signature PrgSort.  A program is a notion.
 Signature IntSort.  An integer is a notion.

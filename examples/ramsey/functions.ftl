@@ -3,7 +3,7 @@
 Let A,B,C,D,P,Q,R,S,T denote sets.
 Let x,y,z denote elements.
 
-[function/functions]
+[function/-s]
 
 Signature FunSort.  A function is a notion.
 

@@ -3,7 +3,7 @@
 Let A,B,C,D,P,Q,R,S,T denote sets.
 Let x,y,z denote elements.
 
-[number/numbers]
+[number/-s]
 
 Signature NATSet.   NAT is a countable set.
 

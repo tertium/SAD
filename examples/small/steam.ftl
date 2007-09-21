@@ -1,4 +1,4 @@
-[animal/animals] [plant/plants] [eats/eat]
+[animal/-s] [plant/-s] [eat/-s]
 
 Signature Animal.   An animal is a notion.
 Signature Plant.    A plant is a notion.
