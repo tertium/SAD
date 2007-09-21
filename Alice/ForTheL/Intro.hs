@@ -40,8 +40,11 @@ isyms = do  nulText
             ss <- doLFTL $ narrow sym ; st <- getS
             setS st { str_syms = ss : str_syms st }
   where
-    sym = do  ss <- exbrk $ chain (char '/') wlexem
-              guard $ not $ null $ tail ss ; return ss
+    sym = exbrk $ do  w <- wlexem ; h <- opt w $ sfx w ; char '/'
+                      sls <- chain (char '/') $ wlexem -|- sfx w
+                      return $ h : sls
+
+    sfx w = nextChar '-' >> liftM (w ++) readTkLex
 
 itvar = do  nulText; word "let"
             tv <- doLFTL $ narrow tvr ; st <- getS
