@@ -48,9 +48,10 @@ maxerr e@(_, pe) d@(_, pd)
   | otherwise             = e
 
 strerr :: [PErr a] -> String
-strerr es = '[' : p ++ "] " ++ file ++ line ++ e ++ text
+strerr es = emsg ++ text
   where
     (e, PState _ _ l _ d f p) = foldr1 maxerr es
+    emsg  = '[' : p ++ "] " ++ file ++ line ++ e
     file  = if null f then "line " else f ++ ":"
     line  = show (foldr lofs l d) ++ ": "
     text  = if null d then "" else "\n in text: "
