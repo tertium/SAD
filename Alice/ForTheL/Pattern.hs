@@ -100,8 +100,6 @@ newExpr (Trm "=" [_, t@(Trm s vs _)] _) (Trm "=" [v, f] _) st
         | rsm   = st { rfn_expr = (tail pt, fm) : rfn_expr st }
         | True  = st { ifn_expr = (init (tail pt), fm) : ifn_expr st }
 
-newExpr _ f _ = return f
-
 
 -- Pattern extraction
 
