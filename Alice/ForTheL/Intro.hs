@@ -32,40 +32,38 @@ import Alice.ForTheL.Phrase
 import Alice.ForTheL.Pattern
 import Alice.Parser.Base
 import Alice.Parser.Prim
-import Alice.Parser.Trans
 
 -- Introduction of synonyms, pretyped variables, and aliases
 
-isyms = do  nulText
-            ss <- doLFTL $ narrow sym ; st <- getS
-            setS st { str_syms = ss : str_syms st }
+isyms = nulText >> (narrow sym >>= updateS . upd) >> return ()
   where
+    upd ss st = st { str_syms = ss : str_syms st }
+
     sym = exbrk $ do  w <- wlexem ; h <- opt w $ sfx w ; char '/'
                       sls <- chain (char '/') $ wlexem -|- sfx w
                       return $ h : sls
 
     sfx w = nextChar '-' >> liftM (w ++) readTkLex
 
-itvar = do  nulText; word "let"
-            tv <- doLFTL $ narrow tvr ; st <- getS
-            setS st { tvr_expr = tv : tvr_expr st }
+itvar = nulText >> (narrow tvr >>= updateS . upd) >> return ()
   where
-    tvr = do  vs@(_:_) <- varlist
+    upd tv st = st { tvr_expr = tv : tvr_expr st }
+
+    tvr = do  word "let"; vs@(_:_) <- varlist
               (q, f) <- stand >> dot anotion
               g <- liftM q $ dig f [zHole]
               let wfc = overfree [] g
               unless (null wfc) (fail wfc)
               return (vs, renull g)
 
-alias = do  nulText; word "let"
-            (f, g) <- doLFTL $ narrow $ prd -|- ntn
+alias = do  nulText ; (f, g) <- narrow $ prd -|- ntn
             getS >>= newExpr f (renull g); return ()
   where
-    prd = do  f <- new_prd avr
+    prd = do  word "let"; f <- new_prd avr
               g <- stand >> dot statement
               prdvars f g ; return (f, g)
 
-    ntn = do  (n, u) <- new_nnm avr
+    ntn = do  word "let"; (n, u) <- new_nnm avr
               (q, f) <- stand >> dot anotion
               h <- liftM q $ dig f [zVar u]
               funvars n h ; return (n, h)
@@ -73,21 +71,6 @@ alias = do  nulText; word "let"
 renull (All v f)  = All "" f
 renull (Exi v f)  = Exi "" f
 renull f          = mapF renull f
-
-
--- Extraction of new primitives from definitions and sigexts
-
-extPrim bl  = liftM nbb $ ext $ blForm lbl
-  where
-    nbb f = bl { blBody = reverse $ TB lbl { blForm = f } : ibl }
-
-    (TB lbl :ibl) = reverse $ blBody bl
-
-    ext (All u f) = liftM (zAll u) $ ext $ inst u f
-    ext (Iff l r) = liftM (`Iff` r) (ext l)
-    ext (Imp l r) = liftM (`Imp` r) (ext l)
-    ext (Tag a f) = liftM (Tag a)   (ext f)
-    ext f = getS >>= newExpr f f
 
 
 -- Definitions and sigexts
@@ -130,7 +113,7 @@ sig_ntn = do  (n, u) <- old_ntn is; (q, f) <- anotion -|- nmn
 
 -- Overloaded patterns
 
-old_prd p = after old p -/- after (new_prd nvr) p
+old_prd p = after old p -/- after new p
   where
     old = una -|- mul -|- old_spr
 
@@ -148,12 +131,19 @@ old_prd p = after old p -/- after (new_prd nvr) p
     mvr = liftM2 (,) zvr (com >> zvr)
     com = word "and" -|- char ','
 
-old_ntn p = after old p -/- after (new_ntn nvr) p
+    new = do  n <- new_prd nvr
+              getS >>= newExpr n n
+
+old_ntn p = after old p -/- after new p
   where
     old = ntn -|- (old_sfn >>= eqt)
     ntn = art >> prim_ntn variable >>= single >>= out
     eqt t = do  v <- hidden ; return (zEqu (zVar v) t, v)
     out (_, n, v) = return (substH (zVar v) n, v)
+
+    new = do  (n, u) <- new_ntn nvr
+              f <- getS >>= newExpr n n
+              return (f, u)
 
 old_spr = cpr -|- lpr -|- rpr -|- ipr
   where

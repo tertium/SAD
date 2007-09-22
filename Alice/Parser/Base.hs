@@ -1,5 +1,5 @@
 {-
- -  Parser/Base.hs -- parser monad class and base monad
+ -  Parser/Base.hs -- parser state monad
  -  Copyright (c) 2001,2004,2007   Andrei Paskevich <atertium@gmail.com>
  -
  -  This file is part of SAD/Alice - a mathematical text verifier.
@@ -27,63 +27,35 @@ import Alice.Parser.Token
 
 -- Parser state
 
-data PState = PState  { psOffs, psLine :: Int,
-                        psRest, psDone :: [Token],
-                        psFile, psLang :: String }
+data PState a = PState  { psProp :: a,
+                          psOffs, psLine :: Int,
+                          psRest, psDone :: [Token],
+                          psFile, psLang :: String }
 
-initPS :: PState
-initPS  = PState 0 1 [] [] "" ""
+initPS :: a -> PState a
+initPS a  = PState a 0 1 [] [] "" ""
 
-type PRes a = (a, PState)
-type PErr   = (String, PState)
-type LPMR a = ([PRes a], [PErr])
+type PRes a b = (b, PState a)
+type PErr a   = (String, PState a)
+type LPMR a b = ([PRes a b], [PErr a])
 
-resadd :: LPMR a -> LPMR a -> LPMR a
+resadd :: LPMR a b -> LPMR a b -> LPMR a b
 resadd (as, ea) (bs, eb) = (as ++ bs, ea ++ eb)
 
-maxerr :: PErr -> PErr -> PErr
+maxerr :: PErr a -> PErr a -> PErr a
 maxerr e@(_, pe) d@(_, pd)
   | psOffs pe < psOffs pd = d
   | otherwise             = e
 
-strerr :: [PErr] -> String
-strerr es = lang ++ file ++ line ++ e ++ text
+strerr :: [PErr a] -> String
+strerr es = '[' : p ++ "] " ++ file ++ line ++ e ++ text
   where
-    (e, PState _ l _ d f p) = foldr maxerr ie es
-    lang  = '[' : p ++ "] " ; ie = ("", initPS)
+    (e, PState _ _ l _ d f p) = foldr1 maxerr es
     file  = if null f then "line " else f ++ ":"
     line  = show (foldr lofs l d) ++ ": "
     text  = if null d then "" else "\n in text: "
                     ++ concatMap show (reverse d)
     lofs (TkSpc n) l = l - n ; lofs _ l = l
-
-
--- Parser state monad class
-
-class Monad m => MonadPS m where
-  getPS :: m PState
-  getPS = updatePS id
-
-  setPS :: PState -> m ()
-  setPS ps  = updatePS (const ps) >> return ()
-
-  updatePS :: (PState -> PState) -> m PState
-  updatePS fn = do  ps <- getPS
-                    setPS (fn ps)
-                    return ps
-
-askPS :: MonadPS m => (PState -> a) -> m a
-askPS fn = getPS >>= return . fn
-
-getText :: MonadPS m => m String
-getText = askPS psDone >>= return . concatMap show . reverse
-
-nulText :: MonadPS m => m Int
-nulText = liftM psLine $ updatePS (\ ps -> ps { psDone = [] })
-
-nextfail :: MonadPS m => String -> m a
-nextfail e  = let nxof ps = ps { psOffs = succ (psOffs ps) }
-              in  updatePS nxof >> fail e
 
 
 -- Lazy parser monad class
@@ -95,9 +67,9 @@ class MonadPlus m => MonadLazy m where
 
 -- List parser monad
 
-newtype LPM a = LPM { runLPM :: PState -> LPMR a }
+newtype LPM a b = LPM { runLPM :: PState a -> LPMR a b }
 
-instance Monad LPM where
+instance Monad (LPM a) where
   fail e    = LPM $ \ p -> ([], [(e, p)])
   return r  = LPM $ \ p -> ([(r, p)], [])
 
@@ -106,11 +78,11 @@ instance Monad LPM where
       after (rs, e) = foldl app ([], e) rs
       app l (r, q)  = resadd (runLPM (k r) q) l
 
-instance MonadPlus LPM where
+instance MonadPlus (LPM a) where
   mzero     = LPM $ \ p -> ([], [])
   mplus m k = LPM $ \ p -> resadd (runLPM m p) (runLPM k p)
 
-instance MonadLazy LPM where
+instance MonadLazy (LPM a) where
   mtry m k  = LPM $ \ p -> case runLPM m p of
                 ([], e) -> case runLPM k p of
                   (rs, d) -> (rs, e ++ d)
@@ -121,43 +93,44 @@ instance MonadLazy LPM where
       after (rs, e)   = foldl (app $ map fst rs) ([], e) rs
       app rs l (r, q) = resadd (runLPM (k rs r) q) l
 
-instance MonadPS LPM where
-  getPS   = LPM $ \ p -> ([(p, p)], [])
-  setPS p = LPM $ \ _ -> ([((), p)], [])
-  updatePS fn = LPM $ \ p ->
-        let np = fn p in ([(p, np)], [])
 
-{-
-doLPM :: (MonadPS n) => LPM a -> n a
-doLPM m = do  p <- getPS ; case runLPM m p of
-                ((r, q):_, _) ->  setPS q >> return r
-                (_, (e, q))   ->  setPS q >> fail e
+-- Parser state manipulation
+
+getPS :: LPM a (PState a)
+getPS   = LPM $ \ p -> ([(p, p)], [])
+
+setPS :: PState a -> LPM a ()
+setPS p = LPM $ \ _ -> ([((), p)], [])
+
+updatePS :: (PState a -> PState a) -> LPM a (PState a)
+updatePS fn = LPM $ \ p -> ([(p, fn p)], [])
+
+askPS :: (PState a -> b) -> LPM a b
+askPS fn = liftM fn getPS
+
+getText :: LPM a String
+getText = askPS $ concatMap show . reverse . psDone
+
+nulText :: LPM a Int
+nulText = liftM psLine $ updatePS (\ ps -> ps { psDone = [] })
+
+nextfail :: String -> LPM a b
+nextfail e  = let nxof ps = ps { psOffs = succ (psOffs ps) }
+              in  updatePS nxof >> fail e
 
 
--- Either parser monad
+-- Proper state manipulation
 
-newtype EPM a = EPM { runEPM :: PState -> Either PErr (PRes a) }
+getS :: LPM a a
+getS  = askPS psProp
 
-instance Monad EPM where
-  m >>= k   = EPM $ either Left (uncurry $ runEPM . k) . runEPM m
-  return r  = EPM $ Right . (,) r
-  fail e    = EPM $ Left . (,) e
+setS :: a -> LPM a ()
+setS s  = updatePS (\ p -> p { psProp = s }) >> return ()
 
-instance MonadPlus EPM where
-  mzero     = fail ""
-  mplus m k = EPM $ \ p -> case runEPM m p of
-                Left e  -> case runEPM k p of
-                  Left d  -> Left $ maxerr e d
-                  r -> r
-                r -> r
+updateS :: (a -> a) -> LPM a a
+updateS fn  = let upd p = p { psProp = fn (psProp p) }
+              in  liftM psProp $ updatePS upd
 
-instance MonadPS EPM where
-  getPS   = EPM $ \ p -> Right (p, p)
-  setPS p = EPM $ \ _ -> Right ((), p)
-  updatePS fn = EPM $ \ p -> Right (p, fn p)
+askS :: (a -> b) -> LPM a b
+askS fn = askPS (fn . psProp)
 
-doEPM :: (MonadPS n) => EPM a -> n a
-doEPM m = do  p <- getPS ; case runEPM m p of
-                Right (r, q)  ->  setPS q >> return r
-                Left (e, q)   ->  setPS q >> fail e
--}

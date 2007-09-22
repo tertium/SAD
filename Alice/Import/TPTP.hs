@@ -30,7 +30,7 @@ import Alice.Data.Text
 import Alice.Parser.Base
 import Alice.Parser.Prim
 
-tptp :: LPM [Text]
+tptp :: LPM a [Text]
 tptp  = fof -/- cnf
 
 fof = u1 -/- u2 -/- u3

@@ -31,7 +31,7 @@ import Alice.Parser.Prim
 
 -- First-order text
 
-fol :: LPM [Text]
+fol :: LPM a [Text]
 fol = u1 -/- u2 -/- u3
   where
     u1  = liftM2 ((:).TB) (narrow formula) fol

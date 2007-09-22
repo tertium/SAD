@@ -28,29 +28,29 @@ import Alice.Parser.Prim
 
 -- Instructions
 
-instr :: (MonadPlus m, MonadPS m) => m Instr
+instr :: LPM a Instr
 instr = nulText >> exbrk (readTkLex >>= readIn >>= gut)
   where
     gut (InStr ISread _)  = fail "'read' not allowed here"
     gut (InCom ICexit)    = fail "'exit'/'quit' not allowed here"
     gut i = return i
 
-iread :: (MonadPlus m, MonadPS m) => m Instr
+iread :: LPM a Instr
 iread = nulText >> exbrk (readTkLex >>= readIn >>= gut)
   where
     gut i@(InStr ISread _)  = return i
     gut _ = mzero
 
-iexit :: (MonadPlus m, MonadPS m) => m ()
+iexit :: LPM a ()
 iexit = nulText >> exbrk (readTkLex >>= readIn >>= gut)
   where
     gut (InCom ICexit)  = return ()
     gut _ = mzero
 
-idrop :: (MonadPlus m, MonadPS m) => m Idrop
+idrop :: LPM a Idrop
 idrop = nulText >> exbrk (char '/' >> readTkLex >>= readId)
 
-readIn :: (MonadPlus m, MonadPS m) => String -> m Instr
+readIn :: String -> LPM a Instr
 readIn n  = readIC -|- readII -|- readIB -|- readIS -|- errins
   where
     readIC  = liftM  InCom (readIX setIC n)
@@ -71,7 +71,7 @@ readIn n  = readIC -|- readII -|- readIB -|- readIS -|- errins
 
     readerr s = nextfail $ "invalid instruction argument: " ++ s
 
-readId :: (MonadPlus m, MonadPS m) => String -> m Idrop
+readId :: String -> LPM a Idrop
 readId n = readIC -|- readII -|- readIB -|- readIS -|- errins
   where
     readIC  = liftM IdCom (readIX setIC n)
@@ -80,7 +80,7 @@ readId n = readIC -|- readII -|- readIB -|- readIS -|- errins
     readIS  = liftM IdStr (readIX setIS n)
     errins  = nextfail $ "unknown instruction: " ++ n
 
-readTok :: (MonadPlus m, MonadPS m) => m String
+readTok :: LPM a String
 readTok = skipSpace $ liftM concat $ chnop (lex -|- chr)
   where
     lex = nextTkLex ; chr = nextTkChr >>= chk

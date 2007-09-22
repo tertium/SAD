@@ -35,61 +35,58 @@ import Alice.Parser.Base
 import Alice.Parser.Prim
 import Alice.Parser.Instr
 import Alice.Parser.Token
-import Alice.Parser.Trans
 
 -- Init file parsing
 
 readInit :: String -> IO [Instr]
 readInit file =
   do  input <- catch (readFile file) (const $ return "")
-      let tkn = tokenize input
-          inp = initPS { psRest = tkn, psFile = file, psLang = "Init" }
-          (res,err) = runLPM instf inp
-          [(is, _)] = res
+      let tkn = tokenize input ; ips = initPS ()
+          inp = ips { psRest = tkn, psFile = file, psLang = "Init" }
+          (res,err) = runLPM instf inp ; [(is, _)] = res
       when (null res) $ dieLn $ strerr err
       return is
 
-instf :: LPM [Instr]
+instf :: LPM a [Instr]
 instf = skipSpace (return ()) >> after (optEx [] $ chnopEx instr) readEOI
 
 
 -- Reader loop
 
 readText :: String -> IO [Text]
-readText file = reader [] [(initPS, initFS)] [TI $ InStr ISread file]
+readText file = reader [] [initPS initFS] [TI $ InStr ISread file]
 
-reader :: [String] -> [(PState, FState)] -> [Text] -> IO [Text]
+reader :: [String] -> [PState FState] -> [Text] -> IO [Text]
 
-reader fs ss@((ps, st):_) [TI (InStr ISread file)] | file `elem` fs =
+reader fs ss@(ps:_) [TI (InStr ISread file)] | file `elem` fs =
   do  putStrLn $ "[Main] " ++ file ++ " already read, skipping"
-      reader fs ((initPS { psOffs = psOffs ps }, st):ss) []
+      let nps = (initPS (psProp ps)) { psOffs = psOffs ps }
+      reader fs (nps:ss) []
 
-reader fs ss@((ps, st):_) [TI (InStr ISread file)] =
+reader fs ss@(ps:_) [TI (InStr ISread file)] =
   do  input <- catch
         (if null file then hGetContents stdin else readFile file)
           $ \ e -> dieLn $ "[Main] " ++ file ++ ": read error: "
                                         ++ ioeGetErrorString e
-      let sst = st { tvr_expr = [] }
-          tkn = tokenize input
-          sps = initPS { psRest = tkn, psFile = file, psOffs = psOffs ps }
-          (res, err) = runLPM (runStateT text sst) sps
-          [((ntx, nst), nps)] = res
+      let tkn = tokenize input
+          ips = initPS $ (psProp ps) { tvr_expr = [] }
+          sps = ips { psRest = tkn, psFile = file, psOffs = psOffs ps }
+          (res, err) = runLPM text sps ; [(ntx, nps)] = res
       when (null res) $ dieLn $ strerr err
-      reader (file:fs) ((nps, nst):ss) ntx
+      reader (file:fs) (nps:ss) ntx
 
 reader fs ss (t:ts) = liftM (t:) $ reader fs ss ts
 
-reader fs ((sps, sst):(ps,st):ss) [] =
+reader fs (sps:ps:ss) [] =
   do  let fi = psFile sps ; la = psLang sps
           fn = if null fi then "stdin" else fi
       unless (null la) $ putStrLn $ '[' : la ++ "] "
                      ++ fn ++ ": parsing successful"
-      let rps = ps { psOffs = psOffs sps }
-          rst = sst { tvr_expr = tvr_expr st }
-          (res, err) = runLPM (runStateT text rst) rps
-          [((ntx, nst), nps)] = res
+      let rps = ps { psOffs = psOffs sps, psProp = rst }
+          rst = (psProp sps) { tvr_expr = tvr_expr (psProp ps) }
+          (res, err) = runLPM text rps ; [(ntx, nps)] = res
       when (null res) $ dieLn $ strerr err
-      reader fs ((nps, nst):ss) ntx
+      reader fs (nps:ss) ntx
 
 reader _ [_] [] = return []
 
@@ -101,11 +98,11 @@ text  = do  p <- liftM parser $ askPS psLang
             narrow $ (skipSpace $ return ()) >> p
   where
     parser "ForTheL"  = forthel
-    parser "FOL"      = lift fol
-    parser "TPTP"     = lift tptp
+    parser "FOL"      = fol
+    parser "TPTP"     = tptp
     parser _          = lang "ForTheL" forthel
-                    -/- lang "FOL"  (lift fol)
-                    -/- lang "TPTP" (lift tptp)
+                    -/- lang "FOL"  fol
+                    -/- lang "TPTP" tptp
 
     lang l p = updatePS (\ ps -> ps { psLang = l }) >> p
 

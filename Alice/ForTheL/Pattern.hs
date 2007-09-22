@@ -30,7 +30,6 @@ import Alice.Data.Text
 import Alice.ForTheL.Base
 import Alice.Parser.Base
 import Alice.Parser.Prim
-import Alice.Parser.Trans
 
 -- Expression generation
 

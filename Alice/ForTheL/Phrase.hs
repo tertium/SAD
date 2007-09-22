@@ -30,7 +30,6 @@ import Alice.Data.Text
 import Alice.ForTheL.Base
 import Alice.Parser.Prim
 import Alice.Parser.Base
-import Alice.Parser.Trans
 
 -- Statement syntax
 
@@ -80,7 +79,7 @@ selection = liftM hchain $ comma $ art >> notion
 
 -- Atomic syntax
 
-atom :: LFTL Formula
+atom :: FTL Formula
 atom  = do  (q, ts) <- term_seq
             p <- and_chain does_literal
             liftM2 (q .) (opt id qu_chain) (dig p ts)
@@ -165,23 +164,23 @@ single _            = nextfail "inadmissible multinamed notion"
 
 -- Term syntax
 
-term_seq :: LFTL MTerm
+term_seq :: FTL MTerm
 term_seq  = liftM (foldl1 fld) $ comma mterm
   where
     fld (q, ts) (r, ss) = (q . r, ts ++ ss)
 
-mterm :: LFTL MTerm
+mterm :: FTL MTerm
 mterm = qu_notion -|- liftM s2m nn_term
   where
     s2m (q, t) = (q, [t])
 
-term :: LFTL UTerm
+term :: FTL UTerm
 term  = (qu_notion >>= m2s) -|- nn_term
   where
     m2s (q, [v]) = return (q, v)
     m2s _ = nextfail "inadmissible multinamed notion"
 
-qu_notion :: LFTL MTerm
+qu_notion :: FTL MTerm
 qu_notion = paren (fa -|- ex -|- no)
   where
     fa  = do  wordOf ["every", "each", "all", "any"]; (q, f, v) <- notion

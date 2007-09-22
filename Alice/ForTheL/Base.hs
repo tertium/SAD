@@ -29,7 +29,6 @@ import Alice.Data.Kit
 import Alice.Data.Text
 import Alice.Parser.Base
 import Alice.Parser.Prim
-import Alice.Parser.Trans
 
 -- Basic types
 
@@ -44,19 +43,18 @@ type Prim     = ([Patt], [Formula] -> Formula)
 
 -- State definition
 
-type FTL  = StateT  FState LPM
-type LFTL = ReaderT FState (ReaderT [String] LPM)
+type FTL  = LPM FState
 
 data FState = FState {
   adj_expr, ver_expr, ntn_expr, snt_expr :: [Prim],
   cfn_expr, rfn_expr, lfn_expr, ifn_expr :: [Prim],
   cpr_expr, rpr_expr, lpr_expr, ipr_expr :: [Prim],
-  tvr_expr :: [TVar], str_syms :: [[String]] }
+  tvr_expr :: [TVar], str_syms :: [[String]], var_decl :: [String] }
 
 initFS  = FState  eq [] [] sn
                   [] [] [] []
                   [] [] [] sp
-                  [] []
+                  [] [] []
   where
     eq  = [ ([Wd ["equal"], Wd ["to"], Vr], zTrm "="),
             ([Wd ["nonequal"], Wd ["to"], Vr], Not . zTrm "=") ]
@@ -65,21 +63,24 @@ initFS  = FState  eq [] [] sn
             ([Sm "-<-"], zTrm "iLess") ]
     sn  = [ ([Sm "=", Vr], zTrm "=") ]
 
-getExpr :: (FState -> [a]) -> (a -> LFTL b) -> LFTL b
+getExpr :: (FState -> [a]) -> (a -> FTL b) -> FTL b
 getExpr e p = askS e >>= msum . map p
 
-getDecl = lift netS
-addDecl = rtrtm . ssrtm . (++)
+getDecl :: FTL [String]
+getDecl = askS var_decl
 
-doLFTL :: LFTL a -> FTL a
-doLFTL  = rtstm $ flip runReaderT []
+addDecl :: [String] -> FTL a -> FTL a
+addDecl vs p  = updateS adv >>= after p . updateS . sbv . var_decl
+  where
+    adv s     = s { var_decl = vs ++ var_decl s }
+    sbv vs s  = s { var_decl = vs }
 
 
 -- Pre-typed variables
 
 type TVar = ([String], Formula)
 
-prim_tvr :: LFTL MNotion
+prim_tvr :: FTL MNotion
 prim_tvr  = getExpr tvr_expr tvr
   where
     tvr (vr, nt)  = do  vs <- varlist
@@ -89,7 +90,7 @@ prim_tvr  = getExpr tvr_expr tvr
 
 -- Predicates: verbs and adjectives
 
-prim_ver, prim_adj, prim_un_adj :: LFTL UTerm -> LFTL UTerm
+prim_ver, prim_adj, prim_un_adj :: FTL UTerm -> FTL UTerm
 
 prim_ver      = getExpr ver_expr . prim_prd
 prim_adj      = getExpr adj_expr . prim_prd
@@ -103,7 +104,7 @@ prim_prd p (pt, fm) = do  (q, ts) <- wd_patt p pt
 
 -- Multi-subject predicates: [a,b are] equal
 
-prim_m_ver, prim_m_adj, prim_m_un_adj :: LFTL UTerm -> LFTL UTerm
+prim_m_ver, prim_m_adj, prim_m_un_adj :: FTL UTerm -> FTL UTerm
 
 prim_m_ver    = getExpr ver_expr . prim_ml_prd
 prim_m_adj    = getExpr adj_expr . prim_ml_prd
@@ -119,7 +120,7 @@ prim_ml_prd p (pt, fm)  = do  (q, ts) <- ml_patt p pt
 
 -- Notions and functions
 
-prim_ntn, prim_of_ntn :: LFTL UTerm -> LFTL MNotion
+prim_ntn, prim_of_ntn :: FTL UTerm -> FTL MNotion
 
 prim_ntn p  = getExpr ntn_expr ntn
   where
@@ -132,14 +133,14 @@ prim_of_ntn p = getExpr ntn_expr ntn
                         let fn v = fm $ (zVar v):zHole:ts
                         return (q, foldr1 And $ map fn vs, vs)
 
-prim_cm_ntn :: LFTL UTerm -> LFTL MTerm -> LFTL MNotion
+prim_cm_ntn :: FTL UTerm -> FTL MTerm -> FTL MNotion
 prim_cm_ntn p s = getExpr ntn_expr ntn
   where
     ntn (pt, fm)  = do  (q, vs, as, ts) <- cm_patt p s pt
                         let fn v = fm $ zHole:v:ts
                         return (q, foldr1 And $ map fn as, vs)
 
-prim_fun :: LFTL UTerm -> LFTL UTerm
+prim_fun :: FTL UTerm -> FTL UTerm
 prim_fun  = (>>= fun) . prim_ntn
   where
     fun (q, Trm "=" [_, t] _, _) | not (occursH t) = return (q, t)
@@ -163,7 +164,7 @@ prim_rsm p (pt, fm) = sm_patt p pt >>= \l -> return $ \t -> fm $ t:l
 prim_lsm p (pt, fm) = sm_patt p pt >>= \l -> return $ \s -> fm $ l++[s]
 prim_ism p (pt, fm) = sm_patt p pt >>= \l -> return $ \t s -> fm $ t:l++[s]
 
-prim_snt :: LFTL Formula -> LFTL MNotion
+prim_snt :: FTL Formula -> FTL MNotion
 prim_snt p  = varlist >>= getExpr snt_expr . snt
   where
     snt vs (pt, fm) = sm_patt p pt >>= \l -> return (id, fm $ zHole:l, vs)

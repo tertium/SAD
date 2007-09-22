@@ -34,7 +34,6 @@ import Alice.ForTheL.Phrase
 import Alice.Parser.Base
 import Alice.Parser.Prim
 import Alice.Parser.Instr
-import Alice.Parser.Trans
 
 -- Top-level grammar
 
@@ -50,11 +49,11 @@ forthel = u1 -/- u2 -/- u3 -/- u5 -/- u6 -/- u7 -/- u8 -/- u4
     u8  = liftM2 ((:).TD) idrop forthel
 
 axmsect = topsect False axm axmaff
-defsect = topsect False def define >>= extPrim
-sigsect = topsect False sig sigext >>= extPrim
+defsect = topsect False def define
+sigsect = topsect False sig sigext
 thmsect = topsect True  thm (proof affirm)
 
-topsect s h p = doLFTL $
+topsect s h p =
     do  li <- nulText ; nm <- h
         tx <- getText ; bs <- tps
         la <- askPS psLang ; fn <- askPS psFile
@@ -66,7 +65,7 @@ topsect s h p = doLFTL $
     u3  = liftM2 ((:).TD) idrop tps
     u4  = p >>= pretvr (return [])
 
-topsent = doLFTL $
+topsent =
     do  li <- nulText ; bs@(TB bl:rs) <- pra
         la <- askPS psLang ; fn <- askPS psFile
         return $ if null rs then bl { blName = "" }
