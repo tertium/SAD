@@ -121,6 +121,7 @@ sym = do  s@(c:_) <- nextTkLex; guard (isLower c); skipSpace (return s)
 
 -- Service stuff
 
+annots :: LPM a ()
 annots = return ()
 
 prmcnj = (p >> return False) -/- (c >> return True)

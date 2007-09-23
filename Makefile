@@ -1,7 +1,7 @@
 ### Compilers and flags ###
 
 HC = ghc
-HFLAGS = -fno-monomorphism-restriction # -prof -auto-all # -O
+HFLAGS = # -prof -auto-all # -O
 
 CC = gcc
 CFLAGS = -Wall -O2 -finline-functions

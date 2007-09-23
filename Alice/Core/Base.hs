@@ -145,6 +145,8 @@ showTimeDiff t
 
 justIO      = RM . const . liftM Just
 
+printRM :: Show a => a -> RM ()
+
 putStrLnRM  = justIO . putStrLn
 putStrRM    = justIO . putStr
 printRM     = justIO . print
