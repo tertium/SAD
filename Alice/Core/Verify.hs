@@ -49,7 +49,7 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
                           else fillDef ths cnt cbl
 
       flt <- askRSIB IBflat False
-      let sth = Context (foldr zExi nfr dv) nbr
+      let sth = Context (foldr mbExi nfr dv) nbr
           bsg = null brn || blSign (head brn)
           smt = bsg && sg && not (noForm bl)
           spr = if flt then [] else pr
