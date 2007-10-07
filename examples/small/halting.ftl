@@ -21,4 +21,4 @@ Axiom Cantor.       Let W decide halting.
     Then there exists V such that for every y
     V halts on y iff W does not succeed on y and y.
 
-Theorem Main.       No program decides halting.
+Proposition.        No program decides halting.
