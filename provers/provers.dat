@@ -55,3 +55,21 @@ USearch stopped by max_seconds option.
 #USearch stopped by max_kept option.
 #USearch stopped by max_gen option.
 
+Pmosesverb
+LMoses
+Fmoses
+Cprovers/moses v
+Yproved in
+Nfound unprovable in
+Utimeout in
+#Ureached final depth bound in
+
+Pspassverb
+LSPASS
+Fdfg
+Cprovers/SPASS -CNFOptSkolem=0 -DocProof=1 -PGiven=0 -Stdin -TimeLimit=%d
+YSPASS beiseite: Proof found.
+NSPASS beiseite: Completion found.
+USPASS beiseite: Ran out of time.
+#USPASS beiseite: Maximal number of loops exceeded.
+
