@@ -60,7 +60,7 @@ release:
 binary: all
 	tar -cjf $(RELBIN).tar.bz2 --transform='s=^=$(RELNAME)/=' \
 	    Alice COPYING Makefile doc examples init.opt moses \
-	    alice provers/provers.dat
+	    alice provers/provers.dat provers/moses
 
 complete: all
 	tar -cjf $(RELBIN).tar.bz2 --transform='s=^=$(RELNAME)/=' \
