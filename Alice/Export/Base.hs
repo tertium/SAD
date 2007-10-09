@@ -40,8 +40,7 @@ initPrv l = Prover l "Prover" "" [] TPTP [] [] []
 -- Database reader
 
 readPrDB :: String -> IO [Prover]
-readPrDB file = do  inp <- catch (readFile file) $ \ e ->
-                      die $ "read error: " ++ ioeGetErrorString e
+readPrDB file = do  inp <- catch (readFile file) $ die . ioeGetErrorString
 
                     let dws = dropWhile isSpace
                         cln = reverse . dws . reverse . dws
