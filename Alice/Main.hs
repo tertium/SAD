@@ -87,15 +87,15 @@ main  =
 
 readOpts :: IO [Instr]
 readOpts  =
-  do  let rio = ReturnInOrder $ InStr ISread
-      (is, _, es) <- liftM (getOpt rio options) getArgs
+  do  (is, fs, es) <- liftM (getOpt Permute options) getArgs
       unless (all wf is && null es) $ die es >> exitFailure
-      if askIB IBhelp False is then helper else return is
+      when (askIB IBhelp False is || null fs) helper
+      return $ is ++ map (InStr ISread) fs
   where
     helper  = do  putStr $ usageInfo header options
                   exitWith ExitSuccess
 
-    header  = "Usage: alice [option|file]..."
+    header  = "Usage: alice <options...> <file|->"
 
     options =
       [ Option "h" [] (NoArg (InBin IBhelp True)) "this help",
