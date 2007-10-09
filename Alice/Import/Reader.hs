@@ -20,9 +20,11 @@
 
 module Alice.Import.Reader (readInit,readText) where
 
+import Data.List
 import Control.Monad
 import System.IO
 import System.IO.Error
+import System.Environment
 import System.Exit
 
 import Alice.Data.Text
@@ -62,10 +64,7 @@ reader fs (ps:ss) [TI (InStr ISread file)] | file `elem` fs =
       reader fs (nps:ss) ntx
 
 reader fs (ps:ss) [TI (InStr ISread file)] =
-  do  input <- catch
-        (if null file then hGetContents stdin else readFile file)
-          $ \ e -> putStrLn ("[Main] " ++ file ++ ": read error: "
-                            ++ ioeGetErrorString e) >> exitFailure
+  do  input <- takeFile file
       let tkn = tokenize input
           ips = initPS $ (psProp ps) { tvr_expr = [] }
           sps = ips { psRest = tkn, psFile = file, psOffs = psOffs ps }
@@ -84,6 +83,16 @@ reader fs (sps:ps:ss) [] =
       reader fs (nps:ss) ntx
 
 reader _ [_] [] = return []
+
+takeFile file = catch (if null file then hGetContents stdin else
+                jail >> readFile file) $ die . ioeGetErrorString
+  where
+    die e = putStrLn ("[Main] " ++ file ++ ": " ++ e) >> exitFailure
+
+    tst j = null j || (isPrefixOf j file && not (isInfixOf ".." file))
+
+    jail  = do  j <- catch (getEnv "ALICE_TEXT_DIR") $ const $ return ""
+                if tst j then return () else die $ "must be under " ++ j
 
 
 -- Universal parser
