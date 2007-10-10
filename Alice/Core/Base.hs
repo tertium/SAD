@@ -24,6 +24,7 @@ import Control.Monad
 import Data.IORef
 import Data.List
 import System.Time
+import System.Exit
 
 import Alice.Data.Formula
 import Alice.Data.Instr
@@ -74,6 +75,7 @@ instance Monad RM where
     where
       apply rs (Just r) = runRM (k r) rs
       apply rs Nothing  = return Nothing
+  fail e    = RM $ \ _  -> putStrLn e >> exitFailure
 
 instance MonadPlus RM where
   mzero     = RM $ \ rs -> return Nothing

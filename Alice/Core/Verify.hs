@@ -156,8 +156,10 @@ procTI mot ths brn cnt = proc
                       failure = rlog0 $ fn ++ ": verification failed"
                   (vLoop mot ths brn cnt txt >> success) <> failure
 
-    proc (InStr ISprdb file)
-      = do  prd <- justIO $ readPrDB file
+    proc i@(InStr ISprdb file)
+      = do  p <- askRSIS ISprdb "" ; unless (null p) $ fail $
+              "[Main] " ++ file ++ ": provers already loaded"
+            addRSIn i ; prd <- justIO $ readPrDB file
             updateRS $ \ rs -> rs { rsPrdb = prd }
 
     proc i  = addRSIn i
