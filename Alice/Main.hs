@@ -95,13 +95,11 @@ main  =
 readOpts :: IO [Instr]
 readOpts  =
   do  (is, fs, es) <- liftM (getOpt Permute options) getArgs
-      unless (all wf is && null es) $ die es >> exitFailure
-      when (askIB IBhelp False is || null fs) helper
-      return $ is ++ map (InStr ISfile) fs
+      let text = is ++ [InStr ISfile $ head $ fs ++ ["-"]]
+      unless (all wf is && null es) $ die es
+      when (askIB IBhelp False is) helper
+      return text
   where
-    helper  = do  putStr $ usageInfo header options
-                  exitWith ExitSuccess
-
     header  = "Usage: alice <options...> <file|->"
 
     options =
@@ -177,5 +175,9 @@ readOpts  =
     wf (InInt _ v)  = v == v
     wf _            = True
 
-    die = putStr . concatMap ("[Main] " ++)
+    helper  = do  putStr $ usageInfo header options
+                  exitWith ExitSuccess
+
+    die es  = do  putStr $ concatMap ("[Main] " ++) es
+                  exitFailure
 
