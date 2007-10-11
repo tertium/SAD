@@ -21,6 +21,7 @@
 module Alice.Core.Verify (verify) where
 
 import Control.Monad
+import Data.Maybe
 
 import Alice.Core.Base
 import Alice.Core.Check
@@ -31,11 +32,19 @@ import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Instr
 import Alice.Data.Text
-import Alice.Import.Reader
 
 -- Main verification loop
 
-verify rst bs = runRM (vLoop False (Context Bot []) [] [] bs) rst
+verify file rst bs =
+  do  let text = TI (InStr ISfile file) : bs
+          fnam = if null file then "stdin" else file
+      putStrLn $ "[Reason] " ++ fnam ++ ": verification started"
+
+      res <- runRM (vLoop False (Context Bot []) [] [] text) rst
+
+      let log = if isJust res then " successful" else " failed"
+      putStrLn $ "[Reason] " ++ fnam ++ ": verification" ++ log
+      return res
 
 vLoop :: Bool -> Context -> [Block] -> [Context] -> [Text] -> RM [Text]
 vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
@@ -143,20 +152,6 @@ procTI mot ths brn cnt = proc
         <> (guardNotIB IBPunf False >> addRSIn (InBin IBPunf True))
         <> (guardNotIB IBPtsk False >> addRSIn (InBin IBPtsk True))
         <> return ()
-
-    proc (InStr ISfile "-") = proc (InStr ISfile "")
-
-    proc i@(InStr ISfile file)
-      = do  lbd <- askRS rsLibr ; addRSIn i
-            txt <- timer CTpars $ justIO $ readText lbd i
-            (guardIB IBtext False >> mapM_ printRM txt) <>
-              (started >> process txt >> success) <> failure
-      where
-        process = vLoop mot ths brn cnt
-        started = rlog0 $ fn ++ ": verification started"
-        success = rlog0 $ fn ++ ": verification successful"
-        failure = rlog0 $ fn ++ ": verification failed"
-        fn = if null file then "stdin" else file
 
     proc i  = addRSIn i
 

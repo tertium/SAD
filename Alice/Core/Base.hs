@@ -35,14 +35,14 @@ import Alice.Parser.Token
 
 -- Reasoner state
 
-data RState = RState {  rsInst :: [Instr],  rsCntr :: [Count],
-                        rsPrdb :: [Prover], rsLibr :: String }
+data RState = RState {  rsInst :: [Instr],
+                        rsCntr :: [Count],
+                        rsPrdb :: [Prover] }
 
 data Count  = CntrT CntrT TimeDiff
             | CntrI CntrI Int
 
-data CntrT  = CTpars
-            | CTprov
+data CntrT  = CTprov
             | CTprvy
             deriving Eq
 
@@ -149,7 +149,7 @@ printRM     = justIO . print
 
 rlog0 tx = putStrLnRM $ "[Reason] " ++ tx
 
-rlog bl tx = do tfn <- askRSIS ISread ""
+rlog bl tx = do tfn <- askRSIS ISfile ""
                 rlog0 $ blLabl tfn bl ++ tx
 
 blLabl tf (Block { blFile = f, blLine = l })

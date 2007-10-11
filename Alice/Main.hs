@@ -21,7 +21,6 @@
 module Main where
 
 import Data.IORef
-import Data.Maybe
 import Control.Monad
 import System.Console.GetOpt
 import System.Environment
@@ -44,15 +43,20 @@ main  =
       hSetBuffering stdout LineBuffering
 
       cmdl <- readOpts
-      init <- readInit $ askIS ISinit "init.opt" cmdl
+      cmdf <- readInit (askIS ISinit "init.opt" cmdl)
 
-      let text = init ++ cmdl
-          txet = reverse text
+      let init = cmdf ++ cmdl
+          tini = reverse init
 
-      prdb <- readPrDB $ askIS ISprdb "provers.dat" txet
-      rstt <- newIORef $ RState [] [] prdb $ askIS ISlibr "." txet
+      text <- readText (askIS ISlibr "." tini) $ map TI init
 
-      verify rstt $ map TI text
+      when (askIB IBtext False tini) $ trans strt text
+
+      prdb <- readPrDB (askIS ISprdb "provers.dat" tini)
+      rstt <- newIORef (RState [] [] prdb)
+      prst <- getClockTime
+
+      verify (askIS ISfile "" tini) rstt text
 
       fint <- getClockTime
       stat <- readIORef rstt
@@ -62,7 +66,6 @@ main  =
           igno = cumulCI CIfail 0 cntr
           subt = cumulCI CIsubt 0 cntr
           chkt = cumulCI CIchkt 0 cntr
-          prst = cumulCT CTpars strt cntr
           prvt = cumulCT CTprov prst cntr
 
       putStrLn $ "[Main] "
@@ -90,17 +93,26 @@ main  =
       return ()
 
 
+trans :: ClockTime -> [Text] -> IO ()
+trans strt text = do  mapM_ printTB text ; fint <- getClockTime
+                      putStrLn $ "[Main] total " ++ tmdiff fint
+                      exitWith ExitSuccess
+  where
+    tmdiff fint = showTimeDiff (getTimeDiff fint strt)
+    printTB (TB bl) = print bl ; printTB _ = return ()
+
+
 -- Command line parsing
 
 readOpts :: IO [Instr]
 readOpts  =
   do  (is, fs, es) <- liftM (getOpt Permute options) getArgs
-      let text = is ++ [InStr ISfile $ head $ fs ++ ["-"]]
+      let text = is ++ [InStr ISfile $ head $ fs ++ [""]]
       unless (all wf is && null es) $ die es
       when (askIB IBhelp False is) helper
       return text
   where
-    header  = "Usage: alice <options...> <file|->"
+    header  = "Usage: alice <options...> <file>"
 
     options =
       [ Option "h" [] (NoArg (InBin IBhelp True)) "this help",

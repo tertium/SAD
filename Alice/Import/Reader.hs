@@ -55,8 +55,8 @@ instf = skipSpace (return ()) >> after (optEx [] $ chnopEx instr) readEOI
 
 -- Reader loop
 
-readText :: String -> Instr -> IO [Text]
-readText lb inst = reader lb [] [initPS initFS] [TI inst]
+readText :: String -> [Text] -> IO [Text]
+readText lb = reader lb [] [initPS initFS]
 
 reader :: String -> [String] -> [PState FState] -> [Text] -> IO [Text]
 
