@@ -47,9 +47,10 @@ main  =
       init <- readInit $ askIS ISinit "init.opt" cmdl
 
       let text = init ++ cmdl
+          txet = reverse text
 
-      prdb <- readPrDB $ askIS ISprdb "provers.dat" text
-      rstt <- newIORef $ RState [] [] prdb $ askIS ISlibr "." text
+      prdb <- readPrDB $ askIS ISprdb "provers.dat" txet
+      rstt <- newIORef $ RState [] [] prdb $ askIS ISlibr "." txet
 
       verify rstt $ map TI text
 
