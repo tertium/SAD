@@ -94,10 +94,12 @@ main  =
 
 
 trans :: ClockTime -> [Text] -> IO ()
-trans strt text = do  mapM_ print text; fint <- getClockTime
-                      putStrLn $ "[Main] total " ++
-                        showTimeDiff (getTimeDiff fint strt)
+trans strt text = do  mapM_ printTB text ; fint <- getClockTime
+                      putStrLn $ "[Main] total " ++ tmdiff fint
                       exitWith ExitSuccess
+  where
+    tmdiff fint = showTimeDiff (getTimeDiff fint strt)
+    printTB (TB bl) = print bl ; printTB _ = return ()
 
 
 -- Command line parsing
