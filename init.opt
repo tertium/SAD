@@ -1,4 +1,5 @@
 # Alice init options
+[library examples]
 [provers provers/provers.dat]
 [prover spass]
 [timelimit 3]
