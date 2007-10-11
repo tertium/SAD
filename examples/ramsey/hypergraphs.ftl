@@ -1,5 +1,5 @@
-[read examples/ramsey/sets.ftl]
-[read examples/ramsey/functions.ftl]
+[read ramsey/sets.ftl]
+[read ramsey/functions.ftl]
 
 Let A,B,C,D,P,Q,R,S,T denote sets.
 Let x,y,z denote elements.
