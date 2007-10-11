@@ -85,8 +85,11 @@ cnRaise cnt cx fs = foldr ((:) . setForm cx) cnt fs
 
 instance Show Text where
   showsPrec p (TB bl) = showsPrec p bl
+{-
   showsPrec p (TI is) = showsPrec p is . showChar '\n'
   showsPrec p (TD id) = showsPrec p id . showChar '\n'
+-}
+  showsPrec _ _ = id
 
 instance Show Block where
   showsPrec p bl  | noBody bl = showForm p bl
