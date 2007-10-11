@@ -90,8 +90,6 @@ main  =
       putStrLn $ "[Main] "
               ++ "total "       ++ showTimeDiff (getTimeDiff fint strt)
 
-      return ()
-
 
 trans :: ClockTime -> [Text] -> IO ()
 trans strt text = do  mapM_ printTB text ; fint <- getClockTime

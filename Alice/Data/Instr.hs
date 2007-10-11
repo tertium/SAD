@@ -70,9 +70,9 @@ data InBin  = IBprov  --  prove goals (yes)
             deriving (Eq,Show)
 
 data InStr  = ISinit  --  init file (init.opt)
+            | ISfile  --  read file
+            | ISread  --  read library file
             | ISlibr  --  library directory
-            | ISread  --  read a library text
-            | ISfile  --  read a file
             | ISprdb  --  prover database
             | ISprvr  --  current prover
             deriving (Eq,Show)
