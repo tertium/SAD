@@ -31,7 +31,6 @@ import Alice.Data.Formula
 import Alice.Data.Kit
 import Alice.Data.Instr
 import Alice.Data.Text
-import Alice.Export.Base
 import Alice.Import.Reader
 
 -- Main verification loop
@@ -40,7 +39,7 @@ verify rst bs = runRM (vLoop False (Context Bot []) [] [] bs) rst
 
 vLoop :: Bool -> Context -> [Block] -> [Context] -> [Text] -> RM [Text]
 vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
-  do  incRSCI CIsect ; tfn <- askRSIS ISread "" ; whenIB IBPsct False $
+  do  incRSCI CIsect ; tfn <- askRSIS ISfile "" ; whenIB IBPsct False $
         putStrRM $ '[' : la ++ "] " ++ blLabl tfn bl ++ showForm 0 bl ""
 
       let nbr = bl : brn; cbl = Context fr nbr
@@ -145,22 +144,19 @@ procTI mot ths brn cnt = proc
         <> (guardNotIB IBPtsk False >> addRSIn (InBin IBPtsk True))
         <> return ()
 
-    proc (InStr ISread "-") = proc (InStr ISread "")
+    proc (InStr ISfile "-") = proc (InStr ISfile "")
 
-    proc i@(InStr ISread file)
-      = do  let fn = if null file then "stdin" else file
-            txt <- timer CTpars $ justIO $ readText file
+    proc i@(InStr ISfile file)
+      = do  lbd <- askRS rsLibr ; addRSIn i
+            txt <- timer CTpars $ justIO $ readText lbd i
             (guardIB IBtext False >> mapM_ printRM txt) <>
-              do  rlog0 $ fn ++ ": verification started"; addRSIn i
-                  let success = rlog0 $ fn ++ ": verification successful"
-                      failure = rlog0 $ fn ++ ": verification failed"
-                  (vLoop mot ths brn cnt txt >> success) <> failure
-
-    proc i@(InStr ISprdb file)
-      = do  p <- askRSIS ISprdb "" ; unless (null p) $ fail $
-              "[Main] " ++ file ++ ": provers already loaded"
-            addRSIn i ; prd <- justIO $ readPrDB file
-            updateRS $ \ rs -> rs { rsPrdb = prd }
+              (started >> process txt >> success) <> failure
+      where
+        process = vLoop mot ths brn cnt
+        started = rlog0 $ fn ++ ": verification started"
+        success = rlog0 $ fn ++ ": verification successful"
+        failure = rlog0 $ fn ++ ": verification failed"
+        fn = if null file then "stdin" else file
 
     proc i  = addRSIn i
 

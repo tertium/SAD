@@ -70,16 +70,15 @@ data InBin  = IBprov  --  prove goals (yes)
             deriving (Eq,Show)
 
 data InStr  = ISinit  --  init file (init.opt)
-            | ISread  --  read file
+            | ISlibr  --  library directory
+            | ISread  --  read a library text
+            | ISfile  --  read a file
             | ISprdb  --  prover database
             | ISprvr  --  current prover
             deriving (Eq,Show)
 
 
 -- Ask functions
-
-askIC :: InCom -> [Instr] -> Bool
-askIC i is    = any id [ True | InCom j <- is, i == j ]
 
 askII :: InInt -> Int -> [Instr] -> Int
 askII i d is  = head $  [ v | InInt j v <- is, i == j ] ++ [d]
@@ -132,6 +131,7 @@ setIB = [ (IBprov,  ["prove"]),
 
 setIS :: [(InStr, [String])]
 setIS = [ (ISread,  ["read"]),
+          (ISlibr,  ["library"]),
           (ISprdb,  ["provers"]),
           (ISprvr,  ["prover"]) ]
 

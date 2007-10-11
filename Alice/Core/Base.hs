@@ -24,7 +24,6 @@ import Control.Monad
 import Data.IORef
 import Data.List
 import System.Time
-import System.Exit
 
 import Alice.Data.Formula
 import Alice.Data.Instr
@@ -36,9 +35,8 @@ import Alice.Parser.Token
 
 -- Reasoner state
 
-data RState = RState {  rsInst :: [Instr],
-                        rsCntr :: [Count],
-                        rsPrdb :: [Prover] }
+data RState = RState {  rsInst :: [Instr],  rsCntr :: [Count],
+                        rsPrdb :: [Prover], rsLibr :: String }
 
 data Count  = CntrT CntrT TimeDiff
             | CntrI CntrI Int
@@ -61,9 +59,6 @@ data CntrI  = CIsect
             | CIunfl
             deriving Eq
 
-initRS :: RState
-initRS  = RState [] [] []
-
 
 -- IO Maybe monad
 
@@ -75,7 +70,6 @@ instance Monad RM where
     where
       apply rs (Just r) = runRM (k r) rs
       apply rs Nothing  = return Nothing
-  fail e    = RM $ \ _  -> putStrLn e >> exitFailure
 
 instance MonadPlus RM where
   mzero     = RM $ \ rs -> return Nothing

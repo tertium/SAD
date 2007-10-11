@@ -41,8 +41,9 @@ import Alice.Parser.Token
 -- Init file parsing
 
 readInit :: String -> IO [Instr]
+readInit ""   = return []
 readInit file =
-  do  input <- catch (readFile file) (const $ return "")
+  do  input <- catch (readFile file) $ die file . ioeGetErrorString
       let tkn = tokenize input ; ips = initPS ()
           inp = ips { psRest = tkn, psFile = file, psLang = "Init" }
       liftM fst $ fireLPM instf inp
@@ -53,46 +54,42 @@ instf = skipSpace (return ()) >> after (optEx [] $ chnopEx instr) readEOI
 
 -- Reader loop
 
-readText :: String -> IO [Text]
-readText file = reader [] [initPS initFS] [TI $ InStr ISread file]
+readText :: String -> Instr -> IO [Text]
+readText libd inst = reader libd [] [initPS initFS] [TI inst]
 
-reader :: [String] -> [PState FState] -> [Text] -> IO [Text]
+reader :: String -> [String] -> [PState FState] -> [Text] -> IO [Text]
 
-reader fs (ps:ss) [TI (InStr ISread file)] | file `elem` fs =
-  do  putStrLn $ "[Main] " ++ file ++ " already read, skipping"
+reader libd fs ss [TI (InStr ISread file)]  | isInfixOf ".." file =
+      die file "contains \"..\", not allowed"
+
+reader libd fs ss [TI (InStr ISread file)]  =
+      reader libd fs ss [TI $ InStr ISfile $ libd ++ '/' : file]
+
+reader libd fs (ps:ss) [TI (InStr ISfile file)] | file `elem` fs =
+  do  warn file "already read, skipping"
       (ntx, nps) <- fireLPM text ps
-      reader fs (nps:ss) ntx
+      reader libd fs (nps:ss) ntx
 
-reader fs (ps:ss) [TI (InStr ISread file)] =
-  do  input <- takeFile file
+reader libd fs (ps:ss) [TI (InStr ISfile file)] =
+  do  let gfl = if null file  then hGetContents stdin
+                              else readFile file
+      input <- catch gfl $ die file . ioeGetErrorString
       let tkn = tokenize input
           ips = initPS $ (psProp ps) { tvr_expr = [] }
           sps = ips { psRest = tkn, psFile = file, psOffs = psOffs ps }
       (ntx, nps) <- fireLPM text sps
-      reader (file:fs) (nps:ps:ss) ntx
+      reader libd (file:fs) (nps:ps:ss) ntx
 
-reader fs ss (t:ts) = liftM (t:) $ reader fs ss ts
+reader libd fs ss (t:ts) = liftM (t:) $ reader libd fs ss ts
 
-reader fs (sps:ps:ss) [] =
-  do  let fi = psFile sps ; la = psLang sps
-          fn = if null fi then "stdin" else fi
-      putStrLn $ '[' : la ++ "] " ++ fn ++ ": parsing successful"
+reader libd fs (sps:ps:ss) [] =
+  do  info (psLang sps) (psFile sps) "parsing successful"
       let rps = ps { psOffs = psOffs sps, psProp = rst }
           rst = (psProp sps) { tvr_expr = tvr_expr (psProp ps) }
       (ntx, nps) <- fireLPM text rps
-      reader fs (nps:ss) ntx
+      reader libd fs (nps:ss) ntx
 
-reader _ [_] [] = return []
-
-takeFile file = catch (if null file then hGetContents stdin else
-                jail >> readFile file) $ die . ioeGetErrorString
-  where
-    die e = putStrLn ("[Main] " ++ file ++ ": " ++ e) >> exitFailure
-
-    tst j = null j || (isPrefixOf j file && not (isInfixOf ".." file))
-
-    jail  = do  j <- catch (getEnv "ALICE_TEXT_DIR") $ const $ return ""
-                if tst j then return () else die $ "must be under " ++ j
+reader _ _ [_] [] = return []
 
 
 -- Universal parser
@@ -117,4 +114,17 @@ fireLPM p ps  = let (res, err) = runLPM (narrow p) ps
                     die s = putStrLn s >> exitFailure
                 in  if null res then  die $ strerr err
                                 else  return $ head res
+
+
+-- Service stuff
+
+info :: String -> String -> String -> IO ()
+info la fi er = let fn = if null fi then "stdin" else fi
+                in  putStrLn $ '[' : la ++ "] " ++ fn ++ ": " ++ er
+
+warn :: String -> String -> IO ()
+warn fn er = info "Main" fn er
+
+die :: String -> String -> IO a
+die fn er = warn fn er >> exitFailure
 

@@ -33,19 +33,25 @@ import Alice.Core.Base
 import Alice.Core.Verify
 import Alice.Data.Instr
 import Alice.Data.Text
+import Alice.Export.Base
 import Alice.Import.Reader
 
 {- and what is the use of a book without pictures or conversation? -}
 
 main :: IO ()
 main  =
-  do  hSetBuffering stdout LineBuffering
+  do  strt <- getClockTime
+      hSetBuffering stdout LineBuffering
+
       cmdl <- readOpts
       init <- readInit $ askIS ISinit "init.opt" cmdl
-      rstt <- newIORef initRS
-      strt <- getClockTime
 
-      verify rstt $ map TI $ init ++ cmdl
+      let text = init ++ cmdl
+
+      prdb <- readPrDB $ askIS ISprdb "provers.dat" text
+      rstt <- newIORef $ RState [] [] prdb $ askIS ISlibr "." text
+
+      verify rstt $ map TI text
 
       fint <- getClockTime
       stat <- readIORef rstt
@@ -90,7 +96,7 @@ readOpts  =
   do  (is, fs, es) <- liftM (getOpt Permute options) getArgs
       unless (all wf is && null es) $ die es >> exitFailure
       when (askIB IBhelp False is || null fs) helper
-      return $ is ++ map (InStr ISread) fs
+      return $ is ++ map (InStr ISfile) fs
   where
     helper  = do  putStr $ usageInfo header options
                   exitWith ExitSuccess
@@ -103,8 +109,10 @@ readOpts  =
             "init file, empty to skip (def: init.opt)",
         Option "T" [] (NoArg (InBin IBtext True))
             "translate input text and exit",
+        Option ""  ["library"] (ReqArg (InStr ISlibr) "DIR")
+            "place to look for included texts (def: .)",
         Option ""  ["provers"] (ReqArg (InStr ISprdb) "FILE")
-            "import prover descriptions",
+            "list of prover descriptions (def: provers.dat)",
         Option "P" ["prover"] (ReqArg (InStr ISprvr) "NAME")
             "use prover NAME (def: first listed)",
         Option "t" ["timelimit"] (ReqArg (InInt IItlim . number) "N")
