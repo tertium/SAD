@@ -71,10 +71,11 @@ neg_form  = (neg_op >> liftM Not dot_form) -/-
             (word "true"  >> return Top) -/-
             (word "false" >> return Bot) -/- equ_form
 
-equ_form  = do  t <- sin_term; optEx t (equ t -/- neq t)
+equ_form  = do  t <- sin_term; optEx (atm t) (equ t -/- neq t)
   where
     equ t = equ_op >> liftM (zEqu t) sin_term
     neq t = neq_op >> liftM (Not . zEqu t) sin_term
+    atm t | isVar t = zTrm (trName t) [] | True = t
 
 sin_term  = liftM2 sTrm sym seq_term -/- liftM sVar sym
 seq_term  = char '(' >> after (com_seq sin_term) (char ')')
