@@ -6,6 +6,8 @@ HFLAGS = # -prof -auto-all # -O
 CC = gcc
 CFLAGS = -Wall -O2 -finline-functions
 
+STRIP = strip
+
 ### Targets ###
 
 ALICE = alice
@@ -17,16 +19,13 @@ BUILDDIR = .build
 
 all: $(ALICE) $(MOSES)
 
-.PHONY: all $(ALICE) release binary complete clean depend
+.PHONY: all $(ALICE) source binary getall clean depend
 
 ### Alice ###
 
 $(ALICE):	$(BUILDDIR)
 	$(HC) --make $(ALICEDIR)/Main.hs -o $@ $(HFLAGS) -odir $(BUILDDIR) -hidir $(BUILDDIR)
-	strip -s $@
-
-#%:
-#	$(HC) --make $@ $(HFLAGS) -odir $(BUILDDIR) -hidir $(BUILDDIR)
+	$(if $(STRIP),$(STRIP) -s $@)
 
 ### Moses ###
 
@@ -47,26 +46,6 @@ $(BUILDDIR):
 $(BUILDDIR)/$(MOSESDIR):
 	mkdir -p $@
 
-### Release ###
-
-RELNAME = sad-$(shell date +%y%m%d)
-RELBIN  = $(RELNAME)-$(shell uname -m)
-
-release:
-	tar -czf $(RELNAME).tar.gz --transform='s=^=$(RELNAME)/=' \
-	    Alice COPYING Makefile doc examples init.opt moses \
-	    provers/provers.dat
-
-binary: all
-	tar -cjf $(RELBIN).tar.bz2 --transform='s=^=$(RELNAME)/=' \
-	    Alice COPYING Makefile doc examples init.opt moses \
-	    alice provers/provers.dat provers/moses
-
-complete: all
-	tar -cjf $(RELBIN).tar.bz2 --transform='s=^=$(RELNAME)/=' \
-	    Alice COPYING Makefile doc examples init.opt moses \
-	    alice provers
-
 ### Janitory ###
 
 clean:
@@ -75,6 +54,29 @@ clean:
 depend:
 	makedepend -Y -p $(BUILDDIR)/ -- $(CFLAGS) -- $(MOSESDIR)/*.c
 	rm Makefile.bak
+
+### Release ###
+
+TAR = tar --transform='s=^=$(RELNAME)/='
+
+RELNAME = sad-$(shell date +%y%m%d)
+RELBIN  = $(RELNAME)-$(shell uname -m)
+
+COMMON = $(SUBDIR) $(TOPDIR)
+SUBDIR = Alice moses doc examples
+TOPDIR = Makefile COPYING README init.opt
+SOURCE = $(COMMON) provers/provers.dat
+BINARY = $(SOURCE) alice provers/moses
+GETALL = $(COMMON) alice provers
+
+source:
+	$(TAR) -czf $(RELNAME).tar.gz $(SOURCE)
+
+binary: all
+	$(TAR) -cjf $(RELBIN).tar.bz2 $(BINARY)
+
+getall: all
+	$(TAR) -cjf $(RELBIN).tar.bz2 $(GETALL)
 
 # DO NOT DELETE
 
