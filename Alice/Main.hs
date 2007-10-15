@@ -119,9 +119,9 @@ readOpts  =
         Option "T" [] (NoArg (InBin IBtext True))
             "translate input text and exit",
         Option ""  ["library"] (ReqArg (InStr ISlibr) "DIR")
-            "place to look for included texts (def: .)",
+            "place to look for library texts (def: .)",
         Option ""  ["provers"] (ReqArg (InStr ISprdb) "FILE")
-            "list of prover descriptions (def: provers.dat)",
+            "index of provers (def: provers.dat)",
         Option "P" ["prover"] (ReqArg (InStr ISprvr) "NAME")
             "use prover NAME (def: first listed)",
         Option "t" ["timelimit"] (ReqArg (InInt IItlim . number) "N")
