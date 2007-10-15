@@ -3,7 +3,7 @@ The top directory of the current distribution
 contains the following subdirectories and files:
 
     Alice/      - sources of Alice, the core of SAD
-    moses/      - sources of Moses, the default prover
+    moses/      - sources of Moses, the native prover
     doc/        - documentation and companion files
     examples/   - repository of formal mathematical texts
     provers/    - index of provers and prover executables

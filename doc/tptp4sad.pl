@@ -13,7 +13,7 @@ local $wget    = "/usr/bin/wget";   # your wget executable
 #                                   # or tries to take it from $tptpurl
 #
 # Any "include"d axiom set will be looked for in $tptpath or at $tptpurl
-# This script requires the include instructions to be given _one_in_a_row_
+# This script requires the include instructions to be given one in a row,
 # and any such a line should not contain any more non-whitespace symbols.
 # All the problem files in TPTP v.2.6.0 satisfy this requirement.
 

@@ -1,0 +1,219 @@
+
+The main executable of SAD is alice, lying in the top SAD directory.
+This program parses a given input text and verifies it with the help
+of a built-in "reasoner" (collection of proof search heuristics) and
+an external first-order prover.
+
+This distribution includes Moses, the native and default prover of SAD.
+However, the SAD system can employ any prover accepting input problems
+in a standard format such as TPTP or DFG. In its default configuration,
+SAD can work with several third-party provers (see doc/provers.txt).
+
+
+Invocation:
+===========
+
+In the default configuration, you must run alice from the top SAD
+directory. The simplest invocation is as follows:
+
+    % ./alice examples/small/obvious.ftl
+
+or, if you want it:
+
+    % ./alice < examples/small/obvious.ftl
+
+The output of alice is explained later in this document. First of all,
+let us run ./alice -h and examine its command line options:
+
+  --init=FILE                 init file, empty to skip (def: init.opt)
+
+    This tells alice where to look for its initial configuration
+    file instead of the default location, ./init.opt. You may skip
+    initial configuration and work with all the SAD options taken
+    by default or from the command line. To this purpose, you must
+    pass the empty argument to this option: --init=
+
+  -T                          translate input text and exit
+
+    Use this option if you don't want to verify the text, but merely
+    to see its translation to the first-order.
+
+  --library=DIR               place to look for library texts (def: .)
+
+    Whenever SAD encounters an instruction like [read foobar.ftl]
+    in a ForTheL text being processed, it looks for the referred file
+    in the library directory. In this distribution, SAD is configured
+    to go into the examples/ subdirectory (see init.opt).
+
+  --provers=FILE              index of provers (def: provers.dat)
+
+    This option tells where to look for the provers index, instead
+    of the default location, ./provers.dat. In this distribution,
+    SAD is configured to take the index from provers/provers.dat.
+    Read doc/provers.txt for further explanation.
+
+  -P NAME  --prover=NAME      use prover NAME (def: first listed)
+
+    With this option, you choose the prover to work with. By default,
+    the first entry in the index is taken. The argument to this option
+    should be the value of the "P" tag (see doc/provers.txt).
+
+  -t N     --timelimit=N      N seconds per prover call (def: 3)
+
+    Run the prover with the given time limit on ordinary proof tasks.
+
+  --depthlimit=N              N reasoner loops per goal (def: 7)
+
+    The number of reasoner's iterations on a particular proof task
+    before giving up.
+
+  --checktime=N               timelimit for checker's tasks (def: 1)
+
+    Run the prover with the given time limit on the proof tasks from
+    the Ontological Checker (see doc/design.txt). These tasks are
+    expected to be easier than ordinary ones.
+
+  --checkdepth=N              depthlimit for checker's tasks (def: 3)
+
+    The number of reasoner's iterations on a particular proof task
+    from Ontological Checker (see doc/design.txt). These tasks are
+    expected to be easier than ordinary ones.
+
+  -n                          cursory mode (equivalent to --prove off)
+
+    Do not verify the claims in the text (i.e. its logical correctness).
+    This option can be useful if you have already verfified some initial
+    part of your text and you don't want to reverify it again and again.
+    To this purpose, you run alice with -n and place the instruction
+    [prove on] just before the not-yet-verified fragment.
+
+  -r                          raw mode (equivalent to --check off)
+
+    Do not verify the ontological correctness of the text. This will
+    also disable definition expansion and some other reasoner's tricks.
+    That is why you should never turn ontological checking off to save
+    time, even on just a fragment of your text: the whole verification
+    process will be affected. This option is intended for first-order
+    texts, TPTP problems, or very simple ForTheL texts, sparing with
+    definitions and signature extensions.
+
+  --prove={on|off}            prove goals in the text (default: on)
+
+    Verify logical correctness (see explanation for -n).
+
+  --check={on|off}            check symbols for definedness (def: on)
+
+    Verify ontological correctness (see explanation for -r).
+
+  --symsign={on|off}          prevent ill-typed unification (def: on)
+
+    Rename signature symbols so that overloaded symbols (e.g. sum
+    of numbers and sum of polynomials) would not unify. This option
+    requires ontological checking turned on.
+
+  --info={on|off}             collect "evidence" literals (def: on)
+
+    Read doc/design.txt for explanation of "evidence literals".
+    This option is quite important for verfication efficiency.
+
+  --thesis={on|off}           maintain current thesis (def: on)
+
+    Read doc/design.txt for explanation of "thesis".
+
+  --filter={on|off}           filter prover tasks (def: on)
+
+    Try to lighten prover tasks by removing some (hopefully
+    unneeded) premises. For examples, since the reasoner cares
+    himself for definition expansion, the system won't send
+    the definitions to the prover.
+
+  --skipfail={on|off}         ignore failed goals (def: off)
+
+    By default, alice stops after the first failed proof task.
+    This option tells alice to proceed till the end of the text.
+
+  --flat={on|off}             do not read proofs (def: off)
+
+    This option can be used in conjunction with -n, to be
+    overridden later in the text.
+
+  -q                          print no details
+
+    This turns off all the printing options listed below.
+
+  -v                          print more details (-vv, -vvv, etc)
+
+    This turns on the printing options below, one by one
+    for each additional -v.
+
+  --printgoal={on|off}        print current goal (def: on)
+  --printreason={on|off}      print reasoner's messages (def: off)
+  --printsection={on|off}     print sentence translations (def: off)
+  --printcheck={on|off}       print checker's messages (def: off)
+  --printprover={on|off}      print prover's messages (def: off)
+  --printunfold={on|off}      print definition unfoldings (def: off)
+  --printfulltask={on|off}    print full prover tasks (def: off)
+
+
+Configuration:
+==============
+
+Every long command line option of alice, except for --init,
+can appear as an instruction in the init.opt file, as follows:
+
+    [library examples]
+    [provers provers/provers.dat]
+    [prover otter]
+    [timelimit 3]
+    [prove on]
+    [symsign off]
+    # et cetera
+
+The distributed init.opt contains all the allowed instructions
+with the default values (except for [library] and [provers]).
+The instructions in init.opt can be overridden by command line
+options.
+
+Further, every instruction, except for [library] and [provers],
+can also appear in the text under consideration, overriding
+the previous value. For example, you can "envelop" a part of
+your text as follows:
+
+    [prove off]   # Let us take this part for granted for now
+
+    ... # this goes unverified
+
+    [/prove]      # return to the previous value of [prove]
+
+You can also use in texts (but not in init.opt) two extra instructions:
+
+    [read that/file.ftl]    include a text from the library directory
+                            (specified by the --library option or the
+                            [library] instruction). The value of this
+                            instruction must be a relative pathname.
+
+    [exit] or [quit]        ignore the rest of the file.
+
+Unlike other instructions, these two can not appear inside a section.
+
+
+TPTP problems:
+==============
+
+The SAD system accepts (with reservations and glitches) first-order
+problems in TPTP syntax. To this purpose, you should use tptp4sad.pl,
+a perl script, residing in the doc/ subdirectory of this distribution.
+
+In order to fetch a particular problem from the TPTP library,
+say SET037-3.p, you execute the following pipe:
+
+    % doc/tptp4sad.pl SET037-3.p | ./alice
+
+The script "tptp4sad.pl" will look for the given problem in your
+local copy of the TPTP library (if you have one) or fetch it from
+the web site of TPTP. Edit the script to set pathnames and URLs.
+
+If you want to try your own problem in the TPTP syntax, run
+
+    % doc/tptp4sad.pl myownproblem.p | ./alice
+

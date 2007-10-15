@@ -1,9 +1,9 @@
 
 The Evidence Algorithm programme was initiated in the early 1960s
 by Academician Viktor Glushkov at the Institute of Cybernetics of
-Kiev, Ukraine (at the epoch, USSR). Serious advances were made by
-the research group of EA, including a formal language TL, original
-goal-driven deductive procedure and a working implementation of SAD.
+Kiev, Ukraine (USSR at the epoch). Serious advances have been made
+by the research group of EA, including the formal text language TL,
+an original deductive engine, and a working implementation of SAD.
 Later the project was abandoned (over non-scientific factors) and
 restored only in 1998. Today, the SAD system is developed by three
 people:
@@ -23,6 +23,6 @@ people:
 
 Authors thank everybody who took part in the development of SAD
 over the forty years of the project's existence. We are especially
-grateful to Viktor Glushkov, Fyodor Anufriev, Viktor Bodnarchuk,
+thankful to Viktor Glushkov, Fyodor Anufriev, Viktor Bodnarchuk,
 Anatoli Degtyarev, and Marina Morokhovets.
 
