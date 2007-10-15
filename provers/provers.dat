@@ -38,10 +38,10 @@ Peprover
 LEprover
 Ftptp
 Cprovers/eprover -xAuto -tAuto -mAuto --tstp-in -s --cpu-limit=%d
-Y# SZS status: Theorem
-N# SZS status: CounterSatisfiable
-U# SZS status: ResourceOut
-U# SZS status: GaveUp
+Y# SZS status Theorem
+N# SZS status CounterSatisfiable
+U# SZS status ResourceOut
+U# SZS status GaveUp
 
 Potter
 LOtter
