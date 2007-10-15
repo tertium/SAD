@@ -34,24 +34,25 @@ import Alice.Export.Prover
 -- Reasoner
 
 reason :: [Context] -> Context -> RM ()
-reason cnt tc = do  dlp <- askRSII IIdpth 7
-                    flt <- askRSIB IBfilt True
+reason cnt tc = do  flt <- askRSIB IBfilt True
                     dfl <- askRSIB IBchck True
                     let nct = context (flt && dfl) cnt tc
-                    goalseq dlp nct tc $ splitG $ cnForm tc
+                    n <- askRSII IIdpth 7 ; guard $ n > 0
+                    goalseq n nct tc $ splitG $ cnForm tc
 
 goalseq :: Int -> [Context] -> Context -> [Formula] -> RM ()
-goalseq n cnt tc (f:fs) = do  when (n == 0) $ rde >> mzero
-                              trv <> launch cnt ntc <> dlp
+goalseq n cnt tc (f:fs) = do  trv <> launch cnt ntc <> dlp
                               goalseq n (ntc : cnt) tc fs
   where
     rfr = reduce f
     ntc = setForm tc rfr
 
     trv = sbg >> guard (isTop rfr) >> incRSCI CIsubt
-    dlp = do  tsk <- unfold $ setForm tc (Not rfr) : cnt
-              let Context {cnForm = Not nfr} : nct = tsk
-              goalseq (pred n) nct tc $ splitG nfr
+
+    dlp | n == 1  = rde >> mzero
+        | True    = do  tsk <- unfold $ setForm tc (Not rfr) : cnt
+                        let Context {cnForm = Not nfr} : nct = tsk
+                        goalseq (pred n) nct tc $ splitG nfr
 
     rde = whenIB IBPrsn False $ rlog0 $ "reasoning depth exceeded"
     sbg = whenIB IBPrsn False $ rlog0 $ tri ++ "subgoal: " ++ show f
