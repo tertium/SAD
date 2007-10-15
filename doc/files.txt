@@ -1,0 +1,74 @@
+
+The top directory of the current distribution
+contains the following subdirectories and files:
+
+    Alice/      - sources of Alice, the core of SAD
+    moses/      - sources of Moses, the default prover
+    doc/        - documentation and companion files
+    examples/   - repository of formal mathematical texts
+    provers/    - index of provers and prover executables
+
+    COPYING     - text of GNU General Public License
+    Makefile    - build instructions for GNU make
+    README      - brief introduction and index of doc/
+
+    alice       - main executable (in binary distributions)
+    init.opt    - configuration file (see doc/usage.txt)
+
+
+Subdirectories:
+===============
+
+Alice/  is the core program of SAD. It processes a given input text
+        using a built-in "foreground" reasoner (collection of proof
+        search heuristics) and an external "background" first-order
+        prover. Alice is written in Haskell, a general purpose,
+        purely functional programming language (http://haskell.org).
+        See doc/design.txt for further details.
+
+    Core/           - verification procedure and reasoner
+    Data/           - definition of principal datastructures
+    Parser/         - syntax analyser and basic primitives
+    Export/         - interface to external provers
+    ForTheL/        - grammar of ForTheL
+    Import/         - reader routine and first-order syntax
+
+
+moses/  is the prover for first-order logic with equality used as
+        the background prover in SAD by default. Moses is based on
+        an original goal-driven sequent calculus and is written in C.
+
+
+doc/
+    build.txt       - build instructions
+    usage.txt       - configure and use SAD
+    provers.txt     - make SAD work with external provers
+
+    design.txt      - architecture of SAD
+    forthel.txt     - short introduction to ForTheL
+    sad-fol.txt     - syntax of first-order texts
+
+    files.txt       - this file
+    authors.txt     - team of Evidence Algorithm
+
+    tptp4sad.pl     - perl script to fetch and prepare problems
+                      from the TPTP library (http://tptp.org)
+
+provers/
+    provers.dat     - index of provers (see doc/provers.txt)
+    moses           - Moses executable (in binary distributions)
+
+
+examples/
+    seq/            - first-order problems
+    small/          - simple ForTheL texts
+    to_convert/     - texts written for previous versions of SAD,
+                      waiting to be updated for the current version
+
+    ramsey/         - Ramsey's Infinite and Finite Theorems
+                      (so far, only the infinite theorem is ready)
+
+    chinese.ftl     - Chinese remainder theorem
+    fixpoint.ftl    - Tarski-Knaster fixed point theorem
+    newman.ftl      - Newman's lemma on term rewriting systems
+

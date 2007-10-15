@@ -1,0 +1,47 @@
+
+ForTheL (Formal Theory Language) is intended for representation
+of mathematical texts including axioms, definitions, theorems and
+proofs. Here we provide an informal introduction to the language.
+The detailed ForTheL reference is currently in preparation.
+
+The syntax of a ForTheL sentence follows the rules of English grammar.
+Sentences are built of units: statements, predicates, notions (which
+denote classes of objects) and terms (which denote individual objects).
+Units are composed of syntactical primitives: nouns which form notions
+(e.g. "subset of") or terms ("closure of"), verbs and adjectives which
+form predicates ("belongs to", "compact"), symbolic primitives that use
+a concise symbolic notation for predicates and functions and allow to
+use usual first-order formulas as ForTheL statements. Some primitives
+(for example, "equal to") are predefined in ForTheL and the rest must
+be introduced with the help of definitions and signature extensions.
+Of course, just a little fragment of English is formalized in ForTheL.
+
+There are three kinds of sentences in ForTheL: assumptions, selections,
+and affirmations. Assumptions are statements preceded with the words
+"let" or "assume that". They serve to declare variables or to provide
+some hypotheses for the following text. For example, the following
+sentences are typical assumptions: "Let S be a nonempty set.", "Assume
+that m is greater than n.". Selections are formed by notions preceded
+with the words "take" or "choose". They state the existence of objects
+in corresponding classes and are used to declare variables, too. Here
+follows an example of a selection: "Take an even prime number X.".
+Finally, affirmations are simply statements: "If p divides n - p then
+p divides n.".
+
+A ForTheL text is a sequence of top-level sections. These sections
+-- axioms, signature extensions, definitions, and theorems -- play
+in ForTheL the same role they do in usual mathematical texts. Any
+top-level section consists of zero or more assumptions followed by
+an affirmation.
+
+An author can facilitate the verification process by supplying a
+proof for affirmations in the text. A ForTheL proof is a sequence
+of assumptions, selections, affirmations (which may have proofs of
+their own), and compound low-level sections: cases and raw blocks.
+The case sections occur in the proofs by case analysis. The raw
+blocks are used to structure a proof: set the scope of assumptions
+and variable declarations. ForTheL supports various proof schemes
+like proof by contradiction, case analysis, and general induction.
+
+You can find a number of ForTheL texts in the examples/ subdirectory.
+

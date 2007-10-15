@@ -1,0 +1,91 @@
+
+Third-party provers:
+====================
+
+The SAD system can employ any prover taking input problems
+in a standard format such as TPTP or DFG. Besides Moses,
+the native prover of SAD (included in the distribution),
+SAD is configured to work with the following provers:
+
+  - SPASS, by Christoph Weidenbach et al, Max Plank Institute
+    fuer Informatik, Germany (http://spass.mpi-sb.mpg.de)
+
+  - Otter, by William McCune, Argonne National Laboratory, USA
+    (http://www.cs.unm.edu/~mccune/otter/)
+
+  - E prover, by Stephan Schulz, Technische Universitaet Muenchen,
+    Germany (http://www.eprover.org)
+
+  - Vampire, by Andrei Voronkov and Alexandre Riazanov, UK
+    (http://en.wikipedia.org/wiki/Vampire_theorem_prover)
+
+We encourage you to download and build these provers. Working 
+on formalization of non-trivial mathematical texts, we mainly 
+use SPASS, which implements some powerful inference techniques 
+for sort literals in clauses -- they are of drastic usefulness 
+for problems of mathematical nature.
+
+
+Configure SAD for a new prover:
+===============================
+
+If you want to use SAD with a prover not listed above, you must 
+check whether it accepts problems in TPTP or DFG syntax, or in 
+the input syntax of Otter. If it doesn't, then you must either
+adapt SAD for that prover, or adapt that prover for one of the
+supported syntaxes.
+
+Now, if SAD can find a common language with your prover, you
+must add several lines to the index file provers/provers.dat. 
+For example, let us consider the description for the prover
+called Vampire (version 7.44):
+
+    Pvampire
+    LVampire
+    Ftptp
+    Cprovers/vampire -t %d /dev/stdin
+    YRefutation found
+    NSatisfiability detected
+    URefutation not found
+
+Each line is started with a reserved character, called "tag".
+Supported tags are "P" (standing for "prover"), "L" (label),
+"C" (command), "F" (format), "Y" (yes-line), "N" (no-line),
+"U" (unknown-line), and "#" (commentary). The rest of the line,
+including any white space or special characters -- but not the
+end-of-line character -- is the value. Any white space before
+the tag character is ignored. Empty lines and commentary lines
+are ignored, too. The case of a tag is significant.
+
+The first tag must be always be "P". It denotes the unique name 
+of the prover, by which you can refer to it in the configuration
+file init.opt (instruction [prover vampire]) or from the command
+line (option "-P vampire"). The rest of tags can go in any order,
+but all the seven tags must be provided.
+
+The "L" tag denotes the prover's label to appear in system's log
+messages. The label has not to be unique -- actually, you may want
+to have several descriptions for the same prover, having different
+sets of command line options (compare, in the current provers.dat,
+descriptions for "vampire" and "vampcasc", "spass" and "spassverb").
+
+The "F" tag denotes the format of the prover's input. Currently,
+the supported values are "tptp", "dfg", "otter", and "moses".
+
+The "C" tag contains the command line, or, precisely, the list 
+of whitespace-delimited arguments (sorry, no backslash escaping,
+no quote enclosing -- white spaces in arguments are not supported).
+Relative pathnames are taken with respect to your current directory.
+Occurrences of `%d' in the arguments are replaced with the time limit
+in seconds, when the prover is called. The problem itself is sent to
+the prover's standard input. If the prover, like Vampire, requires
+a file to read from, you can trick it by giving /dev/stdin as the
+file name. 
+
+The tags "Y", "N", and "U" denote the lines to look in the prover's
+output for, respectively: success (proof found or the corresponding
+clause set is refuted), failure (a counterexample or completion is 
+found), and uncertainty (timeout or some other resource exceeded). 
+For any given problem, the prover's output must contain exactly 
+one of the lines denoted by these tags.
+

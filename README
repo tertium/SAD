@@ -1,0 +1,25 @@
+
+The System for Automated Deduction (SAD) is intended for automated 
+verification of formal texts written in a special language called 
+ForTheL (which stands for FORmal THEory Language) or in first-order 
+language. SAD is developed in the frame of the "Evidence Algorithm" 
+project (http://nevidal.org.ua).
+
+The SAD system is freely distributed under the conditions of 
+the GNU General Public License. It can be downloaded or used
+online at the web site of the project.
+
+Read the files in the doc/ subdirectory of this distribution
+to know how to build, configure, and use SAD:
+
+    build.txt       - build instructions
+    usage.txt       - configure and use SAD
+    provers.txt     - make SAD work with external provers
+
+    design.txt      - architecture of SAD
+    forthel.txt     - short introduction to ForTheL
+    sad-fol.txt     - syntax of first-order texts
+
+    files.txt       - content of the distribution
+    authors.txt     - team of Evidence Algorithm
+

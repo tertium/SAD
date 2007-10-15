@@ -1,0 +1,72 @@
+
+Prerequisites:
+==============
+
+SAD compiles and works on Linux and FreeBSD systems.
+It will probably work on Solaris and Mac OS X as well,
+though some tinkering might be necessary.
+
+To build SAD from sources you need:
+
+- the source tarball distribution from http://nevidal.org.ua
+- GHC, the Glasgow Haskell Compiler (http://haskell.org/ghc)
+- gcc, gmake, strip, the standard GNU toolchain.
+
+If you want to use SAD for first-order problems from
+the TPTP library, you also need the Perl interpreter.
+
+You might also want to use some third party provers with SAD.
+Read doc/provers.txt for the links and instructions.
+
+
+Build:
+======
+
+Unpack the tarball:
+
+    % tar zxf sad-YYMMDD.tar.gz
+    % cd sad-YYMMDD
+
+Put proper paths to ghc, gcc, and strip in Makefile:
+
+    % vi Makefile
+
+Run GNU make:
+
+    % gmake
+
+
+Install:
+========
+
+By default, SAD is configured to be executed in-place.
+The system expects to find library texts (ones that may be
+referenced from other texts) in the subdirectory examples/
+and to find the prover index and executables in provers/.
+
+If you want to run SAD from elsewhere:
+
+(a) Assume your SAD system resides in /path/to/sad/.
+    Put the following lines into /path/to/sad/init.opt:
+
+        [library /path/to/sad/examples]
+        [provers /path/to/sad/provers/provers.dat]
+
+(b) In /path/to/sad/provers/provers.dat, replace
+    the relative pathnames with the absolute ones:
+
+        % sed -i .bak -e 's=^Cprovers=C/path/to/sad/provers=' \
+                            /path/to/sad/provers/provers.dat
+
+(c) Put the following shell script somewhere in your $PATH:
+
+        #!/bin/sh
+        /path/to/sad/alice --init /path/to/sad/init.opt "$@"
+
+
+Configure SAD:
+==============
+
+The SAD system is configured by two files: init.opt and provers.dat.
+They are explained, respectively, in doc/usage.txt and doc/provers.txt.
+

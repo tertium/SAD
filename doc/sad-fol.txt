@@ -1,0 +1,54 @@
+
+The System for Automated Deduction accepts first-order texts
+in the form of a sequence of dot-terminated formulas where
+the goal formulas are prefixed with a colon. For example,
+the text of the form:
+
+    P1. P2. : G1. P3. : G2.
+
+is equivalent to two sequents:
+
+    P1, P2 -> G1
+    P1, P2, G1, P3 -> G2
+
+Texts with the empty last goal are also allowed:
+
+    P1. P2. P3. :
+
+This text is equivalent to the sequent
+
+    P1, P2, P3 ->
+
+Formulas are built from tokens: variables, function symbols
+and predicate symbols, with the help of the propositional
+connectives, quantifiers and parentheses. You can also use
+Church's dot to group subformulas. Note that we use the same
+character to terminate formulas as this is unambiguous for
+well-formed formulas. We adopt the following notation:
+
+     Symbol  | Alternative | Meaning
+    ---------+-------------+------------------------
+      @      |  forall     |  universal quantifier
+      $      |  exists     |  existential quantifier
+      ~      |  iff        |  equivalence
+      >      |  implies    |  implication
+      |      |  or         |  disjunction
+      &      |  and        |  conjunction
+      -      |  not        |  negation
+      .      |             |  Church's dot
+      =      |             |  equality
+      !=     |             |  disequality
+      true   |             |  verum
+      false  |             |  falsum
+
+Variables, function and predicate symbols are composed
+of Latin letters, digits, and underscores. Free variables
+are treated as constants. For example, the following text
+is well-formed (and, by the way, correct):
+
+    @ x,y . P1(x,c) & Q2(y,c).
+    : exists z . P1(a,z) or Q2(b,z).
+
+You can find the examples of first-order problems for SAD
+in the examples/seq/ subdirectory.
+

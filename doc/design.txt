@@ -1,0 +1,99 @@
+
+The System for Automated Deduction is built around the following
+principles:
+
+ - the system's input is a formal mathematical text which is
+   as close as possible to a text written in human language
+   and in human style;
+
+ - inference search handled by a powerful automated prover,
+   based on purely combinatorial search procedure (powerful
+   necessarily means first-order here);
+
+ - there is an intermediate ``reasoning'' layer, a collection
+   of heuristic techniques, whose duty is to transform: split,
+   simplify, filter a particular proof task before sending it
+   to the prover. And if the prover fails, try to analyze the
+   failure, try some other transformations, et cetera.
+
+This "reasoner" is the heart of the system. The idea is to exploit
+the hints given by the human-like form of the problem -- something
+that a combinatorial procedure can never do -- treat definitions in
+a special way, not like ordinary axioms; treat nouns in a special way,
+not like ordinary predicates, and so on.
+
+Thus, we strive towards a strong proof assistant -- strong due to
+a strong prover in the background and strong due to a sophisticated
+reasoner before the prover.
+
+
+Implementation:
+===============
+
+The principal components of SAD, in its current implementation, are:
+Parser, Verifier, Evidence Collector, Ontological Checker, Reasoner,
+and Backstage Prover.
+
+Parser accepts a ForTheL text, checks its syntactical correctness
+and constructs the internal text tree, where ForTheL statements are
+presented as logical formulas.
+
+Verifier makes her round through the text tree, section by section,
+sentence by sentence, checking the ontological and logical correctness
+of the text. First of all, the formula image of a sentence is sent
+to the Evidence Collector.
+
+    Evidence Collector finds and accumulates so called "evidences"
+    for the term occurrences in the formula under consideration.
+    Evidences are literals that tell us something important about
+    a given occurrence. The most important purpose of evidence
+    literals is to hold the term's type information (ForTheL is
+    an untyped language, so that the type properties have to be
+    expressed with logical formulas). Some simple properties,
+    like non-emptiness, are highly useful, too.
+
+Once "fortified" with the found properties, occurrences of terms
+and atoms are passed to the Ontological Checker.
+
+    Ontological Checker performs an analogue of type checking in
+    an untyped text. For each occurrence of a signature symbol,
+    the checker goes up through the text processed by this moment,
+    looking for an appropriate definition or signature extension.
+    The deductive core of the system, the Reasoner, is called to
+    prove the instantiated guards.
+
+When the ontological correctness of the sentence in question
+is confirmed, Verifier processes it according to the rules of
+the calculus of logical correctness. Generally, if the sentence
+is a statement to prove, then a new verification loop is started
+to verify the submitted proof, possibly empty. This statement
+becomes the initial "thesis" of the new cycle.
+
+The thesis may be gradually simplified as the proof proceeds:
+when the thesis is an implication and we assume its antecedent,
+or when it is a conjunction and we affirm its part. At the end
+of the proof (immediately, if there was no proof in the text),
+the current thesis is sent to the Reasoner.
+
+    Reasoner deals with proof tasks: one-goal logical sequents.
+    This module can be viewed as a kind of automated heuristic
+    based prover, supplied with a collection of proof task
+    transformation rules. This collection is not intended to
+    form a complete logic calculus. The goal of the Reasoner
+    is not to find the entire proof on its own, but rather to
+    simplify inference search for the Prover at the backstage.
+    If the prover fails to find the inference, Reasoner may
+    continue the task transformation or try some other way,
+    or reject the text.
+
+    At present, the capabilities of the Reasoner are as follows:
+    propositional goal splitting, formula simplification with
+    the help of accumulated term properties, simple filtering
+    of premises according to explicit references in the text,
+    incremental definition expansion.
+
+The Backstage Prover is an automated prover in classical first-order
+logic, whose duty is to complete the proofs started by the Reasoner.
+It is independent from SAD by design, so that an external theorem
+prover can be used. See doc/provers.txt for further details.
+
