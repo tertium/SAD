@@ -69,7 +69,7 @@ export prs ins cnt gl =
             let lns = filter (not . null) $ lines $ ofl ++ efl
                 out = map (("[" ++ lbl ++ "] ") ++) lns
 
-            when (null lns) $ die "empty response"
+            when (length lns == 0) $ die "empty response"
             when (askIB IBPprv False ins) $ mapM_ putStrLn out
 
             let pos = any (\ l -> any (`isPrefixOf` l) yes) lns
