@@ -23,6 +23,7 @@ people:
 
 Authors thank everybody who took part in the development of SAD
 over the forty years of the project's existence. We are especially
-thankful to Viktor Glushkov, Fyodor Anufriev, Viktor Bodnarchuk,
-Anatoli Degtyarev, and Marina Morokhovets.
+thankful to Viktor Glushkov, Felix Anufriev, Viktor Bodnarchuk,
+Zainutdin Aselderov, Yulia Kapitonova, Anatoli Degtyarev,
+Nikolai Malevanyi, Alexander Zhezherun, and Marina Morokhovets.
 
