@@ -26,19 +26,19 @@ import Alice.Data.Text
 import Alice.Export.Base
 
 otterOut :: Prover -> Int -> [Context] -> Context -> String
-otterOut pr tl cn gl = (hdr . sos . usa) ""
+otterOut pr tl cn gl = (hdr . usa . sos) ""
   where
     hdr = foldr ((.) . sop) tlm (prArgs pr)
     sop o = showString o . showString ".\n"
 
     tlm = showString "assign(max_seconds," . shows tl . showString ").\n"
 
+    usa = showString "formula_list(usable).\n"
+        . foldr (flip (.) . otterForm . cnForm) equ cn . eol
+
     aut = if elem "set(auto)" (prArgs pr) then "usable" else "sos"
     sos = showString "formula_list(" . showString aut . showString ").\n"
         . otterForm (Not $ cnForm gl) . eol
-
-    usa = showString "formula_list(usable).\n"
-        . foldr ((.) . otterForm . cnForm) equ cn . eol
 
     equ = showString "all x (x = x).\n"
     eol = showString "end_of_list.\n"

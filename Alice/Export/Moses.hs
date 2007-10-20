@@ -28,7 +28,7 @@ import Alice.Export.Base
 mosesOut :: Prover -> Int -> [Context] -> Context -> String
 mosesOut pr tl cn gl = (prm . cnj . tlm) ""
   where
-    prm = foldr ((.) . mosesForm) id cn
+    prm = foldr (flip (.) . mosesForm) id cn
     cnj = showChar '?' . mosesTerm 0 (cnForm gl) . showChar '\n'
     tlm = shows tl . showChar '\n'
 

@@ -43,7 +43,7 @@ dfgOut pr tl cn gl = (hdr . sym . axm . cnj . eop) ""
     eol = showString "end_of_list.\n"
     eop = showString "end_problem.\n"
 
-    axs = foldr ((.) . dfgForm) id cn
+    axs = foldr (flip (.) . dfgForm) id cn
     gll = dfgForm gl
 
 

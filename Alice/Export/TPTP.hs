@@ -26,9 +26,9 @@ import Alice.Data.Text
 import Alice.Export.Base
 
 tptpOut :: Prover -> Int -> [Context] -> Context -> String
-tptpOut pr tl cn gl = tsk ""
+tptpOut pr tl cn gl = (axs . cnj) ""
   where
-    tsk = foldr ((.) . tptpForm ",hypothesis,") cnj cn
+    axs = foldr (flip (.) . tptpForm ",hypothesis,") id cn
     cnj = tptpForm ",conjecture," gl
 
 
