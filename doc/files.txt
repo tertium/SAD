@@ -65,10 +65,12 @@ examples/
     to_convert/     - texts written for previous versions of SAD,
                       waiting to be updated for the current version
 
-    ramsey/         - Ramsey's Infinite and Finite Theorems
-                      (so far, only the infinite theorem is ready)
+    ramsey/         - Ramsey's Infinite Theorem
+                      (the finite theorem is not converted yet)
 
-    chinese.ftl     - Chinese remainder theorem
+    cauchy.ftl      - Cauchy-Bouniakowsky-Schwarz inequality
+    chinese.ftl     - Chinese remainder theorem in terms of rings
     fixpoint.ftl    - Tarski-Knaster fixed point theorem
     newman.ftl      - Newman's lemma on term rewriting systems
+    primes.ftl      - Square root of a prime number is irrational
 
