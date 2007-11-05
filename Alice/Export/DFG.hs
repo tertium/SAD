@@ -80,7 +80,7 @@ showTrName = showString . filter (/= ':') . trName
 
 -- Symbol count
 
-newtype SymSet = SS { getSS :: ([(String, Int)], [(String, Int)]) }
+newtype SymSet = SS ([(String, Int)], [(String, Int)])
 
 instance Monoid.Monoid SymSet where
   mempty  = SS ([], [])

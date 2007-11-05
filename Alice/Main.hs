@@ -61,8 +61,7 @@ main  =
       fint <- getClockTime
       stat <- readIORef rstt
 
-      let inst = rsInst stat
-          cntr = rsCntr stat
+      let cntr = rsCntr stat
           igno = cumulCI CIfail 0 cntr
           subt = cumulCI CIsubt 0 cntr
           chkt = cumulCI CIchkt 0 cntr
