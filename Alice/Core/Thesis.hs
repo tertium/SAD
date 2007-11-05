@@ -24,7 +24,6 @@ import Control.Monad
 import Data.List
 import Data.Maybe
 
-import Alice.Core.Base
 import Alice.Core.Info
 import Alice.Core.Extras
 import Alice.Data.Formula

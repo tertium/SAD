@@ -21,12 +21,10 @@
 module Alice.ForTheL.Intro where
 
 import Control.Monad
-import Data.Char
 import Data.List
 
 import Alice.Data.Formula
 import Alice.Data.Kit
-import Alice.Data.Text
 import Alice.ForTheL.Base
 import Alice.ForTheL.Phrase
 import Alice.ForTheL.Pattern

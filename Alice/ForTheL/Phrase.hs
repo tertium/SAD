@@ -22,11 +22,9 @@ module Alice.ForTheL.Phrase where
 
 import Control.Monad
 import Data.List
-import Data.Maybe
 
 import Alice.Data.Formula
 import Alice.Data.Kit
-import Alice.Data.Text
 import Alice.ForTheL.Base
 import Alice.Parser.Prim
 import Alice.Parser.Base

@@ -24,9 +24,7 @@ import Control.Monad
 
 import Alice.Data.Formula
 import Alice.Data.Kit
-import Alice.Data.Instr
 import Alice.Data.Text
-import Alice.Core.Base
 import Alice.Core.Info
 
 -- Recollect adhoc definitions and evidence literals

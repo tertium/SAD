@@ -25,7 +25,6 @@ import Data.Maybe
 
 import Alice.Core.Base
 import Alice.Core.Check
-import Alice.Core.Info
 import Alice.Core.Reason
 import Alice.Core.Thesis
 import Alice.Data.Formula

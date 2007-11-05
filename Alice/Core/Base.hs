@@ -25,13 +25,9 @@ import Data.IORef
 import Data.List
 import System.Time
 
-import Alice.Data.Formula
 import Alice.Data.Instr
 import Alice.Data.Text
 import Alice.Export.Base
-import Alice.ForTheL.Base
-import Alice.Parser.Base
-import Alice.Parser.Token
 
 -- Reasoner state
 
