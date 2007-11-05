@@ -87,6 +87,7 @@ findDef trm cx  = dive Top 0 $ cnForm cx
     dive gs _ (Imp (Tag DHD t) f) = fine gs t $ Tag DIM f
 
     dive gs n (All _ f) = dive gs (succ n) $ inst ('?':show n) f
+    dive gs n (And g f) = dive gs n f `mplus` dive gs n g
     dive gs n (Imp g f) = dive (bool $ And gs g) n f
     dive _ _ _          = mzero
 
