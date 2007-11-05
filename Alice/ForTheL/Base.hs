@@ -235,7 +235,7 @@ var     = do  v <- nextTkLex ; unless (all isAlpha v) $
                 fail $ "invalid variable: " ++ show v
               skipSpace $ return ('x':v)
 
-decl vs f = dive f
+decl vs = dive
   where
     dive (All _ f)  = dive f
     dive (Exi _ f)  = dive f
@@ -250,7 +250,7 @@ decl vs f = dive f
 
     noc f v = not $ occurs (zVar v) f
 
-free vs f = nub (dive f)
+free vs = nub . dive
   where
     dive f@(Var u@('x':_) _)  = nifilt vs u ++ foldF dive f
     dive f                    = foldF dive f
