@@ -51,28 +51,28 @@ deOr  = spl . albet
 
 -- Boolean simplification
 
-bool (All v Top)  = Top
-bool (All v Bot)  = Bot
-bool (Exi v Top)  = Top
-bool (Exi v Bot)  = Bot
+bool (All _ Top)  = Top
+bool (All _ Bot)  = Bot
+bool (Exi _ Top)  = Top
+bool (Exi _ Bot)  = Bot
 bool (Iff Top f)  = f
 bool (Iff f Top)  = f
 bool (Iff Bot f)  = bool $ Not f
 bool (Iff f Bot)  = bool $ Not f
 bool (Imp Top f)  = f
-bool (Imp f Top)  = Top
-bool (Imp Bot f)  = Top
+bool (Imp _ Top)  = Top
+bool (Imp Bot _)  = Top
 bool (Imp f Bot)  = bool $ Not f
-bool (Or  Top f)  = Top
-bool (Or  f Top)  = Top
+bool (Or  Top _)  = Top
+bool (Or  _ Top)  = Top
 bool (Or  Bot f)  = f
 bool (Or  f Bot)  = f
 bool (And Top f)  = f
 bool (And f Top)  = f
-bool (And Bot f)  = Bot
-bool (And f Bot)  = Bot
-bool (Tag a Top)  = Top
-bool (Tag a Bot)  = Bot
+bool (And Bot _)  = Bot
+bool (And _ Bot)  = Bot
+bool (Tag _ Top)  = Top
+bool (Tag _ Bot)  = Bot
 bool (Not Top)    = Bot
 bool (Not Bot)    = Top
 bool f            = f
@@ -186,8 +186,8 @@ instance Show Formula where
 showFormula :: Int -> Int -> Formula -> ShowS
 showFormula p d = dive
     where
-      dive (All v f)  = showString "forall " . binder f
-      dive (Exi v f)  = showString "exists " . binder f
+      dive (All _ f)  = showString "forall " . binder f
+      dive (Exi _ f)  = showString "exists " . binder f
       dive (Iff f g)  = showParen True $ sinfix " iff " f g
       dive (Imp f g)  = showParen True $ sinfix " implies " f g
       dive (Or  f g)  = showParen True $ sinfix " or "  f g
@@ -217,7 +217,7 @@ showFormula p d = dive
       sinfix o f g  = dive f . showString o . dive g
 
 showArgs sh (t:ts)  = showParen True $ sh t . showTail sh ts
-showArgs sh _       = id
+showArgs _ _        = id
 
 showTail sh ts      = foldr ((.) . ((showChar ',' .) . sh)) id ts
 

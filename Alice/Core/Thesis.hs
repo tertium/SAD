@@ -111,7 +111,7 @@ tmVars u f  = TM (vrs [])
   where
     vrs ov (v:vs) | gut u v = (ov ++ vs, inst v f) : vrs (v:ov) vs
                   | True    = vrs (v:ov) vs
-    vrs ov _                = []
+    vrs _ _                 = []
 
     gut x@('x':_) y = x == y
     gut _ _         = True
@@ -127,6 +127,6 @@ instance Monad TM where
     where apply (s, r) = runTM (k r) s
 
 instance MonadPlus TM where
-  mzero     = TM $ \ s -> []
+  mzero     = TM $ \ _ -> []
   mplus m k = TM $ \ s -> runTM m s ++ runTM k s
 

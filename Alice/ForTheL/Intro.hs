@@ -66,8 +66,8 @@ alias = do  nulText ; (f, g) <- narrow $ prd -|- ntn
               h <- liftM q $ dig f [zVar u]
               funvars n h ; return (n, h)
 
-renull (All v f)  = All "" f
-renull (Exi v f)  = Exi "" f
+renull (All _ f)  = All "" f
+renull (Exi _ f)  = Exi "" f
 renull f          = mapF renull f
 
 

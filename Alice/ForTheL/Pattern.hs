@@ -51,20 +51,20 @@ newExpr t@(Trm ('m':'i':'s':' ':_) vs _) f st = setS ns >> return nf
     fm  = substs nf $ map trName vs
     ns  = st { adj_expr = (pt, fm) : adj_expr st }
 
-newExpr t@(Trm ('m':'d':'o':' ':s) vs _) f st = setS ns >> return nf
+newExpr t@(Trm ('m':'d':'o':' ':_) vs _) f st = setS ns >> return nf
   where
     ((hp:tp), nf) = wexp st t f
     pt  = hp : Wd [] : Vr : tp
     fm  = substs nf $ map trName vs
     ns  = st { ver_expr = (pt, fm) : ver_expr st }
 
-newExpr t@(Trm ('a':' ':s) vs _) f st = setS ns >> return nf
+newExpr t@(Trm ('a':' ':_) vs _) f st = setS ns >> return nf
   where
     (pt, nf) = wexp st t f
     fm  = substs nf $ map trName vs
     ns  = st { ntn_expr = (pt, fm) : ntn_expr st }
 
-newExpr (Trm "=" [v, t@(Trm ('a':' ':s) vs _)] _) f st
+newExpr (Trm "=" [v, t@(Trm ('a':' ':_) vs _)] _) f st
         = setS ns >> return nf
   where
     (pt, nf) = wexp st t f

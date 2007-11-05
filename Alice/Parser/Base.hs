@@ -80,7 +80,7 @@ instance Monad (LPM a) where
       app l (r, q)  = resadd (runLPM (k r) q) l
 
 instance MonadPlus (LPM a) where
-  mzero     = LPM $ \ p -> ([], [])
+  mzero     = LPM $ \ _ -> ([], [])
   mplus m k = LPM $ \ p -> resadd (runLPM m p) (runLPM k p)
 
 instance MonadLazy (LPM a) where

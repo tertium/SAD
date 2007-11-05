@@ -89,7 +89,7 @@ specDig trm = dive Top 0
     dive gs n (And f g) = dive gs n f `mplus` dive gs n g
     dive _ _ _          = mzero
 
-    fine gs tr@(Trm t _ _) fr =
+    fine gs tr fr =
       do  nfr <- match tr wtr `ap` return fr; guard $ green nfr
           ngs <- match tr trm `ap` return gs; guard $ green ngs
           guard $ rapid ngs; return nfr

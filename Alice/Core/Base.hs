@@ -61,18 +61,18 @@ data CntrI  = CIsect
 newtype RM a  = RM { runRM :: IORef RState -> IO (Maybe a) }
 
 instance Monad RM where
-  return r  = RM $ \ rs -> return $ Just r
+  return r  = RM $ \ _  -> return $ Just r
   m >>= k   = RM $ \ rs -> runRM m rs >>= apply rs
     where
       apply rs (Just r) = runRM (k r) rs
-      apply rs Nothing  = return Nothing
+      apply _  Nothing  = return Nothing
 
 instance MonadPlus RM where
-  mzero     = RM $ \ rs -> return Nothing
+  mzero     = RM $ \ _  -> return Nothing
   mplus m k = RM $ \ rs -> runRM m rs >>= apply rs
     where
       apply rs Nothing  = runRM k rs
-      apply rs x        = return x
+      apply _  x        = return x
 
 infixr 1 <>
 (<>) :: RM a -> RM a -> RM a

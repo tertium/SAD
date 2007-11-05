@@ -26,7 +26,7 @@ import Alice.Data.Text
 import Alice.Export.Base
 
 mosesOut :: Prover -> Int -> [Context] -> Context -> String
-mosesOut pr tl cn gl = (prm . cnj . tlm) ""
+mosesOut _ tl cn gl = (prm . cnj . tlm) ""
   where
     prm = foldr (flip (.) . mosesForm) id cn
     cnj = showChar '?' . mosesTerm 0 (cnForm gl) . showChar '\n'
@@ -43,13 +43,13 @@ mosesForm (Context f (Block { blName = m } : _))
 mosesTerm :: Int -> Formula -> ShowS
 mosesTerm d = dive
   where
-    dive (All v f)  = showChar '@' . binder f
-    dive (Exi v f)  = showChar '$' . binder f
+    dive (All _ f)  = showChar '@' . binder f
+    dive (Exi _ f)  = showChar '$' . binder f
     dive (Iff f g)  = showChar '~' . binary f g
     dive (Imp f g)  = showChar '>' . binary f g
     dive (Or  f g)  = showChar '|' . binary f g
     dive (And f g)  = showChar '&' . binary f g
-    dive (Tag a f)  = dive f
+    dive (Tag _ f)  = dive f
     dive (Not f)    = showChar '!' . dive f
     dive Top        = showChar '+'
     dive Bot        = showChar '-'

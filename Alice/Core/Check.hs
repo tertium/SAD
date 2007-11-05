@@ -35,9 +35,9 @@ import Alice.Core.Reason
 fillDef :: Context -> [Context] -> Context -> RM Formula
 fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
   where
-    fill pr nw fc sg n (Tag DHD f)
+    fill pr _ fc sg n (Tag DHD f)
       = liftM (Tag DHD) $ fill pr True fc sg n f
-    fill _ _ fc _ _ t | isThesis t
+    fill _ _ _ _ _ t | isThesis t
       = return $ cnForm ths
     fill pr _ fc _ _ v | isVar v
       = do  uin <- askRSIB IBinfo True

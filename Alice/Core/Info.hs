@@ -60,7 +60,7 @@ trigger prd cnt trm = fld (sr Top 0) cnt
     sr ps nn (And f g)  = sr ps nn f +++ sr ps nn g
     sr ps nn (Iff f g)  = sr ps nn $ zIff f g
     sr ps nn (Tag _ f)  = sr ps nn f
-    sr ps nn f  | bad f = []
+    sr ps _  f  | bad f = []
                 | prd   = sm Top f ps
                 | True  = fld (sl ps f) $ offspring f
 
@@ -71,7 +71,7 @@ trigger prd cnt trm = fld (sr Top 0) cnt
     sm ps gl (And f g)  = sm (bool $ And f ps) gl g +++
                           sm (bool $ And g ps) gl f
     sm ps gl (Tag _ f)  = sm ps gl f
-    sm ps gl f  | bad f = []
+    sm _  _  f  | bad f = []
     sm ps gl (Not f)    = map (Tag DOR) $ sq ps gl f
     sm ps gl f          = map (Tag DIM) $ sq ps gl f
 
@@ -178,7 +178,7 @@ trInfoA t = trInfoD t ++ trInfoI t
 
 sameInfo (Tag DIM f) (Tag DIM g) = sameInfo f g
 sameInfo (Tag DOR f) (Tag DOR g) = sameInfo f g
-sameInfo (Tag _ f)   (Tag _ g)   = False
+sameInfo (Tag _ _)   (Tag _ _)   = False
 sameInfo (Not f)     (Not g)     = sameInfo f g
 sameInfo f g                     = twins f g
 

@@ -52,13 +52,13 @@ otterForm f = otterTerm 0 f . showString ".\n"
 otterTerm :: Int -> Formula -> ShowS
 otterTerm d = dive
   where
-    dive (All v f)  = showString "$Quantified(all," . binder f . showChar ')'
-    dive (Exi v f)  = showString "$Quantified(exists," . binder f . showChar ')'
+    dive (All _ f)  = showString "$Quantified(all," . binder f . showChar ')'
+    dive (Exi _ f)  = showString "$Quantified(exists," . binder f . showChar ')'
     dive (Iff f g)  = showString "<->" . showArgs dive [f,g]
     dive (Imp f g)  = showString "->" . showArgs dive [f,g]
     dive (Or  f g)  = showString "|" . showArgs dive [f,g]
     dive (And f g)  = showString "&" . showArgs dive [f,g]
-    dive (Tag a f)  = dive f
+    dive (Tag _ f)  = dive f
     dive (Not f)    = showString "-" . showArgs dive [f]
     dive Top        = showString "$T"
     dive Bot        = showString "$F"

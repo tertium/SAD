@@ -46,7 +46,7 @@ verify file rst bs =
       return res
 
 vLoop :: Bool -> Context -> [Block] -> [Context] -> [Text] -> RM [Text]
-vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
+vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv _ _ la _ _ _) : bs) =
   do  incRSCI CIsect ; tfn <- askRSIS ISfile "" ; whenIB IBPsct False $
         putStrRM $ '[' : la ++ "] " ++ blLabl tfn bl ++ showForm 0 bl ""
 
@@ -77,7 +77,7 @@ vLoop mot ths brn cnt (TB bl@(Block fr pr sg dv nm ls la fn li tx) : bs) =
 
       return $ TB nbl : nbs
 
-vLoop True ths brn cnt [] = whenIB IBprov True prove >> return []
+vLoop True ths _ cnt [] = whenIB IBprov True prove >> return []
   where
     prove = do  let rl = rlog bl $ "goal: " ++ tx
                     bl = cnHead ths ; tx = blText bl
@@ -102,15 +102,15 @@ splitTh mot ths brn cnt bs = dive id cnt $ cnForm ths
                                    = fine (setForm ths f : cn) (c g)
     dive c cn (Imp f g)            = dive (c . Imp f) cn g
     dive c cn (All v f)            = dive (c . All v) cn f
-    dive c cn f                    = vLoop mot ths brn cnt bs
+    dive _ _ _                     = vLoop mot ths brn cnt bs
 
     fine nct f  = let nth = thesis nct $ setForm ths f
                   in  splitTh mot (snd nth) brn nct bs
 
 deICH = dive id
   where
-    dive c (Imp (Tag DIH f) g)  = c g
-    dive c (Imp (Tag DCH f) g)  = c $ Not f
+    dive c (Imp (Tag DIH _) f)  = c f
+    dive c (Imp (Tag DCH f) _)  = c $ Not f
     dive c (Imp f g)            = dive (c . Imp f) g
     dive c (All v f)            = dive (c . All v) f
     dive c f                    = c f
@@ -118,7 +118,7 @@ deICH = dive id
 
 -- Instruction handling
 
-procTI mot ths brn cnt = proc
+procTI mot ths _ cnt = proc
   where
     proc (InCom ICPths)
       = do  let smt = if mot then "(mot): " else "(nmt): "
@@ -154,7 +154,7 @@ procTI mot ths brn cnt = proc
 
     proc i  = addRSIn i
 
-procTD mot ths brn cnt = proc
+procTD _ _ _ _ = proc
   where
     proc i  = drpRSIn i
 

@@ -58,7 +58,7 @@ t_frm   = do  li <- nulText; wordOf ["fof","input_formula"]
               return $ Block fr [] ty [] nm [] la fn li tx
 
 t_cls   = do  li <- nulText; wordOf ["cnf","input_clause"]
-              char '('; nm <- readTkLex; char ','; ty <- prmcnj
+              char '('; nm <- readTkLex; char ','; prmcnj
               char ','; f <- cnfform -/- expar cnfform -/- exbrk clause
               annots; char ')'; char '.'; let cl = foldr zAll f (free f)
               fn <- askPS psFile; la <- askPS psLang; tx <- getText

@@ -26,7 +26,7 @@ import Alice.Data.Text
 import Alice.Export.Base
 
 tptpOut :: Prover -> Int -> [Context] -> Context -> String
-tptpOut pr tl cn gl = (axs . cnj) ""
+tptpOut _ _ cn gl = (axs . cnj) ""
   where
     axs = foldr (flip (.) . tptpForm ",hypothesis,") id cn
     cnj = tptpForm ",conjecture," gl
@@ -43,13 +43,13 @@ tptpForm s (Context f (Block { blName = m } : _))
 tptpTerm :: Int -> Formula -> ShowS
 tptpTerm d = dive
   where
-    dive (All v f)  = showParen True $ showString " ! " . binder f
-    dive (Exi v f)  = showParen True $ showString " ? " . binder f
+    dive (All _ f)  = showParen True $ showString " ! " . binder f
+    dive (Exi _ f)  = showParen True $ showString " ? " . binder f
     dive (Iff f g)  = sinfix " <=> " f g
     dive (Imp f g)  = sinfix " => " f g
     dive (Or  f g)  = sinfix " | " f g
     dive (And f g)  = sinfix " & " f g
-    dive (Tag a f)  = dive f
+    dive (Tag _ f)  = dive f
     dive (Not f)    = showParen True $ showString " ~ " . dive f
     dive Top        = showString "$true"
     dive Bot        = showString "$false"

@@ -60,7 +60,7 @@ readText lb = reader lb [] [initPS initFS]
 
 reader :: String -> [String] -> [PState FState] -> [Text] -> IO [Text]
 
-reader lb fs ss [TI (InStr ISread file)] | isInfixOf ".." file =
+reader _ _ _ [TI (InStr ISread file)] | isInfixOf ".." file =
       die file "contains \"..\", not allowed"
 
 reader lb fs ss [TI (InStr ISread file)] =

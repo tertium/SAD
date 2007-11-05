@@ -29,7 +29,7 @@ import Alice.Data.Text
 import Alice.Export.Base
 
 dfgOut :: Prover -> Int -> [Context] -> Context -> String
-dfgOut pr tl cn gl = (hdr . sym . axm . cnj . eop) ""
+dfgOut _ _ cn gl = (hdr . sym . axm . cnj . eop) ""
   where
     hdr = showString "begin_problem(A).list_of_descriptions.name({*EA*})."
         . showString "author({*EA*}).status(unknown).description({*EA*})."
@@ -57,13 +57,13 @@ dfgForm (Context f (Block { blName = m } : _))
 dfgTerm :: Int -> Formula -> ShowS
 dfgTerm d = dive
   where
-    dive (All v f)  = showString "forall" . showParen True (binder f)
-    dive (Exi v f)  = showString "exists" . showParen True (binder f)
+    dive (All _ f)  = showString "forall" . showParen True (binder f)
+    dive (Exi _ f)  = showString "exists" . showParen True (binder f)
     dive (Iff f g)  = showString "equiv" . showArgs dive [f,g]
     dive (Imp f g)  = showString "implies" . showArgs dive [f,g]
     dive (Or  f g)  = showString "or" . showArgs dive [f,g]
     dive (And f g)  = showString "and" . showArgs dive [f,g]
-    dive (Tag a f)  = dive f
+    dive (Tag _ f)  = dive f
     dive (Not f)    = showString "not" . showArgs dive [f]
     dive Top        = showString "true"
     dive Bot        = showString "false"
@@ -106,7 +106,7 @@ dfgSyms s (Trm t ts _)  = let h | t == "="  = Monoid.mempty
                                 | otherwise = SS ([], [(t, length ts)])
                               a = Monoid.mconcat $ map (dfgSyms False) ts
                           in  Monoid.mappend h a
-dfgSyms s (Var v _)     = SS ([], [(v, 0)])
+dfgSyms _ (Var v _)     = SS ([], [(v, 0)])
 dfgSyms _ (Ind _ _)     = Monoid.mempty
 dfgSyms s f             = foldF (dfgSyms s) f
 

@@ -57,7 +57,7 @@ readPrvs :: Int -> Maybe Prover -> [String] -> Either String [Prover]
 
 readPrvs n mbp ([]:ls)      = readPrvs (succ n) mbp ls
 readPrvs n mbp (('#':_):ls) = readPrvs (succ n) mbp ls
-readPrvs n _ (l@[c]:ls)     = Left $ show n ++ ": empty value"
+readPrvs n _ ([_]:_)        = Left $ show n ++ ": empty value"
 
 readPrvs n (Nothing) (('P':l):ls)
   = readPrvs (succ n) (Just $ initPrv l) ls
@@ -82,11 +82,11 @@ readPrvs n (Just pr) (('F':l):ls)
       "moses" ->  readPrvs (succ n) (Just pr { prFrmt = Moses }) ls
       _       ->  Left $ show n ++ ": unknown format: " ++ l
 
-readPrvs n (Just pr) ((c:_):ls) = Left $ show n ++ ": invalid tag: "   ++ [c]
-readPrvs n (Nothing) ((c:_):ls) = Left $ show n ++ ": misplaced tag: " ++ [c]
+readPrvs n (Just _)  ((c:_):_)  = Left $ show n ++ ": invalid tag: "   ++ [c]
+readPrvs n (Nothing) ((c:_):_)  = Left $ show n ++ ": misplaced tag: " ++ [c]
 
-readPrvs n (Just pr) [] = fmap1 (:[]) $ validate pr
-readPrvs n (Nothing) [] = Right []
+readPrvs _ (Just pr) [] = fmap1 (:[]) $ validate pr
+readPrvs _ (Nothing) [] = Right []
 
 
 validate :: Prover -> Either String Prover

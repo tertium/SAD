@@ -41,14 +41,14 @@ nextEOI = getPS >>= reoi
   where
     reoi (PState _ _ _ (t:_) _ _ _)
             = nextfail $ "unexpected token '" ++ show t ++ "'"
-    reoi ps = return ()
+    reoi _  = return ()
 
 skipSpace :: LPM a b -> LPM a b
 skipSpace p = after p (getPS >>= sptk)
   where
     sptk (PState pr po pl (t@(TkSpc n):ts) pd pf pp)
             = setPS (PState pr (succ po) (pl + n) ts (t:pd) pf pp)
-    sptk ps = return ()
+    sptk _  = return ()
 
 nextTkChr, readTkChr :: LPM a Char
 nextTkChr = nextToken >>= nxch
