@@ -45,18 +45,18 @@ main  =
       cmdl <- readOpts
       cmdf <- readInit (askIS ISinit "init.opt" cmdl)
 
-      let init = cmdf ++ cmdl
-          tini = reverse init
+      let inix = cmdf ++ cmdl
+          xini = reverse inix
 
-      text <- readText (askIS ISlibr "." tini) $ map TI init
+      text <- readText (askIS ISlibr "." xini) $ map TI inix
 
-      when (askIB IBtext False tini) $ trans strt text
+      when (askIB IBtext False xini) $ trans strt text
 
-      prdb <- readPrDB (askIS ISprdb "provers.dat" tini)
+      prdb <- readPrDB (askIS ISprdb "provers.dat" xini)
       rstt <- newIORef (RState [] [] prdb)
       prst <- getClockTime
 
-      verify (askIS ISfile "" tini) rstt text
+      verify (askIS ISfile "" xini) rstt text
 
       fint <- getClockTime
       stat <- readIORef rstt

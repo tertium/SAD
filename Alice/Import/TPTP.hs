@@ -81,18 +81,18 @@ cnfform = liftM (foldr1 Or) $ chainEx (char '|') lit
 formula = un_formula >>= \ f -> optEx f (binTail f)
 
 binTail f = iff -/- xor -/- imp -/- pmi
-          -/- or -/- nor -/- and -/- nan
+          -/- dis -/- nor -/- con -/- nan
   where
     iff = liftM (Iff f) $ string "<=>" >> formula
     xor = liftM (Not . Iff f) $ string "<~>" >> formula
     imp = liftM (Imp f) $ string "=>" >> formula
     pmi = liftM (\ g -> Imp g f) $ string "<=" >> formula
-    or  = liftM (Or f) $ string "|" >> formula
+    dis = liftM (Or f) $ string "|" >> formula
     nor = liftM (Not . Or f) $ string "~|" >> formula
-    and = liftM (And f) $ string "&" >> formula
+    con = liftM (And f) $ string "&" >> formula
     nan = liftM (Not . And f) $ string "~&" >> formula
 
-un_formula  = uqu -/- equ -/- neg -/- tatm -/- expar formula
+un_formula  = uqu -/- equ -/- ngt -/- tatm -/- expar formula
   where
     uqu = do  char '!'; char '['; vs <- chainEx (char ',') tvr
               char ']'; char ':'; f <- un_formula
@@ -102,7 +102,7 @@ un_formula  = uqu -/- equ -/- neg -/- tatm -/- expar formula
               char ']'; char ':'; f <- un_formula
               return $ foldr sExi f vs
 
-    neg = liftM Not $ char '~' >> un_formula
+    ngt = liftM Not $ char '~' >> un_formula
 
 tatm =  tru -/- fls -/- eql -/- atm
   where

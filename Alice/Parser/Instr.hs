@@ -81,8 +81,8 @@ readId n = readIC -|- readII -|- readIB -|- readIS -|- errins
     errins  = nextfail $ "unknown instruction: " ++ n
 
 readTok :: LPM a String
-readTok = skipSpace $ liftM concat $ chnop (lex -|- chr)
+readTok = skipSpace $ liftM concat $ chnop (lxm -|- chr)
   where
-    lex = nextTkLex ; chr = nextTkChr >>= chk
+    lxm = nextTkLex ; chr = nextTkChr >>= chk
     chk ']' = mzero ; chk c = return [c]
 

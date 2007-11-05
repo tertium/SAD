@@ -74,8 +74,8 @@ newExpr (Trm "=" [v, t@(Trm ('a':' ':_) vs _)] _) f st
 newExpr t@(Trm s vs _) f st | elem ' ' s  = setS nn >> return nf
   where
     (pt, nf) = sexp t f ; fm = substs nf $ map trName vs
-    csm = lsm && rsm ; lsm = nvr (head pt) ; rsm = nvr (last pt)
-    nvr Vr = False ; nvr _ = True
+    csm = lsm && rsm ; lsm = nva (head pt) ; rsm = nva (last pt)
+    nva Vr = False ; nva _ = True
 
     ns  | csm   = st { cpr_expr = (pt, fm) : cpr_expr st }
         | lsm   = st { lpr_expr = (init pt, fm) : lpr_expr st }
@@ -91,8 +91,8 @@ newExpr (Trm "=" [_, t@(Trm s vs _)] _) (Trm "=" [v, f] _) st
         | elem ' ' s = setS ns >> return (zEqu v nf)
   where
     (pt, nf) = sexp t f ; fm = substs nf $ map trName vs
-    csm = lsm && rsm ; lsm = nvr (head pt) ; rsm = nvr (last pt)
-    nvr Vr = False ; nvr _ = True
+    csm = lsm && rsm ; lsm = nva (head pt) ; rsm = nva (last pt)
+    nva Vr = False ; nva _ = True
 
     ns  | csm   = st { cfn_expr = (pt, fm) : cfn_expr st }
         | lsm   = st { lfn_expr = (init pt, fm) : lfn_expr st }
@@ -180,23 +180,23 @@ new_sym tvr = lsm -|- rsm
 
 -- Pattern parsing
 
-pt_name lex tvr = do  l <- liftM unwords $ chnop lex; n <- nam
-                      (ls, vs) <- opt ([], []) $ pt_head lex tvr
+pt_name lxm tvr = do  l <- liftM unwords $ chnop lxm; n <- nam
+                      (ls, vs) <- opt ([], []) $ pt_head lxm tvr
                       return (l ++ " . " ++ ls, n:vs)
 
-pt_nonm lex tvr = do  l <- liftM unwords $ chnop lex; n <- hid
-                      (ls, vs) <- opt ([], []) $ pt_shot lex tvr
+pt_nonm lxm tvr = do  l <- liftM unwords $ chnop lxm; n <- hid
+                      (ls, vs) <- opt ([], []) $ pt_shot lxm tvr
                       return (l ++ " . " ++ ls, n:vs)
 
-pt_shot lex tvr = do  l <- lex; (ls, vs) <- pt_tail lex tvr
+pt_shot lxm tvr = do  l <- lxm; (ls, vs) <- pt_tail lxm tvr
                       return (l ++ ' ' : ls, vs)
 
-pt_head lex tvr = do  l <- liftM unwords $ chnop lex
-                      (ls, vs) <- opt ([], []) $ pt_tail lex tvr
+pt_head lxm tvr = do  l <- liftM unwords $ chnop lxm
+                      (ls, vs) <- opt ([], []) $ pt_tail lxm tvr
                       return (l ++ ' ' : ls, vs)
 
-pt_tail lex tvr = do  v <- tvr
-                      (ls, vs) <- opt ([], []) $ pt_head lex tvr
+pt_tail lxm tvr = do  v <- tvr
+                      (ls, vs) <- opt ([], []) $ pt_head lxm tvr
                       return ("# " ++ ls, v:vs)
 
 

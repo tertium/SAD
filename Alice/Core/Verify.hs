@@ -41,8 +41,8 @@ verify file rst bs =
 
       res <- runRM (vLoop False (Context Bot []) [] [] text) rst
 
-      let log = if isJust res then " successful" else " failed"
-      putStrLn $ "[Reason] " ++ fnam ++ ": verification" ++ log
+      let out = if isJust res then " successful" else " failed"
+      putStrLn $ "[Reason] " ++ fnam ++ ": verification" ++ out
       return res
 
 vLoop :: Bool -> Context -> [Block] -> [Context] -> [Text] -> RM [Text]

@@ -36,12 +36,12 @@ import Alice.Core.Extras
 unfold :: [Context] -> RM [Context]
 unfold tsk  = do  when (null exs) $ ntu >> mzero
                   unf ; addRSCI CIunfl $ length exs
-                  return $ foldr exp [] mts
+                  return $ foldr ext [] mts
   where
     mts = markup tsk
     exs = concatMap marked mts
 
-    exp c cnt = setForm c (unfoldF cnt c) : cnt
+    ext c cnt = setForm c (unfoldF cnt c) : cnt
 
     ntu = whenIB IBPunf False $ rlog0 $ "nothing to unfold"
     unf = whenIB IBPunf False $ rlog0 $ "unfold: " ++ out
