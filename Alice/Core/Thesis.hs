@@ -49,6 +49,7 @@ thesis cnt@(ct:_) tc = (nmt, setForm tc nth)
 tmWipe hs f | any (tmComp 0 $ f) hs     = Top
             | any (tmComp 0 $ Not f) hs = Bot
             | isTrm f                   = f
+            | isIff f                   = tmWipe hs $ albet f
             | otherwise                 = bool $ mapF (tmWipe hs) f
 
 tmComp n f g  = cmp (albet f) (albet g)
@@ -60,6 +61,8 @@ tmComp n f g  = cmp (albet f) (albet g)
     cmp (Not a) (Not b)     = tmComp n a b
     cmp (Tag _ a) b         = tmComp n a b
     cmp a (Tag _ b)         = tmComp n a b
+    cmp Top Top             = True
+    cmp Bot Bot             = True
     cmp a b                 = twins a b
 
     nvr = show n
