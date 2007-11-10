@@ -27,15 +27,17 @@ import Alice.Data.Formula
 
 -- Alpha-beta normalization
 
-albet (Iff f g)       = And (Imp f g) (Imp g f)
+albet (Iff f g)       = zIff f g
 albet (Imp f g)       = Or (Not f) g
 albet (Not (All v f)) = Exi v $ Not f
 albet (Not (Exi v f)) = All v $ Not f
-albet (Not (Iff f g)) = Or (And (Not f) g) (And (Not g) f)
-albet (Not (Imp f g)) = And (Not g) f
+albet (Not (Iff f g)) = albet $ Not $ zIff f g
+albet (Not (Imp f g)) = And f (Not g)
 albet (Not (And f g)) = Or (Not f) (Not g)
 albet (Not (Or f g))  = And (Not f) (Not g)
 albet (Not (Not f))   = albet f
+albet (Not Top)       = Bot
+albet (Not Bot)       = Top
 albet f               = f
 
 deAnd = spl . albet
@@ -128,6 +130,9 @@ isTop _   = False
 
 isBot Bot = True
 isBot _   = False
+
+isIff (Iff _ _) = True
+isIff _         = False
 
 isInd (Ind _ _) = True
 isInd _         = False
