@@ -169,9 +169,9 @@ int main(int argc, char** argv)
         case TIM : putstr("timeout"); break;
     }
     printf(" in %lu ms", msec);
-    if (res == PRF) printf(" -- proof tree nodes: %lu -- proof tree depth: %lu",
+    if (res == PRF) printf(" - proof tree nodes: %lu - proof tree depth: %lu",
                                                             tree_nodes, tree_depth);
-    printf("\ninference steps: %lu -- born nodes: %lu -- depth bound: %lu\n",
+    printf("\ninference steps: %lu - born nodes: %lu - depth bound: %lu\n",
                                                 step_count, node_count, depth_count);
     return 0;
 }
