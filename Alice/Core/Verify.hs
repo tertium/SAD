@@ -125,11 +125,11 @@ procTI mot ths _ cnt = proc
             rlog0 $ "current thesis " ++ smt ++ show (cnForm ths)
 
     proc (InCom ICPcnt)
-      = do  let tlb = filter cnTopL cnt
+      = do  let tlb = filter cnTopL $ reverse cnt
                 tlf = map (lichten 0 . cnForm) tlb
                 srl = filter (not . isTop) tlf
             rlog0 $ "current simple rules:"
-            mapM_ printRM srl
+            mapM_ ((putStrRM "  " >>) . printRM) srl
 
     proc (InCom _)  = rlog0 $ "unsupported instruction"
 

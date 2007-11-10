@@ -73,8 +73,9 @@ launch cnt tc = do  incRSCI CIprov; whenIB IBPtsk False debug
                     addRSTI CTprvy td ; incRSCI CIprvy
   where
     debug = do  rlog0 "prover task:"
-                let tlb = map cnForm (tc:cnt)
-                mapM_ printRM $ reverse tlb
+                let tlb = map cnForm $ reverse cnt
+                mapM_ ((putStrRM "  " >>) . printRM) tlb
+                putStrRM "  |- " ; printRM $ cnForm tc
 
 
 -- Goal splitting
