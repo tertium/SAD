@@ -95,13 +95,26 @@ context :: Bool -> [Context] -> Context -> [Context]
 context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
   where
     chk c | tst c = c { cnForm = lichten 0 $ cnForm c }
-          | True  = c
+          | True  = c { cnForm = adroite 0 $ cnForm c }
 
     tst c | cnLowL c  = False
           | null ls   = df && isDefn (cnForm c)
           | otherwise = cnName c `notElem` ls
 
     ls = cnLink tc
+
+adroite :: Int -> Formula -> Formula
+adroite n = sr
+  where
+    sr (All v f)    = let nn = show n ; fn = adroite (succ n)
+                      in  All v $ bind nn $ fn $ inst nn f
+    sr (Iff (Tag DHD (Trm "=" [Var v _, t] _)) f)
+        | isTrm t && isEqu f
+                    = safeSubst t v f
+    sr (Imp (Tag DHD (Trm "=" [Var v _, t] _)) f)
+        | isTrm t   = safeSubst t v f
+    sr (Imp f g)    = Imp f (sr g)
+    sr f            = f
 
 lichten :: Int -> Formula -> Formula
 lichten n = sr
