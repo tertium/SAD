@@ -21,6 +21,7 @@
 module Alice.Core.Verify (verify) where
 
 import Control.Monad
+import Data.IORef
 import Data.Maybe
 
 import Alice.Core.Base
@@ -40,8 +41,10 @@ verify file rst bs =
       putStrLn $ "[Reason] " ++ fnam ++ ": verification started"
 
       res <- runRM (vLoop False (Context Bot []) [] [] text) rst
+      ign <- liftM (cumulCI CIfail 0 . rsCntr) $ readIORef rst
 
-      let out = if isJust res then " successful" else " failed"
+      let scs = isJust res && ign == 0
+          out = if scs then " successful" else " failed"
       putStrLn $ "[Reason] " ++ fnam ++ ": verification" ++ out
       return res
 
