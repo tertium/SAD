@@ -79,10 +79,10 @@ type DefTrio = (Context, Formula, Formula)
 findDef :: (MonadPlus m) => Formula -> Context -> m DefTrio
 findDef trm cx  = dive Top 0 $ cnForm cx
   where
-    dive gs _ (Iff (Tag DHD (Trm "=" [Var v _, t] _)) f) | isTrm t
-                                  = fine gs t $ Tag DEQ $ safeSubst t v f
-    dive gs _ (Imp (Tag DHD (Trm "=" [Var v _, t] _)) f) | isTrm t
-                                  = fine gs t $ Tag DIM $ safeSubst t v f
+    dive gs _ (All _ (Iff (Tag DHD (Trm "=" [_, t] _)) f))
+      = fine gs t $ Tag DEQ $ safeSubst t "" $ inst "" f
+    dive gs _ (All _ (Imp (Tag DHD (Trm "=" [_, t] _)) f))
+      = fine gs t $ Tag DIM $ safeSubst t "" $ inst "" f
     dive gs _ (Iff (Tag DHD t) f) = fine gs t $ Tag DEQ f
     dive gs _ (Imp (Tag DHD t) f) = fine gs t $ Tag DIM f
 

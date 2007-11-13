@@ -106,25 +106,24 @@ context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
 adroite :: Int -> Formula -> Formula
 adroite n = sr
   where
+    sr (All _ (Iff (Tag DHD (Trm "=" [_, t] _)) f))
+        | isEqu f   = safeSubst t "" $ inst "" f
+    sr (All _ (Imp (Tag DHD (Trm "=" [_, t] _)) f))
+                    = safeSubst t "" $ inst "" f
     sr (All v f)    = let nn = show n ; fn = adroite (succ n)
                       in  All v $ bind nn $ fn $ inst nn f
-    sr (Iff (Tag DHD (Trm "=" [Var v _, t] _)) f)
-        | isTrm t && isEqu f
-                    = safeSubst t v f
-    sr (Imp (Tag DHD (Trm "=" [Var v _, t] _)) f)
-        | isTrm t   = safeSubst t v f
     sr (Imp f g)    = Imp f (sr g)
     sr f            = f
 
 lichten :: Int -> Formula -> Formula
 lichten n = sr
   where
+    sr (All _ (Iff (Tag DHD (Trm "=" [_, t] _)) f))
+                    = sr $ safeSubst t "" $ inst "" f
+    sr (All _ (Imp (Tag DHD (Trm "=" [_, t] _)) f))
+                    = sr $ safeSubst t "" $ inst "" f
     sr (All v f)    = let nn = show n ; fn = lichten (succ n)
                       in  bool $ All v $ bind nn $ fn $ inst nn f
-    sr (Iff (Tag DHD (Trm "=" [Var v _, t] _)) f)
-         | isTrm t  = sr $ safeSubst t v f
-    sr (Imp (Tag DHD (Trm "=" [Var v _, t] _)) f)
-         | isTrm t  = sr $ safeSubst t v f
     sr (Iff f g)    = sr $ zIff f g
     sr (And f g)    = bool $ And (sr f) (sr g)
     sr (Imp f g)    = bool $ Imp (sm f) (sr g)
