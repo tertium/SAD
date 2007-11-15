@@ -8,8 +8,8 @@ Let x,y,z,u,v,w denote elements.
 
 Signature EOfElem. An element of S is an element.
 
-Let x << S denote x is an element of S.
-Let x belongs to S denote x is an element of S.
+Let x << S denote (x is an element of S).
+Let x belongs to S denote (x is an element of S).
 
 Definition DefEmpty.    S is empty iff S has no elements.
 
@@ -75,13 +75,13 @@ Definition DefFix.
     A fixed point of f is an element x of Dom f
         such that f(x) = x.
 
-Definition DefIso.
-    f is isotone iff for all x,y << Dom f
+Definition DefMonot.
+    f is monotone iff for all x,y << Dom f
         x <= y  =>  f(x) <= f(y).
 
 
 Theorem Tarski.
-    Let U be a complete lattice and f be an isotone function on U.
+    Let U be a complete lattice and f be an monotone function on U.
     Let S be the set of fixed points of f.
     S is a complete lattice.
 Proof.

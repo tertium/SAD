@@ -15,19 +15,19 @@ Let x - y stand for x + -y.
 
 Axiom AddComm.  x + y = y + x.
 Axiom AddAsso.  (x + y) + z = x + (y + z).
-Axiom _AddZero.  x + 0 = x = 0 + x.
-Axiom _AddInvr.  x + -x = 0 = -x + x.
+Axiom AddZero.  x + 0 = x = 0 + x.
+Axiom AddInvr.  x + -x = 0 = -x + x.
 
 Axiom MulComm.  x * y = y * x.
 Axiom MulAsso.  (x * y) * z = x * (y * z).
-Axiom _MulUnit.  x * 1 = x = 1 * x.
+Axiom MulUnit.  x * 1 = x = 1 * x.
 
 Axiom AMDistr.  x * (y + z) = (x * y) + (x * z) and
                 (y + z) * x = (y * x) + (z * x).
 
 Lemma MulMnOne. -1 * x = -x = x * -1.
 
-Lemma _MulZero.  x * 0 = 0 = 0 * x.
+Lemma MulZero.  x * 0 = 0 = 0 * x.
 
 Axiom Cancel.  If x * y = 0 then x = 0 or y = 0.
 
@@ -63,9 +63,7 @@ Let I,J denote ideals.
 Lemma IdeSum.   I + J is an ideal.
 Proof.
     Let x, y belong to I + J and z be an element.
-
     Take k << I and l << J such that x = k + l.
-
     Take m << I and n << J such that y = m + n.
     k + m belongs to I and l + n belongs to J.
     z * k belongs to I and z * l belongs to J.
