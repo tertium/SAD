@@ -21,12 +21,12 @@
 module Main where
 
 import Data.IORef
+import Data.Time
 import Control.Monad
 import System.Console.GetOpt
 import System.Environment
 import System.Exit
 import System.IO
-import System.Time
 
 import Alice.Core.Base
 import Alice.Core.Verify
@@ -39,7 +39,7 @@ import Alice.Import.Reader
 
 main :: IO ()
 main  =
-  do  strt <- getClockTime
+  do  strt <- getCurrentTime
       hSetBuffering stdout LineBuffering
 
       cmdl <- readOpts
@@ -54,11 +54,11 @@ main  =
 
       prdb <- readPrDB (askIS ISprdb "provers.dat" xini)
       rstt <- newIORef (RState [] [] prdb)
-      prst <- getClockTime
+      prst <- getCurrentTime
 
       verify (askIS ISfile "" xini) rstt text
 
-      fint <- getClockTime
+      fint <- getCurrentTime
       stat <- readIORef rstt
 
       let cntr = rsCntr stat
@@ -82,20 +82,20 @@ main  =
               ++ " - proved "   ++ show (cumulCI CIchky 0 cntr)
               ++ " - unfolds "  ++ show (cumulCI CIunfl 0 cntr)
       putStrLn $ "[Main] "
-              ++ "parser "      ++ showTimeDiff (getTimeDiff prst strt)
-              ++ " - reason "   ++ showTimeDiff (getTimeDiff fint prvt)
-              ++ " - prover "   ++ showTimeDiff (getTimeDiff prvt prst)
+              ++ "parser "      ++ showTimeDiff (diffUTCTime prst strt)
+              ++ " - reason "   ++ showTimeDiff (diffUTCTime fint prvt)
+              ++ " - prover "   ++ showTimeDiff (diffUTCTime prvt prst)
               ++ "/" ++ showTimeDiff (maximCT CTprvy cntr)
       putStrLn $ "[Main] "
-              ++ "total "       ++ showTimeDiff (getTimeDiff fint strt)
+              ++ "total "       ++ showTimeDiff (diffUTCTime fint strt)
 
 
-trans :: ClockTime -> [Text] -> IO ()
-trans strt text = do  mapM_ printTB text ; fint <- getClockTime
+trans :: UTCTime -> [Text] -> IO ()
+trans strt text = do  mapM_ printTB text ; fint <- getCurrentTime
                       putStrLn $ "[Main] total " ++ tmdiff fint
                       exitWith ExitSuccess
   where
-    tmdiff fint = showTimeDiff (getTimeDiff fint strt)
+    tmdiff fint = showTimeDiff (diffUTCTime fint strt)
     printTB (TB bl) = print bl ; printTB _ = return ()
 
 

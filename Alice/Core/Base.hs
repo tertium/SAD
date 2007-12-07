@@ -23,7 +23,7 @@ module Alice.Core.Base where
 import Control.Monad
 import Data.IORef
 import Data.List
-import System.Time
+import Data.Time
 
 import Alice.Data.Instr
 import Alice.Data.Text
@@ -35,7 +35,7 @@ data RState = RState {  rsInst :: [Instr],
                         rsCntr :: [Count],
                         rsPrdb :: [Prover] }
 
-data Count  = CntrT CntrT TimeDiff
+data Count  = CntrT CntrT NominalDiffTime
             | CntrI CntrI Int
 
 data CntrT  = CTprov
@@ -97,10 +97,10 @@ addRSTI c i = updateRS $ \ rs -> rs { rsCntr = CntrT c i : rsCntr rs }
 addRSCI c i = updateRS $ \ rs -> rs { rsCntr = CntrI c i : rsCntr rs }
 incRSCI c   = addRSCI c 1
 
-timer c a   = do  b <- justIO $ getClockTime
+timer c a   = do  b <- justIO $ getCurrentTime
                   r <- a
-                  e <- justIO $ getClockTime
-                  addRSTI c $ getTimeDiff e b
+                  e <- justIO $ getCurrentTime
+                  addRSTI c $ diffUTCTime e b
                   return r
 
 guardIB i d     = askRSIB i d >>= guard
@@ -115,22 +115,18 @@ fetchCI c cs  = [ i | CntrI d i <- cs, c == d ]
 fetchCT c cs  = [ i | CntrT d i <- cs, c == d ]
 
 cumulCI c t = foldr (+) t . fetchCI c
-cumulCT c t = foldr addToClockTime t . fetchCT c
-maximCT c   = foldr max noTimeDiff . fetchCT c
-
-getTimeDiff e b = let t = diffClockTimes e b
-                      x = tdSec t ; y = tdPicosec t
-                      (u, v) = y `divMod` 1000000000000
-                  in  t { tdSec = x + fromInteger u, tdPicosec = v }
+cumulCT c t = foldr addUTCTime t . fetchCT c
+maximCT c   = foldr max 0 . fetchCT c
 
 showTimeDiff t
   | th == 0 = dsh mn ++ ':' : dsh ss ++ '.' : dsh cs
   | True    = dsh th ++ ':' : dsh mn ++ ':' : dsh ss
   where
-    TimeDiff ye mo da hr mn ss ps = normalizeTimeDiff t
-    th    = hr + da * 24 + mo * 30 * 24 + ye * 365 * 24
-    dsh n = if n < 10 then '0':show n else show n
-    cs    = ps `div` 10000000000
+    dsh n   = if n < 10 then '0':show n else show n
+    tc      = truncate $ t * 100
+    (ts,cs) = divMod tc 100
+    (tm,ss) = divMod ts 60
+    (th,mn) = divMod tm 60
 
 
 -- IO management
