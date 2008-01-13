@@ -231,8 +231,9 @@ nodups vs = unless (null $ dups vs) $
 
 hidden  = askPS psOffs >>= \ n -> return ('h':show n)
 
-var     = do  v <- nextTkLex ; unless (all isAlpha v) $
-                fail $ "invalid variable: " ++ show v
+var     = do  v <- nextTkLex
+              unless (all isAlphaNum v && isAlpha (head v)) $
+                        fail $ "invalid variable: " ++ show v
               skipSpace $ return ('x':v)
 
 decl vs = dive
