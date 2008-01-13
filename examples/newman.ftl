@@ -28,7 +28,7 @@ Definition WCRDef.  R is locally confluent iff
     for all a,b,c  such that a -R> b,c
     there exists d such that b,c -R*> d.
 
-Definition Termin.   R is terminating iff for all a,b
+Definition Termin.  R is terminating iff for all a,b
     a -R+> b => b -<- a.
 
 Definition NFRDef.  A normal form of x in R is an element y
