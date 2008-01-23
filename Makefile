@@ -1,7 +1,7 @@
 ### Compilers and flags ###
 
 HC = ghc
-HFLAGS = -O # -prof -auto-all
+HFLAGS = -fglasgow-exts # -prof -auto-all
 
 CC = gcc
 CFLAGS = -Wall -O2 -finline-functions
