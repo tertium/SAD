@@ -66,45 +66,84 @@ class MonadPlus m => MonadLazy m where
   mtie :: m a -> ([a] -> a -> m b) -> m b
 
 
--- List parser monad
+-- Simple list parser monad
 
-newtype LPM a b = LPM { runLPM :: PState a -> LPMR a b }
+newtype SLPM a b = SLPM { runSLPM :: PState a -> LPMR a b }
 
-instance Monad (LPM a) where
-  fail e    = LPM $ \ p -> ([], [(e, p)])
-  return r  = LPM $ \ p -> ([(r, p)], [])
+instance Monad (SLPM a) where
+  fail e    = SLPM $ \ p -> ([], [(e, p)])
+  return r  = SLPM $ \ p -> ([(r, p)], [])
 
-  m >>= k   = LPM $ after . runLPM m
+  m >>= k   = SLPM $ after . runSLPM m
     where
       after (rs, e) = foldl app ([], e) rs
-      app l (r, q)  = resadd (runLPM (k r) q) l
+      app l (r, q)  = resadd (runSLPM (k r) q) l
 
-instance MonadPlus (LPM a) where
-  mzero     = LPM $ \ _ -> ([], [])
-  mplus m k = LPM $ \ p -> resadd (runLPM m p) (runLPM k p)
+instance MonadPlus (SLPM a) where
+  mzero     = SLPM $ \ _ -> ([], [])
+  mplus m k = SLPM $ \ p -> resadd (runSLPM m p) (runSLPM k p)
 
-instance MonadLazy (LPM a) where
-  mtry m k  = LPM $ \ p -> case runLPM m p of
-                ([], e) -> case runLPM k p of
+instance MonadLazy (SLPM a) where
+  mtry m k  = SLPM $ \ p -> case runSLPM m p of
+                ([], e) -> case runSLPM k p of
                   (rs, d) -> (rs, e ++ d)
                 r -> r
 
-  mtie m k  = LPM $ after . runLPM m
+  mtie m k  = SLPM $ after . runSLPM m
     where
       after (rs, e)   = foldl (app $ map fst rs) ([], e) rs
-      app rs l (r, q) = resadd (runLPM (k rs r) q) l
+      app rs l (r, q) = resadd (runSLPM (k rs r) q) l
+
+
+-- CPS list parser monad
+
+newtype CLPM a b = CLPM { runCLPM :: forall c . (b -> SLPM a c) -> SLPM a c }
+
+instance Monad (CLPM a) where
+  fail e    = CLPM $ \ _ -> fail e
+  return r  = CLPM $ \ k -> k r
+  m >>= n   = CLPM $ \ k -> runCLPM m (\ b -> runCLPM (n b) k)
+
+instance MonadPlus (CLPM a) where
+  mzero     = CLPM $ \ _ -> mzero
+  mplus m n = CLPM $ \ k -> mplus (runCLPM m k) (runCLPM n k)
+
+instance MonadLazy (CLPM a) where
+  mtry m n  = CLPM $ \ k -> SLPM $ \ p ->
+                case runSLPM (runCLPM m return) p of
+                  ([], e) -> case runSLPM (runCLPM n k) p of
+                    (rs, d) -> (rs, e ++ d)
+                  (rs, e) -> let app l (r, q) = resadd (runSLPM (k r) q) l
+                             in  foldl app ([], e) rs
+
+  mtie m n  = CLPM $ \ k -> mtie (runCLPM m return) (\ as a -> runCLPM (n as a) k)
 
 
 -- Parser state manipulation
 
-getPS :: LPM a (PState a)
-getPS   = LPM $ \ p -> ([(p, p)], [])
+class MonadPState m where
+  getPS :: m a (PState a)
+  setPS :: PState a -> m a ()
+  updatePS :: (PState a -> PState a) -> m a (PState a)
 
-setPS :: PState a -> LPM a ()
-setPS p = LPM $ \ _ -> ([((), p)], [])
+instance MonadPState SLPM where
+  getPS = SLPM $ \ p -> ([(p, p)], [])
+  setPS p = SLPM $ \ _ -> ([((), p)], [])
+  updatePS fn = SLPM $ \ p -> ([(p, fn p)], [])
 
-updatePS :: (PState a -> PState a) -> LPM a (PState a)
-updatePS fn = LPM $ \ p -> ([(p, fn p)], [])
+instance MonadPState CLPM where
+  getPS = CLPM $ \ k -> SLPM $ \ p -> runSLPM (k p) p
+  setPS p = CLPM $ \ k -> SLPM $ \ _ -> runSLPM (k ()) p
+  updatePS fn = CLPM $ \ k -> SLPM $ \ p -> runSLPM (k p) (fn p)
+
+
+-- List parser monad
+
+type LPM = CLPM
+
+runLPM :: LPM a b -> PState a -> LPMR a b
+runLPM m = runSLPM $ runCLPM m return
+-- runLPM = runSLPM
 
 askPS :: (PState a -> b) -> LPM a b
 askPS fn = liftM fn getPS
