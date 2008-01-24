@@ -70,7 +70,7 @@ dfgTerm d = dive
     dive t| isEqu t = showString "equal" . showArgs dive (trArgs t)
           | isTrm t = showTrName t . showArgs dive (trArgs t)
           | isVar t = showTrName t
-          | isInd t = showChar 'w' . shows (d - 1 - trIndx t)
+          | isInd t = showChar 'W' . shows (d - 1 - trIndx t)
 
     binder f  = showChar '[' . dfgTerm (succ d) (Ind 0 [])
               . showString "]," . dfgTerm (succ d) f
