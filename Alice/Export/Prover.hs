@@ -32,6 +32,7 @@ import Alice.Data.Text
 import Alice.Export.Base
 import Alice.Export.DFG
 import Alice.Export.TPTP
+import Alice.Export.LADR
 import Alice.Export.Otter
 import Alice.Export.Moses
 
@@ -52,7 +53,8 @@ export prs ins cnt gl =
 
       let dmp = case fmt of
                   DFG   -> dfgOut   ; TPTP  -> tptpOut
-                  Otter -> otterOut ; Moses -> mosesOut
+                  LADR  -> ladrOut  ; Otter -> otterOut
+                  Moses -> mosesOut
           tsk = dmp prv tlm cnt gl
 
       when (askIB IBPdmp False ins) $ putStrLn tsk

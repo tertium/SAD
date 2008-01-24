@@ -32,7 +32,7 @@ data Prover = Prover {  prName :: String,   prLabl :: String,
                         prFrmt :: Format,   prSucc :: [String],
                         prFail :: [String], prUnkn :: [String] }
 
-data Format = DFG | TPTP | Otter | Moses
+data Format = DFG | TPTP | LADR | Otter | Moses
 
 initPrv l = Prover l "Prover" "" [] TPTP [] [] []
 
@@ -78,6 +78,7 @@ readPrvs n (Just pr) (('F':l):ls)
   = case l of
       "dfg"   ->  readPrvs (succ n) (Just pr { prFrmt = DFG }) ls
       "tptp"  ->  readPrvs (succ n) (Just pr { prFrmt = TPTP }) ls
+      "ladr"  ->  readPrvs (succ n) (Just pr { prFrmt = LADR }) ls
       "otter" ->  readPrvs (succ n) (Just pr { prFrmt = Otter }) ls
       "moses" ->  readPrvs (succ n) (Just pr { prFrmt = Moses }) ls
       _       ->  Left $ show n ++ ": unknown format: " ++ l
