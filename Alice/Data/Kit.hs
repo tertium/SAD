@@ -123,7 +123,7 @@ zEqu t s  = zTrm "=" [t,s]
 zSet t    = zTrm "aSet" [t]
 zElm t s  = zTrm "aElementOf" [t,s]
 zLess t s = zTrm "iLess" [t,s]
-zSSS s ts = zTrm ('S':'C':':':s) ts
+zSSS s ts = zTrm ('c':'S':':':s) ts
 
 isTop Top = True
 isTop _   = False
@@ -149,7 +149,7 @@ isEqu _                 = False
 isThesis (Trm "#TH#" [] _)  = True
 isThesis _                  = False
 
-isSSS (Trm ('S':'C':':':_) _ _) = True
+isSSS (Trm ('c':'S':':':_) _ _) = True
 isSSS _                         = False
 
 
@@ -206,6 +206,7 @@ showFormula p d = dive
       dive (Trm "#TH#" _ _)   = showString "thesis"
       dive (Trm "=" [l,r] _)  = sinfix " = " l r
       dive (Trm ('s':s) ts _) = showString (symDecode s) . sargs ts
+      dive (Trm ('t':s) ts _) = showString s . sargs ts
       dive (Trm s ts _)       = showString s . sargs ts
       dive (Var ('x':s) _)    = showString s
       dive (Var s _)          = showString s
