@@ -63,5 +63,5 @@ tptpTerm d = dive
     binder f  = showChar '[' . tptpTerm (succ d) (Ind 0 [])
               . showString "] : " . tptpTerm (succ d) f
 
-showTrName = showString . (:) 's' . filter (/= ':') . trName
+showTrName = showString . filter (/= ':') . trName
 
