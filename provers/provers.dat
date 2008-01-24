@@ -43,10 +43,17 @@ N# SZS status CounterSatisfiable
 U# SZS status ResourceOut
 U# SZS status GaveUp
 
+Pprover9
+LProver9
+Fladr
+Cprovers/prover9 set(quiet). clear(echo_input). clear(print_initial_clauses). clear(print_proofs). clear(print_given).
+YTHEOREM PROVED
+USEARCH FAILED
+
 Potter
 LOtter
 Fotter
-Cprovers/otter set(auto) clear(print_proofs) clear(print_given)
+Cprovers/otter set(auto). clear(print_proofs). clear(print_given).
 YSearch stopped by max_proofs option.
 NSearch stopped because sos empty.
 USearch stopped by max_seconds option.
