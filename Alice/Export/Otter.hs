@@ -28,19 +28,18 @@ import Alice.Export.Base
 otterOut :: Prover -> Int -> [Context] -> Context -> String
 otterOut pr tl cn gl = (hdr . usa . sos) ""
   where
-    hdr = foldr ((.) . sop) tlm (prArgs pr)
-    sop o = showString o . showString ".\n"
-
+    hdr = foldr ((.) . showString) tlm $ filter ((== '.') . last) $ prArgs pr
     tlm = showString "assign(max_seconds," . shows tl . showString ").\n"
+        . showString "set(prolog_style_variables).\n"
 
     usa = showString "formula_list(usable).\n"
         . foldr (flip (.) . otterForm . cnForm) equ cn . eol
 
-    aut = if elem "set(auto)" (prArgs pr) then "usable" else "sos"
+    aut = if elem "set(auto)." (prArgs pr) then "usable" else "sos"
     sos = showString "formula_list(" . showString aut . showString ").\n"
         . otterForm (Not $ cnForm gl) . eol
 
-    equ = showString "all x (x = x).\n"
+    equ = showString "all X (X = X).\n"
     eol = showString "end_of_list.\n"
 
 
@@ -52,8 +51,8 @@ otterForm f = otterTerm 0 f . showString ".\n"
 otterTerm :: Int -> Formula -> ShowS
 otterTerm d = dive
   where
-    dive (All _ f)  = showString "$Quantified(all," . binder f . showChar ')'
-    dive (Exi _ f)  = showString "$Quantified(exists," . binder f . showChar ')'
+    dive (All _ f)  = showString "(all " . binder f . showChar ')'
+    dive (Exi _ f)  = showString "(exists " . binder f . showChar ')'
     dive (Iff f g)  = showString "<->" . showArgs dive [f,g]
     dive (Imp f g)  = showString "->" . showArgs dive [f,g]
     dive (Or  f g)  = showString "|" . showArgs dive [f,g]
@@ -65,9 +64,9 @@ otterTerm d = dive
     dive t| isEqu t = showString "=" . showArgs dive (trArgs t)
           | isTrm t = showTrName t . showArgs dive (trArgs t)
           | isVar t = showTrName t
-          | isInd t = showChar 'w' . shows (d - 1 - trIndx t)
+          | isInd t = showChar 'W' . shows (d - 1 - trIndx t)
 
-    binder f  = otterTerm (succ d) (Ind 0 []) . showChar ','
+    binder f  = otterTerm (succ d) (Ind 0 []) . showChar ' '
               . otterTerm (succ d) f
 
 showTrName = showString . filter (/= ':') . trName
