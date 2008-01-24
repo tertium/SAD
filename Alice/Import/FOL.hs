@@ -94,7 +94,7 @@ com_seq p = bi_form p (com_seq p) (char ',') (:) (:[])
 sAll  = zAll . ('x':)
 sExi  = zExi . ('x':)
 sVar  = zVar . ('x':)
-sTrm  = zTrm . ('s':)
+sTrm  = zTrm . ('t':)
 
 iff_op  = char '~' -/- word "iff"
 imp_op  = char '>' -/- word "implies"

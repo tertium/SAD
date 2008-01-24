@@ -132,7 +132,7 @@ prmcnj = (p >> return False) -/- (c >> return True)
 sAll  = zAll . ('x':)
 sExi  = zExi . ('x':)
 sVar  = zVar . ('x':)
-sTrm  = zTrm . ('s':)
+sTrm  = zTrm . ('t':)
 
 free (Var v _)  = [v]
 free f          = nub $ foldF free f
