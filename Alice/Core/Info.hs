@@ -160,7 +160,7 @@ hasInfo f = isTrm f || isVar f || isInd f
 nullInfo f  | hasInfo f = f {trInfo = []}
             | otherwise = f
 
-nullDefn f  | hasInfo f = f {trInfo = selInfo [DIM,DOR] f}
+nullDefn f  | hasInfo f = f {trInfo = remInfo [DEQ,DSD] f}
             | otherwise = f
 
 wipeInfo f  = mapF wipeInfo $ nullInfo f
