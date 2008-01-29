@@ -29,8 +29,8 @@ import Alice.Core.Info
 
 -- Recollect adhoc definitions and evidence literals
 
-fillInfo :: Int -> [Context] -> Context -> Formula
-fillInfo n cnt cx = reduce $ fill True [] (Just True) n $ cnForm cx
+fillInfo :: [Context] -> Context -> Formula -> Formula
+fillInfo cnt cx = reduce . fill True [] (Just True) 0
   where
     fill pr fc sg n fr
       | isVar fr    = sti fr

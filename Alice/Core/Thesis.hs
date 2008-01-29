@@ -36,7 +36,7 @@ thesis :: [Context] -> Context -> (Bool, Context)
 thesis cnt@(ct:_) tc = (nmt, setForm tc nth)
   where
     nmt = cnSign ct || isJust ith
-    nth = fillInfo 0 cnt $ setForm tc kth
+    nth = fillInfo cnt tc kth
     kth = tmWipe (tmDown $ cnForm ct) jth
     jth | cnSign ct = ths
         | otherwise = fromMaybe ths ith
@@ -111,7 +111,7 @@ tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
         qua u f = tmVars u f >>= dive
         rnd = roundFM 'z' pass fc sg n
         dfs = msum . map def . trInfoD
-        def = dive . fillInfo n nct . setForm tc
+        def = dive . fillInfo nct tc
         nct = cnRaise cnt tc fc
 
 tmVars u f  = TM (vrs [])
