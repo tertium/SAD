@@ -75,8 +75,9 @@ trigger prd cnt trm = fld (sr Top 0) cnt
     sm ps gl (Not f)    = map (Tag DOR) $ sq ps gl f
     sm ps gl f          = map (Tag DIM) $ sq ps gl f
 
-    sq ps gl s  = [ g | ngl <- match s wtr `ap` [gl], green ngl,
-                        nps <- match s trm `ap` [ps], green nps,
+    sq ps gl s  = [ g | sbs <- match s trm,
+                        let ngl = sbs gl, green ngl,
+                        let nps = sbs ps, green nps,
                         rapid nps, let g = dlv ngl ]
 
     dlv (Not f) = Not $ skipInfo wipeInfo f
@@ -87,7 +88,6 @@ trigger prd cnt trm = fld (sr Top 0) cnt
 
     gut s = not (isVar s) || green s
     fld f = foldr ((+++) . f) []
-    wtr = wipeInfo trm
 
 
 -- Simplification with evidence
@@ -136,9 +136,15 @@ safeSubst :: Formula -> String -> Formula -> Formula
 safeSubst t v = dive
   where
     dive (Var u _)  | u == v  = t
-    dive f  | hasInfo f = let nti = map (safeSubst wtr v) $ trInfo f
-                          in  skipInfo (mapF dive) f { trInfo = nti }
+    dive f  | hasInfo f = skipInfo (mapF dive)
+                            f { trInfo = map sbs $ trInfo f }
             | otherwise = mapF dive f
+
+    sbs f@(Tag DIM _) = subst wtr v f
+    sbs f@(Tag DOR _) = subst wtr v f
+    sbs f             = safeSubst dtr v f
+
+    dtr = wipeDefn t
     wtr = wipeInfo t
 
 green :: Formula -> Bool
@@ -154,7 +160,12 @@ hasInfo f = isTrm f || isVar f || isInd f
 nullInfo f  | hasInfo f = f {trInfo = []}
             | otherwise = f
 
+nullDefn f  | hasInfo f = f {trInfo = selInfo [DIM,DOR] f}
+            | otherwise = f
+
 wipeInfo f  = mapF wipeInfo $ nullInfo f
+
+wipeDefn f  = mapF wipeDefn $ nullDefn f
 
 skipInfo fn f | hasInfo f = (fn $ nullInfo f) {trInfo = trInfo f}
               | otherwise = fn f

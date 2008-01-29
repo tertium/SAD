@@ -47,7 +47,7 @@ specDef :: Formula -> Formula
 specDef trm@(Trm "=" [l, r] _) | not (null sds)  = ntr
   where
     ntr = Trm "=" [l, r { trInfo = remInfo [DEQ,DSD] r }] nds
-    sds = map (Tag DSD . replace (wipeInfo l) r) $ trInfoD r
+    sds = map (Tag DSD . replace (wipeDefn l) r) $ trInfoD r
     nds = sds ++ remInfo [DSD] trm
 
 specDef trm | isTrm trm = otr { trInfo = nds }
@@ -90,11 +90,12 @@ specDig trm = dive Top 0
     dive _ _ _          = mzero
 
     fine gs tr fr =
-      do  nfr <- match tr wtr `ap` return fr; guard $ green nfr
-          ngs <- match tr trm `ap` return gs; guard $ green ngs
-          guard $ rapid ngs; return nfr
+      do  sbs <- match tr wtr
+          let nfr = sbs fr; ngs = sbs gs
+          guard $ green nfr && green ngs
+          guard $ rapid ngs ; return nfr
 
-    wtr = wipeInfo trm
+    wtr = wipeDefn trm
 
 
 -- Well-formedness checking

@@ -97,7 +97,7 @@ findDef trm cx  = dive Top 0 $ cnForm cx
           return (cx, ngs, trm { trName = t, trInfo = [nfr] })
       where otr = tr { trName = takeWhile (/= ':') t }
 
-    wtr = wipeInfo trm
+    wtr = wipeDefn trm
 
 testDef :: Bool -> [Context] -> Context -> Formula -> DefTrio -> RM Formula
 testDef hard cnt cx trm (dc, gs, nt)
