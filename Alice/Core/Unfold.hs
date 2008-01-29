@@ -49,6 +49,7 @@ unfold tsk  = do  when (null exs) $ ntu >> mzero
 
 unfoldF cnt cx = fill [] (Just True) 0 (cnForm cx)
   where
+    fill _  _  _ f | noDCN f  = f
     fill fc sg n f | isTrm f  = fillInfo (cnRaise cnt cx fc) cx $
                                 unfoldA (fromJust sg) f
     fill fc sg n (Iff f g)    = fill fc sg n $ zIff f g
@@ -103,4 +104,7 @@ isDCN     = not . null . getDCN
 
 getDCN f  | hasInfo f = trInfoC f
           | otherwise = []
+
+noDCN     = not . hasDCN
+hasDCN f  = isDCN f || anyF hasDCN (nullInfo f)
 
