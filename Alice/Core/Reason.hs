@@ -94,12 +94,16 @@ splitG fr = spl $ albet $ strip fr
 context :: Bool -> [Context] -> Context -> [Context]
 context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
   where
-    chk c | tst c = c { cnForm = lichten 0 $ cnForm c }
-          | True  = c { cnForm = adroite 0 $ cnForm c }
+    chk c | cnLowL c  = c
+          | lht       = setForm c $ lichten 0 f
+          | dhd       = setForm c $ adroite 0 f
+          | otherwise = c
+      where
+        lht | null ls = df && defn
+            | True    = cnName c `notElem` ls
 
-    tst c | cnLowL c  = False
-          | null ls   = df && isDefn (cnForm c)
-          | otherwise = cnName c `notElem` ls
+        dhd = defn || sign ; f = cnForm c
+        defn = isDefn f ; sign = isSign f
 
     ls = cnLink tc
 
