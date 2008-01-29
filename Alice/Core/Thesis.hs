@@ -33,14 +33,14 @@ import Alice.Data.Text
 -- Infer new thesis
 
 thesis :: [Context] -> Context -> (Bool, Context)
-thesis cnt@(ct:_) tc = (nmt, setForm tc nth)
+thesis cnt@(ct:_) tc = (nmt, ntc)
   where
     nmt = cnSign ct || isJust ith
-    nth = fillInfo cnt tc kth
+    ntc = setForm tc $ reduce kth
     kth = tmWipe (tmDown $ cnForm ct) jth
     jth | cnSign ct = ths
         | otherwise = fromMaybe ths ith
-    ith = tmInst cnt tc
+    ith = tmInst cnt ths
     ths = cnForm tc
 
 
@@ -70,9 +70,9 @@ tmComp n f g  = cmp (albet f) (albet g)
 
 -- Instantiate f with vs in sight of h
 
-tmInst (ct:cnt) tc = find gut insts
+tmInst (ct:cnt) ths = find gut insts
   where
-    insts = map snd $ runTM (tmPass cnt tc) $ cnDecl ct
+    insts = map snd $ runTM (tmPass ths) $ cnDecl ct
     gut g = isTop $ tmWipe (tmFlat 0 $ Not g) $ cnForm ct
 
 tmFlat n  = flat . albet
@@ -95,7 +95,7 @@ tmDown = spl . albet
 
 -- Find possible instantiations
 
-tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
+tmPass  = pass [] (Just True) 0
   where
     pass fc sg n  = dive
       where
@@ -110,9 +110,7 @@ tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
 
         qua u f = tmVars u f >>= dive
         rnd = roundFM 'z' pass fc sg n
-        dfs = msum . map def . trInfoD
-        def = dive . fillInfo nct tc
-        nct = cnRaise cnt tc fc
+        dfs = msum . map (dive . reduce) . trInfoD
 
 tmVars u f  = TM (vrs [])
   where
