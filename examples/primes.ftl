@@ -96,6 +96,9 @@ qed.
 
 Lemma DivLE.    Let m | n != 0. Then m <= n.
 
+Lemma DivAsso.  Let l be nonzero and divide m.
+                Then n * (m / l) = (n * m) / l.
+Indeed (l * n) * (m / l) = l * ((n * m) / l).
 
 [prime/-s] [compound/-s]
 
@@ -162,8 +165,8 @@ Proof by induction on ((n + m) + p).
       Case r divides n.
         We have n = (n / r) * r and (n / r) < n.
         Let us prove that p divides (n / r) * m.
-            ((n / r) * m) * r = n * m = (p * (k / r)) * r.
-            Then p * (k / r) = (n / r) * m (by MulCanc).
+            ((n / r) * m) * r = n * m = ((p * k) / r) * r.
+            Then p * (k / r) = (n / r) * m (by DivAsso,MulCanc).
         end.
         Then p divides (n / r) or p divides m (by IH).
         Indeed ((n / r) + m) + p < (n + m) + p (by MonAdd).
@@ -172,8 +175,8 @@ Proof by induction on ((n + m) + p).
       Case r divides m.
         We have m = (m / r) * r and (m / r) < m.
         Let us prove that p divides n * (m / r).
-            (n * (m / r)) * r = m * n = (p * (k / r)) * r.
-            Then p * (k / r) = n * (m / r) (by MulCanc).
+            (n * (m / r)) * r = m * n = ((p * k) / r) * r.
+            Then p * (k / r) = n * (m / r) (by DivAsso,MulCanc).
         end.
         Then p divides n or p divides (m / r) (by IH).
         Indeed (n + (m / r)) + p < (n + m) + p (by MonAdd).
