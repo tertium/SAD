@@ -1,7 +1,7 @@
 ### Compilers and flags ###
 
 HC = ghc
-HFLAGS = -fglasgow-exts # -prof -auto-all
+HFLAGS = -O2 -XPolymorphicComponents # -prof -auto-all
 
 CC = gcc
 CFLAGS = -Wall -O2 -finline-functions
