@@ -163,5 +163,6 @@ isSort (Trm ('a':_) _ _)    = True
 isSort (Not (Trm "=" _ _))  = True
 isSort f                    = isTop f || isBot f
 
-ground f  = not (isVar f) && allF ground f
+ground (Var _ _)            = False
+ground f                    = allF ground $ nullInfo f
 
