@@ -35,7 +35,7 @@ fillInfo n cnt cx = reduce $ fill True [] (Just True) n $ cnForm cx
     fill pr fc sg n fr
       | isVar fr    = sti fr
       | isTrm fr    = sti $ specDef $ fr { trArgs = nts }
-      | otherwise   = roundF (fill pr) fc sg n fr
+      | otherwise   = roundF 'i' (fill pr) fc sg n fr
       where
         sti = setInfo pr $ cnRaise cnt cx fc
         nts = map (fill False fc sg n) (trArgs fr)

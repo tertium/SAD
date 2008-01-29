@@ -97,17 +97,21 @@ tmDown = spl . albet
 
 tmPass cnt tc = pass [] (Just True) 0 $ cnForm tc
   where
-    pass fc sg n h  = dive h
+    pass fc sg n  = dive
       where
-        dive h@(All u f)    = case sg of  Just True   -> qua u f h
-                                          _           -> return h
-        dive h@(Exi u f)    = case sg of  Just False  -> qua u f h
-                                          _           -> return h
+        dive h@(All u f)    = case sg of
+                Just True   -> qua u f `mplus` rnd h
+                _           -> return h
+        dive h@(Exi u f)    = case sg of
+                Just False  -> qua u f `mplus` rnd h
+                _           -> return h
         dive h@(Trm _ _ _)  = return h `mplus` dfs h
-        dive h              = roundFM pass fc sg n h
+        dive h              = rnd h
 
-        qua u f = mplus (tmVars u f >>= dive) . roundFM pass fc sg n
-        dfs = msum . map (dive . fillInfo n nct . setForm tc) . trInfoD
+        qua u f = tmVars u f >>= dive
+        rnd = roundFM 'z' pass fc sg n
+        dfs = msum . map def . trInfoD
+        def = dive . fillInfo n nct . setForm tc
         nct = cnRaise cnt tc fc
 
 tmVars u f  = TM (vrs [])

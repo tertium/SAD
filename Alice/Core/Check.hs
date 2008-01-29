@@ -50,7 +50,7 @@ fillDef ths cnt cx  = fill True False [] (Just True) 0 $ cnForm cx
             nis <- mapM (fill True False fc sg n) is
             ntr <- setDef nw nct cx $ Trm t nts nis
             return $ sinfo uin pr nct $ specDef ntr
-    fill pr nw fc sg n f = roundFM (fill pr nw) fc sg n f
+    fill pr nw fc sg n f = roundFM 'w' (fill pr nw) fc sg n f
 
     sinfo uin pr cnt trm
       | uin   = setInfo pr cnt trm

@@ -51,8 +51,8 @@ unfoldF cnt cx = fill [] (Just True) 0 (cnForm cx)
   where
     fill fc sg n f | isTrm f  = fillInfo n (cnRaise cnt cx fc) $
                                 setForm cx $ unfoldA (fromJust sg) f
-    fill fc sg n (Iff f g)    = roundF fill fc sg n (zIff f g)
-    fill fc sg n f            = roundF fill fc sg n f
+    fill fc sg n (Iff f g)    = fill fc sg n $ zIff f g
+    fill fc sg n f            = roundF 'u' fill fc sg n f
 
 unfoldA sg fr = nfr
   where

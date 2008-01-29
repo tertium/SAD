@@ -74,33 +74,33 @@ mapFM fn (Ind v ss)     = liftM  (Ind v) (mapM fn ss)
 
 -- Logical traversing
 
-roundF :: ([Formula] -> Maybe Bool -> Int -> Formula -> Formula)
-        -> [Formula] -> Maybe Bool -> Int -> Formula -> Formula
-roundF fn cn sg n  = dive
+roundF :: Char -> ([Formula] -> Maybe Bool -> Int -> Formula -> Formula)
+               ->  [Formula] -> Maybe Bool -> Int -> Formula -> Formula
+roundF c fn cn sg n = dive
   where
-    dive (All u f) =  let nf = fn cn sg (succ n); nn = 'u':show n
+    dive (All u f)  = let nf = fn cn sg (succ n); nn = c:show n
                       in  All u $ bind nn $ nf $ inst nn f
-    dive (Exi u f) =  let nf = fn cn sg (succ n); nn = 'u':show n
+    dive (Exi u f)  = let nf = fn cn sg (succ n); nn = c:show n
                       in  Exi u $ bind nn $ nf $ inst nn f
-    dive (Iff f g) =  let nf = fn cn Nothing n f
+    dive (Iff f g)  = let nf = fn cn Nothing n f
                       in  Iff nf $ fn cn Nothing n g
-    dive (Imp f g) =  let nf = fn cn (liftM not sg) n f
+    dive (Imp f g)  = let nf = fn cn (liftM not sg) n f
                       in  Imp nf $ fn (nf:cn) sg n g
-    dive (Or  f g) =  let nf = fn cn sg n f
+    dive (Or  f g)  = let nf = fn cn sg n f
                       in  Or nf $ fn (Not nf:cn) sg n g
-    dive (And f g) =  let nf = fn cn sg n f
+    dive (And f g)  = let nf = fn cn sg n f
                       in  And nf $ fn (nf:cn) sg n g
-    dive (Not f)   =  Not $ fn cn (liftM not sg) n f
-    dive f         =  mapF (fn cn sg n) f
+    dive (Not f)    = Not $ fn cn (liftM not sg) n f
+    dive f          = mapF (fn cn sg n) f
 
 roundFM :: (Monad m) =>
-          ([Formula] -> Maybe Bool -> Int -> Formula -> m Formula)
-        -> [Formula] -> Maybe Bool -> Int -> Formula -> m Formula
-roundFM fn cn sg n  = dive
+          Char -> ([Formula] -> Maybe Bool -> Int -> Formula -> m Formula)
+               ->  [Formula] -> Maybe Bool -> Int -> Formula -> m Formula
+roundFM c fn cn sg n  = dive
   where
-    dive (All u f)  = do  let nf = fn cn sg (succ n); nn = 'u':show n
+    dive (All u f)  = do  let nf = fn cn sg (succ n); nn = c:show n
                           liftM (All u . bind nn) $ nf $ inst nn f
-    dive (Exi u f)  = do  let nf = fn cn sg (succ n); nn = 'u':show n
+    dive (Exi u f)  = do  let nf = fn cn sg (succ n); nn = c:show n
                           liftM (Exi u . bind nn) $ nf $ inst nn f
     dive (Iff f g)  = do  nf <- fn cn Nothing n f
                           liftM (Iff nf) $ fn cn Nothing n g
