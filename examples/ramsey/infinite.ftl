@@ -81,8 +81,7 @@ Proof by induction.
         proof.
             Let x << Ran C(i).
             Take Q << [cdr N(i) / k] such that C(i)(Q) = x.
-            x = c(Q + min N(i)).
-            x << Ran c.
+            x = c(Q + min N(i)) << Ran c.
         end.
 
         For every (i << NAT) and every countable X [= cdr N(i)
