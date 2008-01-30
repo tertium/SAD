@@ -21,7 +21,6 @@
 module Alice.Export.DFG (dfgOut) where
 
 import Data.List
-import qualified Data.Monoid as Monoid
 
 import Alice.Data.Formula
 import Alice.Data.Kit
@@ -80,13 +79,6 @@ showTrName = showString . filter (/= ':') . trName
 
 -- Symbol count
 
-newtype SymSet = SS ([(String, Int)], [(String, Int)])
-
-instance Monoid.Monoid SymSet where
-  mempty  = SS ([], [])
-  mappend (SS (psa, fsa)) (SS (psb, fsb))
-          = SS (union psa psb, union fsa fsb)
-
 dfgSLS :: [Context] -> ShowS
 dfgSLS tsk  = sls "functions" fns . sls "predicates" pds
   where
@@ -97,16 +89,14 @@ dfgSLS tsk  = sls "functions" fns . sls "predicates" pds
     shs (s, a)  = showParen True $ stn s . showChar ',' . shows a
     stn = showString . filter (/= ':')
 
-    SS (pds, fns) = foldr fld (Monoid.mempty) tsk
-    fld = Monoid.mappend . dfgSyms True . cnForm
+    pds = [ (s, a) | (True,  s, a) <- sms ]
+    fns = [ (s, a) | (False, s, a) <- sms ]
+    sms = foldr (union . nub . dfgSyms True . cnForm) [] tsk
 
-dfgSyms :: Bool -> Formula -> SymSet
-dfgSyms s (Trm t ts _)  = let h | t == "="  = Monoid.mempty
-                                | s         = SS ([(t, length ts)], [])
-                                | otherwise = SS ([], [(t, length ts)])
-                              a = Monoid.mconcat $ map (dfgSyms False) ts
-                          in  Monoid.mappend h a
-dfgSyms _ (Var v _)     = SS ([], [(v, 0)])
-dfgSyms _ (Ind _ _)     = Monoid.mempty
+dfgSyms :: Bool -> Formula -> [(Bool, String, Int)]
+dfgSyms s f | isEqu f   = concatMap (dfgSyms False) $ trArgs f
+dfgSyms s (Trm t ts _)  = (s, t, length ts) : concatMap (dfgSyms False) ts
+dfgSyms s (Var v _)     = [(s, v, 0)]
+dfgSyms s (Ind _ _)     = []
 dfgSyms s f             = foldF (dfgSyms s) f
 
