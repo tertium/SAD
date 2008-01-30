@@ -163,7 +163,7 @@ Proof by induction on ((n + m) + p).
       Indeed (n + m) + r < (n + m) + p.
 
       Case r divides n.
-        We have n = (n / r) * r and (n / r) < n.
+        We have (n / r) < n.
         Let us prove that p divides (n / r) * m.
             ((n / r) * m) * r = n * m = ((p * k) / r) * r.
             Then p * (k / r) = (n / r) * m (by DivAsso,MulCanc).
@@ -173,7 +173,7 @@ Proof by induction on ((n + m) + p).
       end.
 
       Case r divides m.
-        We have m = (m / r) * r and (m / r) < m.
+        We have (m / r) < m.
         Let us prove that p divides n * (m / r).
             (n * (m / r)) * r = m * n = ((p * k) / r) * r.
             Then p * (k / r) = n * (m / r) (by DivAsso,MulCanc).
