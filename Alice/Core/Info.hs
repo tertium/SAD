@@ -102,11 +102,16 @@ reduce f  | isTrm f = nfr
     nfr | triv f            = Top
         | any (twins f) plv = Top
         | any (twins f) nlv = Bot
+        | any twq plv       = Top
+        | any twq nlv       = Bot
         | otherwise         = f
 
     plv = [ f | f@(Trm _ _ _) <- alv ]
     nlv = [ f | Not f <- alv ]
     alv = infos f
+
+    twq g = any (twins g) [ h | (Trm "=" [l,r] _) <- plv,
+                      h <- [replace l r f, replace r l f]]
 
     triv (Trm "=" [l,r] _)  = twins l r
     triv f                  = isTop f
