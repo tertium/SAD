@@ -10,14 +10,17 @@ SAD is configured to work with the following provers:
   - SPASS, by Christoph Weidenbach et al, Max Plank Institute
     fuer Informatik, Germany (http://spass.mpi-sb.mpg.de)
 
-  - Otter, by William McCune, Argonne National Laboratory, USA
-    (http://www.cs.unm.edu/~mccune/otter/)
-
   - E prover, by Stephan Schulz, Technische Universitaet Muenchen,
     Germany (http://www.eprover.org)
 
   - Vampire, by Andrei Voronkov and Alexandre Riazanov, UK
     (http://en.wikipedia.org/wiki/Vampire_theorem_prover)
+
+  - Prover9, by William McCune, University of New Mexico, USA
+    (http://www.cs.unm.edu/~mccune/mace4/)
+
+  - Otter, by William McCune, University of New Mexico, USA
+    (http://www.cs.unm.edu/~mccune/otter/)
 
 We encourage you to download and install these provers. Working
 on formalization of non-trivial mathematical texts, we mainly
@@ -31,9 +34,9 @@ Configure SAD for a new prover:
 
 If you want to use SAD with a prover not listed above, you must
 check whether it accepts problems in TPTP or DFG syntax, or in
-the input syntax of Otter. If it doesn't, then you must either
-adapt SAD for that prover, or adapt that prover for one of the
-supported syntaxes.
+the input syntax of Prover9/Otter. If it doesn't, then you must
+either adapt SAD for that prover, or adapt that prover for one
+of the supported syntaxes.
 
 Now, if SAD can find a common language with your prover, you
 must add several lines to the index file provers/provers.dat.
@@ -70,7 +73,7 @@ sets of command line options (compare, in the current provers.dat,
 descriptions for "vampire" and "vampcasc", "spass" and "spassverb").
 
 The "F" tag denotes the format of the prover's input. Currently,
-the supported values are "tptp", "dfg", "otter", and "moses".
+the supported values are "tptp", "dfg", "ladr", "otter", and "moses".
 
 The "C" tag contains the command line, or, precisely, the list
 of whitespace-delimited arguments (sorry, no backslash escaping,
