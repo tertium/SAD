@@ -1,6 +1,9 @@
 .*.swp
 /alice
+/alice.p
+/alice.hpc
 /.build
+/.hpc
 /provers/*
 !/provers/provers.dat
 /tmp

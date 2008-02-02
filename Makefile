@@ -1,7 +1,7 @@
 ### Compilers and flags ###
 
 HC = ghc
-HFLAGS = -O2 -XPolymorphicComponents # -prof -auto-all
+HFLAGS = -O2 -XPolymorphicComponents
 
 CC = gcc
 CFLAGS = -Wall -O2 -finline-functions
@@ -17,14 +17,29 @@ ALICEDIR = Alice
 MOSESDIR = moses
 BUILDDIR = .build
 
-all: $(ALICE) $(MOSES)
+BUILDOPT = -odir $(BUILDDIR) -hidir $(BUILDDIR)
+PROFLOPT = -prof -auto-all -osuf p.o -hisuf p.hi $(BUILDOPT)
+COVEROPT = -fhpc -osuf hpc.o -hisuf hpc.hi $(BUILDOPT)
 
-.PHONY: all $(ALICE) source binary getall clean depend
+all: $(ALICE) $(MOSES)
+prof: $(ALICE).p
+hpc: $(ALICE).hpc
+
+.PHONY: all prof hpc $(ALICE) $(ALICE).p $(ALICE).hpc \
+	source binary getall clean depend
 
 ### Alice ###
 
 $(ALICE):	$(BUILDDIR)
-	$(HC) --make $(ALICEDIR)/Main.hs -o $@ $(HFLAGS) -odir $(BUILDDIR) -hidir $(BUILDDIR)
+	$(HC) --make $(ALICEDIR)/Main.hs -o $@ $(HFLAGS) $(BUILDOPT)
+	$(if $(STRIP),$(STRIP) -s $@)
+
+$(ALICE).p:	$(BUILDDIR)
+	$(HC) --make $(ALICEDIR)/Main.hs -o $@ $(HFLAGS) $(PROFLOPT)
+	$(if $(STRIP),$(STRIP) -s $@)
+
+$(ALICE).hpc:	$(BUILDDIR)
+	$(HC) --make $(ALICEDIR)/Main.hs -o $@ $(HFLAGS) $(COVEROPT)
 	$(if $(STRIP),$(STRIP) -s $@)
 
 ### Moses ###
@@ -49,7 +64,7 @@ $(BUILDDIR)/$(MOSESDIR):
 ### Janitory ###
 
 clean:
-	rm -rf $(ALICE) $(MOSES) $(BUILDDIR) core
+	rm -rf $(ALICE) $(ALICE).p $(ALICE).hpc .hpc $(MOSES) $(BUILDDIR) core
 
 depend:
 	makedepend -Y -p $(BUILDDIR)/ -- $(CFLAGS) -- $(MOSESDIR)/*.c
