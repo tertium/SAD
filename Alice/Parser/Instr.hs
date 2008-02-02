@@ -31,8 +31,8 @@ import Alice.Parser.Prim
 instr :: LPM a Instr
 instr = nulText >> exbrk (readTkLex >>= readIn >>= gut)
   where
-    gut (InStr ISread _)  = fail "'read' not allowed here"
-    gut (InCom ICexit)    = fail "'exit'/'quit' not allowed here"
+    gut (InStr ISread _)  = nextfail "'read' not allowed here"
+    gut (InCom ICexit)    = nextfail "'exit'/'quit' not allowed here"
     gut i = return i
 
 iread :: LPM a Instr
