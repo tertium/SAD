@@ -39,9 +39,6 @@ type PRes a b = (b, PState a)
 type PErr a   = (String, PState a)
 type LPMR a b = ([PRes a b], [PErr a])
 
-resadd :: LPMR a b -> LPMR a b -> LPMR a b
-resadd (as, ea) (bs, eb) = (as ++ bs, ea ++ eb)
-
 maxerr :: PErr a -> PErr a -> PErr a
 maxerr e@(_, pe) d@(_, pd)
   | psOffs pe < psOffs pd = d
@@ -64,59 +61,6 @@ strerr es = emsg ++ text
 class MonadPlus m => MonadLazy m where
   mtry :: m a -> m a -> m a
   mtie :: m a -> ([a] -> a -> m b) -> m b
-
-
--- Simple list parser monad
-
-newtype SLPM a b = SLPM { runSLPM :: PState a -> LPMR a b }
-
-instance Monad (SLPM a) where
-  fail e    = SLPM $ \ p -> ([], [(e, p)])
-  return r  = SLPM $ \ p -> ([(r, p)], [])
-
-  m >>= k   = SLPM $ after . runSLPM m
-    where
-      after (rs, e) = foldl app ([], e) rs
-      app l (r, q)  = resadd (runSLPM (k r) q) l
-
-instance MonadPlus (SLPM a) where
-  mzero     = SLPM $ \ _ -> ([], [])
-  mplus m k = SLPM $ \ p -> resadd (runSLPM m p) (runSLPM k p)
-
-instance MonadLazy (SLPM a) where
-  mtry m k  = SLPM $ \ p -> case runSLPM m p of
-                ([], e) -> case runSLPM k p of
-                  (rs, d) -> (rs, e ++ d)
-                r -> r
-
-  mtie m k  = SLPM $ after . runSLPM m
-    where
-      after (rs, e)   = foldl (app $ map fst rs) ([], e) rs
-      app rs l (r, q) = resadd (runSLPM (k rs r) q) l
-
-
--- CPS list parser monad
-
-newtype CLPM a b = CLPM { runCLPM :: forall c . (b -> SLPM a c) -> SLPM a c }
-
-instance Monad (CLPM a) where
-  fail e    = CLPM $ \ _ -> fail e
-  return r  = CLPM $ \ k -> k r
-  m >>= n   = CLPM $ \ k -> runCLPM m (\ b -> runCLPM (n b) k)
-
-instance MonadPlus (CLPM a) where
-  mzero     = CLPM $ \ _ -> mzero
-  mplus m n = CLPM $ \ k -> mplus (runCLPM m k) (runCLPM n k)
-
-instance MonadLazy (CLPM a) where
-  mtry m n  = CLPM $ \ k -> SLPM $ \ p ->
-                case runSLPM (runCLPM m return) p of
-                  ([], e) -> case runSLPM (runCLPM n k) p of
-                    (rs, d) -> (rs, e ++ d)
-                  (rs, e) -> let app l (r, q) = resadd (runSLPM (k r) q) l
-                             in  foldl app ([], e) rs
-
-  mtie m n  = CLPM $ \ k -> mtie (runCLPM m return) (\ as a -> runCLPM (n as a) k)
 
 
 -- CPS parser monad
@@ -153,16 +97,6 @@ class MonadPState m where
   setPS :: PState a -> m a ()
   updatePS :: (PState a -> PState a) -> m a (PState a)
 
-instance MonadPState SLPM where
-  getPS = SLPM $ \ p -> ([(p, p)], [])
-  setPS p = SLPM $ \ _ -> ([((), p)], [])
-  updatePS fn = SLPM $ \ p -> ([(p, fn p)], [])
-
-instance MonadPState CLPM where
-  getPS = CLPM $ \ k -> SLPM $ \ p -> runSLPM (k p) p
-  setPS p = CLPM $ \ k -> SLPM $ \ _ -> runSLPM (k ()) p
-  updatePS fn = CLPM $ \ k -> SLPM $ \ p -> runSLPM (k p) (fn p)
-
 instance MonadPState CPM where
   getPS = CPM $ \ k s -> k s s
   setPS s = CPM $ \ k _ -> k () s
@@ -175,8 +109,6 @@ type LPM = CPM
 
 runLPM :: LPM a b -> PState a -> LPMR a b
 runLPM m s = runCPM m (\ b t _ _ -> ([(b,t)],[])) s ((,) []) []
--- runLPM m = runSLPM $ runCLPM m return
--- runLPM = runSLPM
 
 askPS :: (PState a -> b) -> LPM a b
 askPS fn = liftM fn getPS
