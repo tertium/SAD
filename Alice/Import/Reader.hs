@@ -111,10 +111,9 @@ text  = skipSpace (return ()) >> askPS psLang >>= parser
 -- LPM launcher
 
 fireLPM :: Show b => LPM a b -> PState a -> IO (PRes a b)
-fireLPM p ps  = let (res, err) = runLPM (narrow p) ps
-                    diez s = putStrLn s >> exitFailure
-                in  if null res then  diez $ strerr err
-                                else  return $ head res
+fireLPM p ps  = case runLPM (narrow p) ps of
+                  Left e  ->  putStrLn e >> exitFailure
+                  Right p ->  return p
 
 
 -- Service stuff

@@ -37,46 +37,30 @@ initPS a  = PState a 0 1 [] [] "" ""
 
 type PRes a b = (b, PState a)
 type PErr a   = (String, PState a)
-type LPMR a b = ([PRes a b], [PErr a])
-
-maxerr :: PErr a -> PErr a -> PErr a
-maxerr e@(_, pe) d@(_, pd)
-  | psOffs pe < psOffs pd = d
-  | otherwise             = e
-
-strerr :: [PErr a] -> String
-strerr es = emsg ++ text
-  where
-    (e, PState _ _ l _ d f p) = foldr1 maxerr es
-    emsg  = '[' : p ++ "] " ++ file ++ line ++ e
-    file  = if null f then "line " else f ++ ":"
-    line  = show (foldr lofs l d) ++ ": "
-    text  = if null d then "" else "\n in text: "
-                    ++ concatMap show (reverse d)
-    lofs (TkSpc n) l = l - n ; lofs _ l = l
-
-
--- Lazy parser monad class
-
-class MonadPlus m => MonadLazy m where
-  mtry :: m a -> m a -> m a
-  mtie :: m a -> ([a] -> a -> m b) -> m b
 
 
 -- CPS parser monad
 
-type CPME a c   = [PErr a] -> c
-type CPMS a c   = PState a -> CPME a c -> CPME a c
-newtype CPM a b = CPM { runCPM :: forall c . (b -> CPMS a c) -> CPMS a c }
+type CPME a b   = [PErr a] -> b
+type CPMS a b   = PState a -> CPME a b -> CPME a b
+type CPMC a b c = (c -> CPMS a b) -> (CPMS a b)
+newtype CPM a c = CPM { runCPM :: forall b . CPMC a b c }
 
 instance Monad (CPM a) where
   return r  = CPM $ \ k -> k r
-  m >>= n   = CPM $ \ k -> runCPM m (\ b -> runCPM (n b) k)
+  m >>= n   = CPM $ \ k -> runCPM m (flip runCPM k . n)
   fail e    = CPM $ \ _ s z -> z . (:) (e,s)
 
 instance MonadPlus (CPM a) where
   mzero     = CPM $ \ _ _ z -> z
   mplus m n = CPM $ \ k s -> runCPM m k s . runCPM n k s
+
+
+-- Lazy parser monad class and instance
+
+class MonadPlus m => MonadLazy m where
+  mtry :: m a -> m a -> m a
+  mtie :: m a -> ([a] -> a -> m b) -> m b
 
 instance MonadLazy (CPM a) where
   mtry m n  = CPM $ \ k s z ->  let mz True = runCPM n k s z
@@ -90,7 +74,7 @@ instance MonadLazy (CPM a) where
                                 in  flip (runCPM m mk s (flip mz)) []
 
 
--- Parser state manipulation
+-- State parser monad class and instance
 
 class MonadPState m where
   getPS :: m a (PState a)
@@ -103,12 +87,32 @@ instance MonadPState CPM where
   updatePS fn = CPM $ \ k s -> k s (fn s)
 
 
--- List parser monad
+-- Lazy parser monad
 
 type LPM = CPM
+type LPMR a b = Either String (PRes a b)
 
 runLPM :: LPM a b -> PState a -> LPMR a b
-runLPM m s = runCPM m (\ b t _ _ -> ([(b,t)],[])) s ((,) []) []
+runLPM m s = runCPM m (\ b t _ _ -> Right (b,t)) s (Left . strerr) []
+
+strerr :: [PErr a] -> String
+strerr es = emsg ++ text
+  where
+    (e, PState _ _ l _ d f p) = foldr1 maxerr es
+    emsg  = '[' : p ++ "] " ++ file ++ line ++ e
+    file  = if null f then "line " else f ++ ":"
+    line  = show (foldr lofs l d) ++ ": "
+    text  = if null d then "" else "\n in text: "
+                    ++ concatMap show (reverse d)
+    lofs (TkSpc n) l = l - n ; lofs _ l = l
+
+maxerr :: PErr a -> PErr a -> PErr a
+maxerr e@(_, pe) d@(_, pd)
+  | psOffs pe < psOffs pd = d
+  | otherwise             = e
+
+
+-- Parser state manipulation
 
 askPS :: (PState a -> b) -> LPM a b
 askPS fn = liftM fn getPS
