@@ -119,6 +119,33 @@ instance MonadLazy (CLPM a) where
   mtie m n  = CLPM $ \ k -> mtie (runCLPM m return) (\ as a -> runCLPM (n as a) k)
 
 
+-- CPS parser monad
+
+type CPME a c   = [PErr a] -> c
+type CPMS a c   = PState a -> CPME a c -> CPME a c
+newtype CPM a b = CPM { runCPM :: forall c . (b -> CPMS a c) -> CPMS a c }
+
+instance Monad (CPM a) where
+  return r  = CPM $ \ k -> k r
+  m >>= n   = CPM $ \ k -> runCPM m (\ b -> runCPM (n b) k)
+  fail e    = CPM $ \ _ s z -> z . (:) (e,s)
+
+instance MonadPlus (CPM a) where
+  mzero     = CPM $ \ _ _ z -> z
+  mplus m n = CPM $ \ k s -> runCPM m k s . runCPM n k s
+
+instance MonadLazy (CPM a) where
+  mtry m n  = CPM $ \ k s z ->  let mz True = runCPM n k s z
+                                    mz _    = z
+                                    mk b t y w _ = k b t (flip y False) w
+                                in  flip (runCPM m mk s (flip mz)) True
+
+  mtie m n  = CPM $ \ k s z ->  let mz rs = foldr (nz $ map fst rs) z rs
+                                    nz bs (b,t) = runCPM (n bs b) k t
+                                    mk b t y w rs = y w ((b,t):rs)
+                                in  flip (runCPM m mk s (flip mz)) []
+
+
 -- Parser state manipulation
 
 class MonadPState m where
@@ -136,13 +163,19 @@ instance MonadPState CLPM where
   setPS p = CLPM $ \ k -> SLPM $ \ _ -> runSLPM (k ()) p
   updatePS fn = CLPM $ \ k -> SLPM $ \ p -> runSLPM (k p) (fn p)
 
+instance MonadPState CPM where
+  getPS = CPM $ \ k s -> k s s
+  setPS s = CPM $ \ k _ -> k () s
+  updatePS fn = CPM $ \ k s -> k s (fn s)
+
 
 -- List parser monad
 
-type LPM = CLPM
+type LPM = CPM
 
 runLPM :: LPM a b -> PState a -> LPMR a b
-runLPM m = runSLPM $ runCLPM m return
+runLPM m s = runCPM m (\ b t _ _ -> ([(b,t)],[])) s ((,) []) []
+-- runLPM m = runSLPM $ runCLPM m return
 -- runLPM = runSLPM
 
 askPS :: (PState a -> b) -> LPM a b
