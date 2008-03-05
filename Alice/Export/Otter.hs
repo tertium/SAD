@@ -1,6 +1,6 @@
 {-
  -  Export/Otter.hs -- print proof task in Otter syntax
- -  Copyright (c) 2001,2004,2007   Andrei Paskevich <atertium@gmail.com>
+ -  Copyright (c) 2001-2008  Andrei Paskevich <atertium@gmail.com>
  -
  -  This file is part of SAD/Alice - a mathematical text verifier.
  -
