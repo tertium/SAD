@@ -45,7 +45,7 @@ tokenize (c : rs)   = TkChr c : tokenize rs
 tokenize _          = []
 
 isLexem :: Char -> Bool
-isLexem c = isAlphaNum c || c == '_'
+isLexem c = isAscii c && isAlphaNum c || c == '_'
 
 isNLine :: Char -> Bool
 isNLine c = c == '\n'

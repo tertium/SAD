@@ -57,7 +57,7 @@ nextTkChr = nextToken >>= nxch
     nxch t  = fail $ "unexpected token '" ++ show t ++ "'"
 
 nextTkLex, readTkLex :: LPM a String
-nextTkLex  = nextToken >>= nxwr
+nextTkLex = nextToken >>= nxwr
   where
     nxwr (TkLex w)  = return w
     nxwr t  = fail $ "unexpected token '" ++ show t ++ "'"

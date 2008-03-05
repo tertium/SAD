@@ -127,9 +127,9 @@ sexp t@(Trm s vs _) f = (pt, nf)
     get_patt "#" = Vr
     get_patt  w  = Sm w
 
-    get_name (Sm s:ls)    = symEncode s ++ get_name ls
-    get_name (Vr:ls)      = symEncode "." ++ get_name ls
-    get_name []           = ""
+    get_name (Sm s:ls)  = symEncode s ++ get_name ls
+    get_name (Vr:ls)    = symEncode "." ++ get_name ls
+    get_name []         = ""
 
 
 -- New patterns
@@ -202,16 +202,18 @@ pt_tail lxm tvr = do  v <- tvr
 
 -- In-pattern lexemes and variables
 
-wlexem  = do  l <- wlx; guard $ all isAlpha l; return $ map toLower l
+wlexem  = do  l <- wlx
+              guard $ all isAlpha l
+              return $ map toLower l
 
 slexem  = slex -|- wlx
   where
     slex  = skipSpace $ chnopEx $ nextTkChr >>= nxc
     nxc c = guard (c `elem` symChars) >> return c
 
-wlx = do  l <- liftM (const "?") (nvr -/- avr) -/- readTkLex
-          guard $ all isAlphaNum l &&
-            map toLower l `notElem` ["a","an","the","is","are","be"]
+wlx = do  l <- liftM (const "_") (nvr -/- avr) -/- readTkLex
+          guard $ all isAlphaNum l
+            && map toLower l `notElem` ["a","an","the","is","are","be"]
           return l
 
 nvr = do  v <- var; dvs <- getDecl; tvs <- askS tvr_expr
