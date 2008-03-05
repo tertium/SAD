@@ -217,9 +217,9 @@ s_form  = liftM snd s_iff
     s_dis = s_con >>= bin_f Or  (string "\\/" >> s_dis)
     s_con = s_una >>= bin_f And (string "/\\" >> s_con)
     s_una = s_all -|- s_exi -|- s_not -|- s_dot -|- s_atm
-    s_all = liftM2 (qua_f zAll Imp) (word "forall" >> sym_notion) s_una
-    s_exi = liftM2 (qua_f zExi And) (word "exists" >> sym_notion) s_una
-    s_not = liftM (una_f Not) $ word "not" >> s_una
+    s_all = liftM2 (qua_f zAll Imp) (string "forall" >> sym_notion) s_una
+    s_exi = liftM2 (qua_f zExi And) (string "exists" >> sym_notion) s_una
+    s_not = liftM (una_f Not) $ string "not" >> s_una
     s_dot = liftM ((,) False) $ char ':' >> s_form
     s_atm = liftM ((,) True)  $ s_atom
 
