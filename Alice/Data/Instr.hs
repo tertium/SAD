@@ -81,19 +81,19 @@ data InStr  = ISinit  --  init file (init.opt)
 -- Ask functions
 
 askII :: InInt -> Int -> [Instr] -> Int
-askII i d is  = head $  [ v | InInt j v <- is, i == j ] ++ [d]
+askII i d is  = head $ [ v | InInt j v <- is, i == j ] ++ [d]
 
 askIB :: InBin -> Bool -> [Instr] -> Bool
-askIB i d is  = head $  [ v | InBin j v <- is, i == j ] ++ [d]
+askIB i d is  = head $ [ v | InBin j v <- is, i == j ] ++ [d]
 
 askIS :: InStr -> String -> [Instr] -> String
-askIS i d is  = head $  [ v | InStr j v <- is, i == j ] ++ [d]
+askIS i d is  = head $ [ v | InStr j v <- is, i == j ] ++ [d]
 
 dropI :: Idrop -> [Instr] -> [Instr]
-dropI (IdCom m) (InCom n   : rs)  | n == m  = rs
-dropI (IdInt m) (InInt n _ : rs)  | n == m  = rs
-dropI (IdBin m) (InBin n _ : rs)  | n == m  = rs
-dropI (IdStr m) (InStr n _ : rs)  | n == m  = rs
+dropI (IdCom m) (InCom n   : rs) | n == m = rs
+dropI (IdInt m) (InInt n _ : rs) | n == m = rs
+dropI (IdBin m) (InBin n _ : rs) | n == m = rs
+dropI (IdStr m) (InStr n _ : rs) | n == m = rs
 dropI i (r : rs)  = r : dropI i rs
 dropI _ _ = []
 

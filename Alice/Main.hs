@@ -136,7 +136,7 @@ readOpts  =
         Option "r" [] (NoArg (InBin IBchck False))
             "raw mode (equivalent to --check off)",
         Option "" ["prove"] (ReqArg (InBin IBprov . binary) "{on|off}")
-            "prove goals in the text (default: on)",
+            "prove goals in the text (def: on)",
         Option "" ["check"] (ReqArg (InBin IBchck . binary) "{on|off}")
             "check symbols for definedness (def: on)",
         Option "" ["symsign"] (ReqArg (InBin IBsign . binary) "{on|off}")
