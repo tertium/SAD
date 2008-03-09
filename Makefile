@@ -79,7 +79,7 @@ RELBIN  = $(RELNAME)-$(shell uname -m)
 
 COMMON = $(SUBDIR) $(TOPDIR)
 SUBDIR = Alice moses doc examples
-TOPDIR = Makefile LICENSE README init.opt
+TOPDIR = Makefile COPYING README init.opt
 SOURCE = $(COMMON) provers/provers.dat
 BINARY = $(SOURCE) alice provers/moses
 GETALL = $(COMMON) alice provers

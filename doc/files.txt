@@ -8,7 +8,7 @@ contains the following subdirectories and files:
     examples/   - repository of formal mathematical texts
     provers/    - index of provers and prover executables
 
-    LICENSE     - text of GNU General Public License
+    COPYING     - text of GNU General Public License
     Makefile    - build instructions for GNU make
     README      - brief introduction and index of doc/
 
