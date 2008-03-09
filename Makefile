@@ -74,8 +74,8 @@ depend:
 
 TAR = tar --transform='s=^=$(RELNAME)/='
 
-RELNAME = sad-$(shell date +%y%m%d)
-RELBIN  = $(RELNAME)-$(shell uname -m)
+RELNAME = sad-$(shell git-describe | cut -d- -f-2)
+RELBIN  = $(RELNAME).i386
 
 COMMON = $(SUBDIR) $(TOPDIR)
 SUBDIR = Alice moses doc examples
