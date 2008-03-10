@@ -41,13 +41,13 @@ reason cnt tc = do  flt <- askRSIB IBfilt True
                     goalseq n nct tc $ splitG $ cnForm tc
 
 goalseq :: Int -> [Context] -> Context -> [Formula] -> RM ()
-goalseq n cnt tc (f:fs) = do  trv <> launch cnt ntc <> dlp
-                              goalseq n (ntc : cnt) tc fs
+goalseq n cnt tc (f:fs) = do  trv <> lnc <> dlp
+                              goalseq n cnt tc fs
   where
     rfr = reduce f
-    ntc = setForm tc rfr
 
     trv = sbg >> guard (isTop rfr) >> incRSCI CIsubt
+    lnc = launch cnt $ setForm tc rfr
 
     dlp | n == 1  = rde >> mzero
         | True    = do  tsk <- unfold $ setForm tc (Not rfr) : cnt
@@ -84,7 +84,7 @@ splitG :: Formula -> [Formula]
 splitG fr = spl $ albet $ strip fr
   where
     spl (All u f) = liftM (All u) (splitG f)
-    spl (And f g) = mplus (splitG f) (splitG g)
+    spl (And f g) = mplus (splitG f) (splitG $ Imp f g)
     spl (Or f g)  = liftM2 zOr (splitG f) (splitG g)
     spl _         = return fr
 
