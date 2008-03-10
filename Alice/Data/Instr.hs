@@ -103,7 +103,7 @@ dropI _ _ = []
 setIC :: [(InCom, [String])]
 setIC = [ (ICexit,  ["exit", "quit"]),
           (ICPths,  ["thesis"]),
-          (ICPcnt,  ["rules"]) ]
+          (ICPcnt,  ["context"]) ]
 
 setII :: [(InInt, [String])]
 setII = [ (IItlim,  ["timelimit"]),

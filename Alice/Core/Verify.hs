@@ -128,10 +128,12 @@ procTI mot ths _ cnt = proc
             rlog0 $ "current thesis " ++ smt ++ show (cnForm ths)
 
     proc (InCom ICPcnt)
-      = do  let tlb = filter cnTopL $ reverse cnt
-                tlf = map (lichten 0 . cnForm) tlb
-                srl = filter (not . isTop) tlf
-            rlog0 $ "current simple rules:"
+      = do  flt <- askRSIB IBfilt True
+            dfl <- askRSIB IBchck True
+            let sqz = cnForm . squeeze (flt && dfl) []
+                cnf = filter (not . isTop) . map sqz
+                srl = reverse $ cnf cnt
+            rlog0 $ "current context:"
             mapM_ ((putStrRM "  " >>) . printRM) srl
 
     proc (InCom _)  = rlog0 $ "unsupported instruction"

@@ -36,7 +36,7 @@ import Alice.Export.Prover
 reason :: [Context] -> Context -> RM ()
 reason cnt tc = do  flt <- askRSIB IBfilt True
                     dfl <- askRSIB IBchck True
-                    let nct = context (flt && dfl) cnt tc
+                    let nct = context (flt && dfl) tc cnt
                     n <- askRSII IIdpth 7 ; guard $ n > 0
                     goalseq n nct tc $ splitG $ cnForm tc
 
@@ -91,21 +91,21 @@ splitG fr = spl $ albet $ strip fr
 
 -- Context filtering
 
-context :: Bool -> [Context] -> Context -> [Context]
-context df cnt tc = filter (not . isTop . cnForm) $ map chk cnt
+context :: Bool -> Context -> [Context] -> [Context]
+context df tc = filter (not . isTop . cnForm)
+              . map (squeeze df $ cnLink tc)
+
+squeeze :: Bool -> [String] -> Context -> Context
+squeeze df ls c | cnLowL c  = c
+                | lht       = setForm c $ lichten 0 f
+                | dhd       = setForm c $ adroite 0 f
+                | otherwise = c
   where
-    chk c | cnLowL c  = c
-          | lht       = setForm c $ lichten 0 f
-          | dhd       = setForm c $ adroite 0 f
-          | otherwise = c
-      where
-        lht | null ls = df && defn
-            | True    = cnName c `notElem` ls
+    lht | null ls = df && defn
+        | True    = cnName c `notElem` ls
 
-        dhd = defn || sign ; f = cnForm c
-        defn = isDefn f ; sign = isSign f
-
-    ls = cnLink tc
+    dhd = defn || sign ; f = cnForm c
+    defn = isDefn f ; sign = isSign f
 
 adroite :: Int -> Formula -> Formula
 adroite n = sr

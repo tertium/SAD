@@ -97,7 +97,7 @@ let us run ./alice -h and examine its command line options:
     texts, TPTP problems, or very simple ForTheL texts, sparing with
     definitions and signature extensions.
 
-  --prove={on|off}            prove goals in the text (default: on)
+  --prove={on|off}            prove goals in the text (def: on)
 
     Verify logical correctness (see explanation for -n).
 
@@ -151,7 +151,7 @@ let us run ./alice -h and examine its command line options:
   --printsection={on|off}     print sentence translations (def: off)
   --printcheck={on|off}       print checker's messages (def: off)
   --printprover={on|off}      print prover's messages (def: off)
-  --printunfold={on|off}      print definition unfoldings (def: off)
+  --printunfold={on|off}      print definition expansions (def: off)
   --printfulltask={on|off}    print full prover tasks (def: off)
 
 
@@ -185,7 +185,13 @@ your text as follows:
 
     [/prove]      # return to the previous value of [prove]
 
-You can also use in texts (but not in init.opt) two extra instructions:
+You can also use the following instructions in ForTheL texts:
+
+    [thesis]                print the current thesis
+
+    [context]               print the current set of premises, filtered
+                            and simplified. This is what the prover
+                            would get before any definition expansion.
 
     [read that/file.ftl]    include a text from the library directory
                             (specified by the --library option or the
@@ -194,7 +200,7 @@ You can also use in texts (but not in init.opt) two extra instructions:
 
     [exit] or [quit]        ignore the rest of the file.
 
-Unlike other instructions, these two can not appear inside a section.
+The last two instructions can only appear at the top level of a text.
 
 
 TPTP problems:
