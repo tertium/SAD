@@ -47,7 +47,7 @@ Lemma LEAsym.   m <= n <= m  =>  m = n.
 
 Lemma LETran.   m <= n <= l  =>  m <= l.
 
-Let m < n stand for m <= n and m != n.
+Let m < n stand for m != n and m <= n.
 
 Axiom LETotal.  m <= n \/ n < m.
 

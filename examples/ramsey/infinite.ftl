@@ -48,7 +48,8 @@ Proof by induction.
 
         We can prove by induction that for all (i << NAT)
                                 N(i) is a countable subset of NAT.
-            Indeed if i is nonzero then i has a predecessor.
+            Indeed if i is nonzero then i has a predecessor
+                                    and we have the thesis.
 
         We can prove by induction that for all (i,j << NAT)
                                     if j <= i then N(i) [= N(j).
