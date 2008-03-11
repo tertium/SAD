@@ -39,7 +39,8 @@ data Idrop  = IdCom InCom
 
 data InCom  = ICexit  --  exit
             | ICPths  --  print current thesis
-            | ICPcnt  --  print current simplified context
+            | ICPcnt  --  print current context
+            | ICPflt  --  print simplified top-level context
             deriving (Eq,Show)
 
 data InInt  = IItlim  --  time limit per prover launch  (3 sec)
@@ -103,7 +104,8 @@ dropI _ _ = []
 setIC :: [(InCom, [String])]
 setIC = [ (ICexit,  ["exit", "quit"]),
           (ICPths,  ["thesis"]),
-          (ICPcnt,  ["context"]) ]
+          (ICPcnt,  ["context"]),
+          (ICPflt,  ["filter"]) ]
 
 setII :: [(InInt, [String])]
 setII = [ (IItlim,  ["timelimit"]),

@@ -189,9 +189,14 @@ You can also use the following instructions in ForTheL texts:
 
     [thesis]                print the current thesis
 
-    [context]               print the current set of premises, filtered
-                            and simplified. This is what the prover
-                            would get before any definition expansion.
+    [context]               print the current set of premises.
+                            This is what the prover would get
+                            before any definition expansion.
+
+    [filter]                print the current set of top-level premises,
+                            filtered and simplified. These will be sent
+                            to the prover if you use explicit references
+                            near a goal.
 
     [read that/file.ftl]    include a text from the library directory
                             (specified by the --library option or the

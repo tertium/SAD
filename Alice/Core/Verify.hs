@@ -136,6 +136,13 @@ procTI mot ths _ cnt = proc
             rlog0 $ "current context:"
             mapM_ ((putStrRM "  " >>) . printRM) srl
 
+    proc (InCom ICPflt)
+      = do  let sqz = cnForm . squeeze True ["."]
+                cnf = filter (not . isTop) . map sqz
+                srl = reverse $ cnf $ filter cnTopL cnt
+            rlog0 $ "current filtered top-level context:"
+            mapM_ ((putStrRM "  " >>) . printRM) srl
+
     proc (InCom _)  = rlog0 $ "unsupported instruction"
 
     proc (InBin IBverb False)
