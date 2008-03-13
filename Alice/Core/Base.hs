@@ -56,23 +56,29 @@ data CntrI  = CIsect
             deriving Eq
 
 
--- IO Maybe monad
+-- CPS IO Maybe monad
 
-newtype RM a  = RM { runRM :: IORef RState -> IO (Maybe a) }
+type CRMM a   = IO a -> IO a
+type CRMC a b = (b -> CRMM a) -> CRMM a
+newtype CRM b = CRM { runCRM :: forall a . IORef RState -> CRMC a b }
 
-instance Monad RM where
-  return r  = RM $ \ _  -> return $ Just r
-  m >>= k   = RM $ \ rs -> runRM m rs >>= apply rs
-    where
-      apply rs (Just r) = runRM (k r) rs
-      apply _  Nothing  = return Nothing
+instance Monad CRM where
+  return r  = CRM $ \ _ k -> k r
+  m >>= n   = CRM $ \ s k -> runCRM m s (\ r -> runCRM (n r) s k)
 
-instance MonadPlus RM where
-  mzero     = RM $ \ _  -> return Nothing
-  mplus m k = RM $ \ rs -> runRM m rs >>= apply rs
-    where
-      apply rs Nothing  = runRM k rs
-      apply _  x        = return x
+instance MonadPlus CRM where
+  mzero     = CRM $ \ _ _ -> id
+  mplus m n = CRM $ \ s k -> runCRM m s k . runCRM n s k
+
+justRS :: CRM (IORef RState)
+justRS      = CRM $ \ s k -> k s
+
+justIO :: IO a -> CRM a
+justIO m    = CRM $ \ _ k -> (>>=) m . flip k
+
+type RM = CRM
+runRM :: RM a -> IORef RState -> IO (Maybe a)
+runRM m s = runCRM m s ((return .) . (const . Just)) (return Nothing)
 
 infixr 1 <>
 (<>) :: RM a -> RM a -> RM a
@@ -81,11 +87,10 @@ infixr 1 <>
 
 -- State management
 
-getRS       = RM $ \ rs -> liftM Just $ readIORef rs
-askRS f     = RM $ \ rs -> liftM (Just . f) $ readIORef rs
-
-setRS r     = RM $ \ rs -> liftM Just $ writeIORef rs r
-updateRS f  = RM $ \ rs -> liftM Just $ modifyIORef rs f
+getRS       = justRS >>= (justIO . readIORef)
+askRS f     = justRS >>= (justIO . fmap f . readIORef)
+setRS r     = justRS >>= (justIO . flip writeIORef r)
+updateRS f  = justRS >>= (justIO . flip modifyIORef f)
 
 askRSII i d = liftM (askII i d) (askRS rsInst)
 askRSIB i d = liftM (askIB i d) (askRS rsInst)
@@ -130,8 +135,6 @@ showTimeDiff t
 
 
 -- IO management
-
-justIO      = RM . const . liftM Just
 
 printRM :: Show a => a -> RM ()
 
