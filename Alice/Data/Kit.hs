@@ -174,6 +174,7 @@ occursS = occurs zSlot
 -- Misc stuff
 
 strip (Tag _ f) = strip f
+strip (Not f)   = Not $ strip f
 strip f         = f
 
 infilt vs v = guard (v `elem` vs) >> return v
