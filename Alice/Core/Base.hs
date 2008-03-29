@@ -58,27 +58,26 @@ data CntrI  = CIsect
 
 -- CPS IO Maybe monad
 
-type CRMM a   = IO a -> IO a
-type CRMC a b = (b -> CRMM a) -> CRMM a
-newtype CRM b = CRM { runCRM :: forall a . IORef RState -> CRMC a b }
+type CRMC a b = IORef RState -> IO a -> (b -> IO a) -> IO a
+newtype CRM b = CRM { runCRM :: forall a . CRMC a b }
 
 instance Monad CRM where
-  return r  = CRM $ \ _ k -> k r
-  m >>= n   = CRM $ \ s k -> runCRM m s (\ r -> runCRM (n r) s k)
+  return r  = CRM $ \ _ _ k -> k r
+  m >>= n   = CRM $ \ s z k -> runCRM m s z (\ r -> runCRM (n r) s z k)
 
 instance MonadPlus CRM where
-  mzero     = CRM $ \ _ _ -> id
-  mplus m n = CRM $ \ s k -> runCRM m s k . runCRM n s k
+  mzero     = CRM $ \ _ z _ -> z
+  mplus m n = CRM $ \ s z k -> runCRM m s (runCRM n s z k) k
 
 justRS :: CRM (IORef RState)
-justRS      = CRM $ \ s k -> k s
+justRS      = CRM $ \ s _ k -> k s
 
 justIO :: IO a -> CRM a
-justIO m    = CRM $ \ _ k -> (>>=) m . flip k
+justIO m    = CRM $ \ _ _ k -> m >>= k
 
 type RM = CRM
 runRM :: RM a -> IORef RState -> IO (Maybe a)
-runRM m s = runCRM m s ((return .) . (const . Just)) (return Nothing)
+runRM m s = runCRM m s (return Nothing) (return . Just)
 
 infixr 1 <>
 (<>) :: RM a -> RM a -> RM a
