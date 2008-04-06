@@ -34,7 +34,7 @@ elsif (not open(IH, "<$link"))
             or die "Fail: cannot run wget\n";
 }
 
-if ($rempr) { while (<IH>) { last if (/\<pre\>(%-*)$/); } }
+if ($rempr) { while (<IH>) { last if (/\<pre\>(%-*)?$/); } }
 
 while (<IH>)
 {
@@ -51,7 +51,7 @@ while (<IH>)
         or $remax = 1, open(IH2, "$url?Category=Axioms\\\&File=$link|")
             or die "Fail: cannot run wget\n";
 
-    if ($remax) { while (<IH2>) { last if (/\<pre\>(%-*)$/); } }
+    if ($remax) { while (<IH2>) { last if (/\<pre\>(%-*)?$/); } }
 
     while (<IH2>)
     {
