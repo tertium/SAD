@@ -19,7 +19,7 @@ local $wget    = "/usr/bin/wget";   # your wget executable
 
 ###################### Here the script starts ##############################
 
-local $url = "$wget -q -O - http://$tptpurl/cgi-bin/DVTPTP2WWW/view_file.pl";
+local $url = "$wget -q -O - http://$tptpurl/cgi-bin/SeeTPTP";
 local $link = shift; local $rempr = 0; local $remax = 0; local $gotit = 0;
 local *IH;
 
