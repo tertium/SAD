@@ -15,7 +15,7 @@ Signature WFOrd.    x -<- y is a relation.
 Signature TCbr.     x -R+> y is a relation.
 
 Definition TCDef.   x -R+> y <=> x -R> y \/ exists z : x -R> z -R+> y.
-Axiom TCTrans.      x -R+> y -R+> z => x -R+> z.   ### QUESTIONABLE
+Axiom TCTrans.      x -R+> y -R+> z => x -R+> z.
 
 Definition TCRDef.  x -R*> y <=> x = y \/ x -R+> y.
 Lemma TCRTrans.     x -R*> y -R*> z => x -R*> z.
