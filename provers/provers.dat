@@ -62,6 +62,10 @@ USearch stopped by max_seconds option.
 #USearch stopped by max_kept option.
 #USearch stopped by max_gen option.
 
+#
+# Verbose provers
+#
+
 Pmosesverb
 LMoses
 Fmoses
@@ -79,4 +83,40 @@ YSPASS beiseite: Proof found.
 NSPASS beiseite: Completion found.
 USPASS beiseite: Ran out of time.
 #USPASS beiseite: Maximal number of loops exceeded.
+
+Pvampireverb
+LVampire
+Ftptp
+Cprovers/vampire -t %d /dev/stdin
+YRefutation found
+NSatisfiability detected
+URefutation not found
+
+Peproververb
+LEprover
+Ftptp
+Cprovers/eprover -xAuto -tAuto -mAuto --tstp-in -l 2 --cpu-limit=%d
+Y# SZS status Theorem
+N# SZS status CounterSatisfiable
+U# SZS status ResourceOut
+U# SZS status GaveUp
+
+Pprover9verb
+LProver9
+Fladr
+Cprovers/prover9 set(quiet). clear(echo_input). clear(print_given).
+YTHEOREM PROVED
+USEARCH FAILED
+
+Potterverb
+LOtter
+Fotter
+Cprovers/otter set(auto). clear(print_given).
+YSearch stopped by max_proofs option.
+NSearch stopped because sos empty.
+USearch stopped by max_seconds option.
+#USearch stopped by max_levels option.
+#USearch stopped by max_given option.
+#USearch stopped by max_kept option.
+#USearch stopped by max_gen option.
 
