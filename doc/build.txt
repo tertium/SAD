@@ -8,7 +8,7 @@ though some tinkering might be necessary.
 
 To build SAD from sources you need:
 
-- the source tarball distribution from http://nevidal.org.ua
+- the source tarball distribution from http://nevidal.org
 - GHC, the Glasgow Haskell Compiler (http://haskell.org/ghc)
 - gcc, gmake, strip, the standard GNU toolchain.
 

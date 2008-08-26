@@ -8,18 +8,18 @@ Later the project was abandoned (over non-scientific factors) and
 restored only in 1998. Today, the SAD system is developed by three
 people:
 
-    Dr Alexander Lyaletski <lav@unicyb.kiev.ua>
+    Alexander Lyaletski <lav@unicyb.kiev.ua>
         Faculty of Cybernetics,
         Kyiv National Taras Shevchenko University,
         Kiev, Ukraine
 
-    Prof. Konstantin Verchinine <verko@capet.iut-fbleau.fr>
-        Departement Informatique, IUT Senart/Fontainebleau,
-        University Paris XII "Val de Marne",
+    Konstantin Verchinine <verko@capet.iut-fbleau.fr>
+        Departement Informatique,
+        IUT Senart/Fontainebleau,
+        University Paris 12 - Val de Marne,
         Fontainebleau, France
 
-    Andrei Paskevich <andrei@capet.iut-fbleau.fr>
-        University Paris XII "Val de Marne", France
+    Andrei Paskevich <andrei@tertium.org>
 
 Authors thank everybody who took part in the development of SAD
 over the forty years of the project's existence. We are especially

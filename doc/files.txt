@@ -69,8 +69,9 @@ examples/
                       (the finite theorem is not converted yet)
 
     cauchy.ftl      - Cauchy-Bouniakowsky-Schwarz inequality
-    chinese.ftl     - Chinese remainder theorem in terms of rings
-    fixpoint.ftl    - Tarski-Knaster fixed point theorem
+    chinese.ftl     - Chinese remainder theorem in an integral domain
+    fuerst.ftl      - Fuerstenberg's proof of the infinitude of primes
     newman.ftl      - Newman's lemma on term rewriting systems
     primes.ftl      - Square root of a prime number is irrational
+    tarski.ftl      - Tarski-Knaster fixed point theorem
 
