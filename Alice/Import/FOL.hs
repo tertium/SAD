@@ -41,11 +41,12 @@ fol = u1 -/- u2 -/- u3
 formula = do  let sign = optEx False $ char ':' >> return True
               li <- nulText; ty <- sign; f <- iff_form; char '.'
               fn <- askPS psFile; la <- askPS psLang; tx <- getText
-              return $ Block f [] ty [] "" [] la fn li tx
+              nm <- liftM (('_':).show) $ askPS psOffs
+              return $ Block f [] ty [] nm [] la fn li tx
 
 contra  = do  li <- nulText; char ':'; let tx = "contradiction"
               readEOI; fn <- askPS psFile; la <- askPS psLang
-              return $ Block Bot [] True [] "" [] la fn li tx
+              return $ Block Bot [] True [] "_" [] la fn li tx
 
 -- Binary formulas
 

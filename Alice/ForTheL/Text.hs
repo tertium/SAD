@@ -67,8 +67,9 @@ topsect s h p =
 topsent =
     do  li <- nulText ; bs@(TB bl:rs) <- pra
         la <- askPS psLang ; fn <- askPS psFile
-        return $ if null rs then bl { blName = "" }
-          else Block zHole bs True [] "" [] la fn li ""
+        nm <- liftM (('_':).show) $ askPS psOffs
+        return $ if null rs then bl { blName = nm }
+          else Block zHole bs True [] nm [] la fn li ""
   where pra = proof affirm >>= pretvr (return [])
 
 
@@ -172,7 +173,8 @@ sentence s pf pvars pl = narrow $
     do  li <- nulText ; fr <- pf ; ls <- pl
         tx <- getText ; vs <- getDecl >>= pvars fr
         la <- askPS psLang ; fn <- askPS psFile
-        return $ Block fr [] s vs "__" ls la fn li tx
+        nm <- liftM (("__" ++).show) $ askPS psOffs
+        return $ Block fr [] s vs nm ls la fn li tx
 
 defvars f dvs | null xvs  = affvars f dvs
               | otherwise = nextfail err
@@ -209,7 +211,7 @@ pretvr p bl = do  dvs <- getDecl; tvs <- askS tvr_expr
 
 noln  = dot $ return []
 link  = dot $ opt [] $ expar $ word "by" >> chain (char ',') readTkLex
-hdr p = dot $ p >> opt "" readTkLex
+hdr p = dot $ p >> askPS psOffs >>= \ n -> opt ('_':show n) readTkLex
 
 axm = hdr $ word "axiom"
 def = hdr $ word "definition"

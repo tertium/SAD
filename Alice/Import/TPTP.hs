@@ -47,7 +47,7 @@ cnf = u1 -/- u2 -/- u3
 
 contra  = do  li <- nulText; let tx = "contradiction"
               readEOI; fn <- askPS psFile; la <- askPS psLang
-              return $ Block Bot [] True [] "" [] la fn li tx
+              return $ Block Bot [] True [] "_" [] la fn li tx
 
 t_frm   = do  li <- nulText; wordOf ["fof","input_formula"]
               char '('; nm <- readTkLex; char ','; ty <- prmcnj
