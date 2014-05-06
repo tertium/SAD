@@ -1,7 +1,7 @@
 ### Compilers and flags ###
 
 HC = ghc
-HFLAGS = -O2 -XPolymorphicComponents
+HFLAGS = -O2 -XPolymorphicComponents -rtsopts
 
 CC = gcc
 CFLAGS = -Wall -O2 -finline-functions

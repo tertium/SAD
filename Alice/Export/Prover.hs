@@ -21,6 +21,7 @@
 module Alice.Export.Prover where
 
 import Control.Monad
+import Control.Exception
 import Data.List
 import System.Exit
 import System.IO

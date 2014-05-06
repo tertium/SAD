@@ -22,6 +22,7 @@ module Alice.Import.Reader (readInit,readText) where
 
 import Data.List
 import Control.Monad
+import Control.Exception
 import System.IO
 import System.IO.Error
 import System.Exit

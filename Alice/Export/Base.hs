@@ -22,6 +22,7 @@ module Alice.Export.Base (Prover(..),Format(..),readPrDB) where
 
 import Data.Char
 import Data.List
+import Control.Exception
 import System.Exit
 import System.IO
 import System.IO.Error
