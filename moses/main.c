@@ -109,11 +109,17 @@ int main(int argc, char** argv)
     long msec; struct sigaction action;
     struct tms tp1, tp2; clock_t tt;
     char res; ui time, i, nb = 0;
+    sigset_t sset;
 
     sigemptyset(&action.sa_mask);
     action.sa_flags = SA_RESTART;
     action.sa_handler = alarm_handler;
     sigaction(SIGALRM, &action, NULL);
+
+    sigemptyset(&sset);
+    sigaddset(&sset, SIGALRM);
+    sigaddset(&sset, SIGINT);
+    sigprocmask(SIG_UNBLOCK, &sset, NULL);
 
     for (i = 1; i < argc; i++)
     {
