@@ -170,7 +170,7 @@ int search(ui start, ui stop, ui step)
 
     if (stop == 0) stop = (ui) -1;
 
-    Gl_Tail = Gl_Root = &Root; memset(Gl_Root, sizeof(Tree), 0);
+    Gl_Tail = Gl_Root = &Root; memset(Gl_Root, 0, sizeof(Tree));
 
     for (depth_count = start; depth_count <= stop; depth_count += step)
     {
