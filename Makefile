@@ -74,7 +74,7 @@ depend:
 
 TAR = tar --transform='s=^=$(RELNAME)/='
 
-RELNAME = sad-$(shell git-describe | cut -d- -f-2)
+RELNAME = sad-$(shell git describe | cut -d- -f-2)
 RELBIN  = $(RELNAME).i386
 
 COMMON = $(SUBDIR) $(TOPDIR)
