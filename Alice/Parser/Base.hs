@@ -20,6 +20,7 @@
 
 module Alice.Parser.Base where
 
+import Control.Applicative
 import Control.Monad
 import Data.List
 
@@ -53,6 +54,17 @@ instance Monad (CPM a) where
 instance MonadPlus (CPM a) where
   mzero     = CPM $ \ _ _ _ z -> z
   mplus m n = CPM $ \ k l s -> runCPM m k l s . runCPM n k l s
+
+instance Functor (CPM a) where
+  fmap  = liftM
+
+instance Applicative (CPM a) where
+  pure  = return
+  (<*>) = ap
+
+instance Alternative (CPM a) where
+  empty = mzero
+  (<|>) = mplus
 
 
 -- Lazy parser monad class and instance

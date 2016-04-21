@@ -45,7 +45,7 @@ readInit :: String -> IO [Instr]
 readInit ""   = return []
 
 readInit file =
-  do  input <- catch (readFile file) $ die file . ioeGetErrorString
+  do  input <- catch (readFile file) $ quit file . ioeGetErrorString
       let tkn = tokenize input ; ips = initPS ()
           inp = ips { psRest = tkn, psFile = file, psLang = "Init" }
       liftM fst $ fireLPM instf inp
@@ -62,7 +62,7 @@ readText lb = reader lb [] [initPS initFS]
 reader :: String -> [String] -> [PState FState] -> [Text] -> IO [Text]
 
 reader _ _ _ [TI (InStr ISread file)] | isInfixOf ".." file =
-      die file "contains \"..\", not allowed"
+      quit file "contains \"..\", not allowed"
 
 reader lb fs ss [TI (InStr ISread file)] =
       reader lb fs ss [TI $ InStr ISfile $ lb ++ '/' : file]
@@ -75,7 +75,7 @@ reader lb fs (ps:ss) [TI (InStr ISfile file)] | file `elem` fs =
 reader lb fs (ps:ss) [TI (InStr ISfile file)] =
   do  let gfl = if null file  then hGetContents stdin
                               else readFile file
-      input <- catch gfl $ die file . ioeGetErrorString
+      input <- catch gfl $ quit file . ioeGetErrorString
       let tkn = tokenize input
           ips = initPS $ (psProp ps) { tvr_expr = [] }
           sps = ips { psRest = tkn, psFile = file, psOffs = psOffs ps }
@@ -126,6 +126,6 @@ info la fn st = let fi = if null fn then "stdin" else fn
 warn :: String -> String -> IO ()
 warn fn st = info "Main" fn st
 
-die :: String -> String -> IO a
-die fn st = warn fn st >> exitFailure
+quit :: String -> String -> IO a
+quit fn st = warn fn st >> exitFailure
 

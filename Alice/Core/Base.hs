@@ -20,6 +20,7 @@
 
 module Alice.Core.Base where
 
+import Control.Applicative
 import Control.Monad
 import Data.IORef
 import Data.List
@@ -68,6 +69,17 @@ instance Monad CRM where
 instance MonadPlus CRM where
   mzero     = CRM $ \ _ z _ -> z
   mplus m n = CRM $ \ s z k -> runCRM m s (runCRM n s z k) k
+
+instance Functor CRM where
+  fmap  = liftM
+
+instance Applicative CRM where
+  pure  = return
+  (<*>) = ap
+
+instance Alternative CRM where
+  empty = mzero
+  (<|>) = mplus
 
 justRS :: CRM (IORef RState)
 justRS      = CRM $ \ s _ k -> k s

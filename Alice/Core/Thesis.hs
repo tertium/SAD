@@ -20,6 +20,7 @@
 
 module Alice.Core.Thesis (thesis) where
 
+import Control.Applicative
 import Control.Monad
 import Data.List
 import Data.Maybe
@@ -135,3 +136,13 @@ instance MonadPlus TM where
   mzero     = TM $ \ _ -> []
   mplus m k = TM $ \ s -> runTM m s ++ runTM k s
 
+instance Functor TM where
+  fmap  = liftM
+
+instance Applicative TM where
+  pure  = return
+  (<*>) = ap
+
+instance Alternative TM where
+  empty = mzero
+  (<|>) = mplus

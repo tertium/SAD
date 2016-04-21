@@ -180,6 +180,7 @@ strip f         = f
 infilt vs v = guard (v `elem` vs) >> return v
 nifilt vs v = guard (v `notElem` vs) >> return v
 
+dups :: Eq a => [a] -> [a]
 dups (v:vs) = infilt vs v `mplus` dups vs
 dups _      = mzero
 
